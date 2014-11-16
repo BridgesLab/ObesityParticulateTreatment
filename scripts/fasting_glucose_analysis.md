@@ -2,13 +2,13 @@
 Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
 
-This only looks at animals treated *in utero*.  These data were most recently updated on Sun Nov 16 09:53:41 2014.
+This only looks at animals treated *in utero*.  These data were most recently updated on Sun Nov 16 12:07:07 2014.
 
 
 ```r
 filename <- '../data/Blood Glucose - Maternal.csv'
-
 data <- read.csv(filename, row.names='X')
+data <- subset(data, animal.MouseID!='206')
 
 library(plyr)
 summary <- ddply(data, .(Treatment, experiment.feeding_state), summarize,
@@ -32,17 +32,17 @@ print(xtable(summary, caption = "Summary Data, based on treating mice individual
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 09:53:42 2014 -->
+<!-- Sun Nov 16 12:07:08 2014 -->
 <table border=1>
 <caption align="bottom"> Summary Data, based on treating mice individually.  Triglycerides are in mmoles/mg of tissue </caption>
 <tr> <th> Treatment </th> <th> experiment.feeding_state </th> <th> mean </th> <th> sd </th> <th> se </th> <th> n </th> <th> shapiro </th>  </tr>
   <tr> <td> Control </td> <td> fasted </td> <td align="right"> 175.14 </td> <td align="right"> 23.97 </td> <td align="right"> 6.19 </td> <td align="right">  15 </td> <td align="right"> 0.69 </td> </tr>
   <tr> <td> Control </td> <td> fed </td> <td align="right"> 154.71 </td> <td align="right"> 23.20 </td> <td align="right"> 6.20 </td> <td align="right">  14 </td> <td align="right"> 0.34 </td> </tr>
-  <tr> <td> Particulate </td> <td> fasted </td> <td align="right"> 177.00 </td> <td align="right"> 39.54 </td> <td align="right"> 11.92 </td> <td align="right">  11 </td> <td align="right"> 0.90 </td> </tr>
+  <tr> <td> Particulate </td> <td> fasted </td> <td align="right"> 181.10 </td> <td align="right"> 39.14 </td> <td align="right"> 12.38 </td> <td align="right">  10 </td> <td align="right"> 0.92 </td> </tr>
    <a name=tab:summary-statistics></a>
 </table>
 
-According to a Shapiro-Wilk Test, the data fit a normal distribution (p>0.3435928).  A Levene's test suggested that the variance can be presumed to be equal (p=0.1370976).  Based on this, a Student's T-test has a p-value of 0.8856322.
+According to a Shapiro-Wilk Test, the data fit a normal distribution (p>0.3435928).  A Levene's test suggested that the variance can be presumed to be equal (p=0.1963716).  Based on this, a Student's T-test has a p-value of 0.6479714.
 
 
 ```r

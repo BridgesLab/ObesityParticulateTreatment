@@ -12,8 +12,8 @@ This only looks at animals treated *in utero*.  These data were most recently up
 
 ```{r data-entry}
 filename <- '../data/Blood Glucose - Maternal.csv'
-
 data <- read.csv(filename, row.names='X')
+data <- subset(data, animal.MouseID!='206')
 
 library(plyr)
 summary <- ddply(data, .(Treatment, experiment.feeding_state), summarize,
