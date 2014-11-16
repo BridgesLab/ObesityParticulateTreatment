@@ -1,0 +1,353 @@
+---
+title: "Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study"
+author: Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania
+  Cormier and Dave Bridges
+date: "November 13, 2014"
+output:
+  html_document:
+    keep_md: true
+---
+This was the data from the CLAMMS study performed on the 9 week old mice.  This script was most recently run on `r date()`.
+
+```{r data-entry}
+sample_key_file <- '../data/CLAMS/mouse_treatments.csv'
+sample_key <- read.csv(sample_key_file)
+
+mri_data_file <- '../data/CLAMS/2014-09-15 Maternal Particulate.xlsx'
+library(xlsx)
+mri_data <- read.xlsx2(mri_data_file, sheetIndex=1)
+mri_data$Fat <- as.numeric(as.character(mri_data$Fat))
+mri_data$Lean <- as.numeric(as.character(mri_data$Lean))
+mri_data$Weight <- as.numeric(as.character(mri_data$Weight))
+
+clams_data_file_first <- '../data/CLAMS/2014-09-15/2014-09-15 Maternal Particulate OXYMAX.csv'
+clams_data_file_second <- '../data/CLAMS/2014-09-19/2014-09-19 Maternal Particulate OXYMAX.csv'
+
+#load in the data
+first_data <- read.csv(clams_data_file_first)
+second_data <- read.csv(clams_data_file_second)
+second_data$Event.Log <- rep(NA, dim(second_data)[1])
+
+all.data <- rbind(first_data,second_data)
+all.data$Subject <- as.factor(all.data$Subject)
+remove.intervals <- 40
+all.data.clean <- subset(all.data, Subject != '1119'&Interval>remove.intervals&Subject!='1096')
+```
+
+The input files were `r mri_data_file` for the echoMRI data and `r clams_data_file_first` and `r clams_data_file_second` for the CLAMS data.  
+
+```{r analysis}
+library(reshape2)
+se <- function(x) sd(x)/sqrt(length(x))
+
+summarized.data <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='Volume.O2')
+summarized.data.err <- dcast(Subject~Light.Dark, data=all.data.clean, se, value.var='Volume.O2')
+
+RER.data <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='RER')
+RER.data.annotated <- merge(RER.data, sample_key, by.x='Subject', by.y='Mouse.ID')
+Activity.data <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='X.Ambulatory')
+Activity.data.annotated <- merge(Activity.data, sample_key, by.x='Subject', by.y='Mouse.ID')
+Heat.data <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='Heat')
+
+combined.data <- merge(summarized.data, mri_data[,c('Label','Lean','Fat','Weight')], by.x='Subject', by.y="Label")
+
+combined.data$Dark.raw <- combined.data$Dark * combined.data$Weight/1000
+combined.data$Light.raw <- combined.data$Light * combined.data$Weight/1000
+
+combined.data.err <- merge(summarized.data.err, mri_data[,c('Label','Lean','Fat','Weight')], by.x='Subject', by.y="Label")
+
+combined.data.err$Dark.raw <- combined.data.err$Dark * combined.data.err$Weight/1000
+combined.data.err$Light.raw <- combined.data.err$Light * combined.data.err$Weight/1000
+annotated.data.o2 <- merge(combined.data, sample_key, by.x='Subject', by.y='Mouse.ID')
+
+#for linear mixed effects
+
+#annotated all data with weights and groups
+full.clean.data <- merge(all.data.clean, mri_data[,c('Label','Lean','Fat','Weight')], by.x='Subject', by.y="Label")
+full.annotated.data <- merge(full.clean.data, sample_key, by.x='Subject', by.y='Mouse.ID')
+
+library(lme4)
+complete.lme <- lmer(Volume.O2 ~ Light.Dark + Weight + Particulate.Treatment + (1|Subject), data=full.annotated.data, REML=T)
+no.treatment.lme <- lmer(Volume.O2 ~ Light.Dark + Weight + (1|Subject), data=full.annotated.data, REML=T)
+
+library(multcomp)
+lme.ph <- glht(complete.lme, infct=mcp(Particulate.Treatment='Dunnett'))
+
+complete.lme.lean <- lmer(Volume.O2 ~ Light.Dark + Lean + Particulate.Treatment + (1|Subject), data=full.annotated.data, REML=T)
+no.treatment.lme.lean <- lmer(Volume.O2 ~ Light.Dark + Lean + (1|Subject), data=full.annotated.data, REML=T)
+
+lme.ph.lean <- glht(complete.lme.lean, infct=mcp(Particulate.Treatment='Dunnett'))
+```
+
+## Resting Metabolic Rate
+
+The VO2 levels were first merged to average over light and dark cycles, removing the first `r remove.intervals` measurements.  To analyse these data we performed an ANCOVA analysis using body weight as the primary covariate. 
+
+```{r VO2-by-weight,dev=c('png','pdf')}
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+par(mfrow=c(1,2))
+with(annotated.data.o2, plot(Weight, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", main='Dark', col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+
+dark.lm <- lm(Dark.raw~Weight+Particulate.Treatment, data=annotated.data.o2)
+dark.aov <- aov(Dark.raw~Weight+Particulate.Treatment, data=annotated.data.o2)
+
+abline(a=coefficients(dark.lm)[1],
+       b=coefficients(dark.lm)[2], col=palette()[1])
+abline(a=coefficients(dark.lm)[1]+coefficients(dark.lm)['Particulate.TreatmentMCP'],
+       b=coefficients(dark.lm)[2], col=palette()[2])
+abline(a=coefficients(dark.lm)[1]+coefficients(dark.lm)['Particulate.TreatmentSaline'],
+       b=coefficients(dark.lm)[2], col=palette()[3])
+
+with(annotated.data.o2, plot(Weight, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", main='Light',col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+light.lm <- lm(Light.raw~Weight+Particulate.Treatment, data=annotated.data.o2)
+light.aov <- aov(Light.raw~Weight+Particulate.Treatment, data=annotated.data.o2)
+
+abline(a=coefficients(light.lm)[1],
+       b=coefficients(light.lm)[2], col=palette()[1])
+abline(a=coefficients(light.lm)[1]+coefficients(light.lm)['Particulate.TreatmentMCP'],
+       b=coefficients(light.lm)[2], col=palette()[2])
+abline(a=coefficients(light.lm)[1]+coefficients(light.lm)['Particulate.TreatmentSaline'],
+       b=coefficients(light.lm)[2], col=palette()[3])
+
+#superpose.eb(annotated.data.o2$Weight, annotated.data.o2$Light.raw, combined.data.err$Light.raw)
+```
+
+We first checked whether normality was maintained in the residuals from the ANCOVA.  The normality assumption was met for both Dark (p=`r shapiro.test(residuals(dark.aov))$p.value`) and Light (p=`r shapiro.test(residuals(light.aov))$p.value`) via Shapiro-Wilk test.  
+
+According to this analysis there was no significant effect of the treatment group on the body weight-adjusted VO2 levels under either Dark (p=`r summary(dark.aov)[[1]]$"Pr(>F)"[2]`) or Light (p=`r summary(light.aov)[[1]]$"Pr(>F)"[2]`) conditions.  There was also no significant effect of body weight in either Dark (p=`r summary(dark.aov)[[1]]$"Pr(>F)"[1]`) or Light (p=`r summary(light.aov)[[1]]$"Pr(>F)"[1]`) conditions.  We detected a `r coefficients(light.lm)['Particulate.TreatmentMCP']/coefficients(light.lm)['(Intercept)']*100`% reduction in metabolic rate between MCP and Cabosil groups in the light and a `r coefficients(dark.lm)['Particulate.TreatmentMCP']/coefficients(dark.lm)['(Intercept)']*100`% reduction in the dark.
+
+Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Weight and the Particulate treatment.  A F-test comparing a model with or without the Particulate treatment yielded a p-value of `r anova(complete.lme, no.treatment.lme)$"Pr(>Chisq)"[2]`.  Post-hoc tests for the effects of particulate treatment are shown in the Table below.  According to this MCP treatment reduces VO2 by `r summary(lme.ph, test=adjusted(type='none'))$test$coefficients[4]/summary(lme.ph, test=adjusted(type='none'))$test$coefficients[1]*100`%, p=`r summary(lme.ph, test=adjusted(type='none'))$test$pvalue[4]`.
+
+```{r vo2-post-hoc, results='asis'}
+library(xtable)
+tukey.table <- data.frame(
+  Coefficient = summary(lme.ph, test=adjusted(type='BH'))$test$coefficients,
+  p.value = summary(lme.ph,test=adjusted(type='none'))$test$pvalue[1:5])
+
+print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected.", label='tab:vo2-lme-ph', digits=c(0,0,3)), type='html')
+
+tukey.table.lean <- data.frame(
+  Coefficient = summary(lme.ph.lean, test=adjusted(type='BH'))$test$coefficients,
+  p.value = summary(lme.ph.lean,test=adjusted(type='none'))$test$pvalue[1:5])
+
+print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected.", label='tab:vo2-lme-lean-ph', digits=c(0,0,3)), type='html')
+```
+## Normalization by Lean Body Mass
+
+```{r VO2-by-LBM, dev=c('png','pdf')}
+par(mfrow=c(1,2))
+with(annotated.data.o2, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", main='Dark',col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+
+dark.lm.lean <- lm(Dark.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
+dark.aov.lean <- aov(Dark.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
+
+abline(a=coefficients(dark.lm.lean)[1],
+       b=coefficients(dark.lm.lean)[2], col=palette()[1])
+abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.TreatmentMCP'],
+       b=coefficients(dark.lm.lean)[2], col=palette()[2])
+abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.TreatmentSaline'],
+       b=coefficients(dark.lm.lean)[2], col=palette()[3])
+superpose.eb(combined.data$Lean, combined.data$Dark.raw, combined.data.err$Dark.raw)
+
+with(annotated.data.o2, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", main='Light',col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+light.lm.lean <- lm(Light.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
+light.aov.lean <- aov(Light.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
+
+abline(a=coefficients(light.lm.lean)[1],
+       b=coefficients(light.lm.lean)[2], col=palette()[1])
+abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate.TreatmentMCP'],
+       b=coefficients(light.lm.lean)[2], col=palette()[2])
+abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate.TreatmentSaline'],
+       b=coefficients(light.lm.lean)[2], col=palette()[3])
+superpose.eb(combined.data$Lean, combined.data$Light.raw, combined.data.err$Dark.raw)
+```
+
+Using the lean mass as the covariate, we checked whether normality was maintained in the residuals from the ANCOVA.  The normality assumption was met for both Dark (p=`r shapiro.test(residuals(dark.aov.lean))$p.value`) and Light (p=`r shapiro.test(residuals(light.aov.lean))$p.value`) via Shapiro-Wilk test.  
+
+According to this analysis there was no significant effect of the treatment group on the body weight-adjusted VO2 levels under either Dark (p=`r summary(dark.aov.lean)[[1]]$"Pr(>F)"[2]`) or Light (p=`r summary(light.aov.lean)[[1]]$"Pr(>F)"[2]`) conditions.  There was also no effect of body weight in either Dark (p=`r summary(dark.aov.lean)[[1]]$"Pr(>F)"[1]`) or Light (p=`r summary(light.aov.lean)[[1]]$"Pr(>F)"[1]`) conditions.  Analysed this way, we detected a `r coefficients(light.lm.lean)['Particulate.TreatmentMCP']/coefficients(light.lm.lean)['(Intercept)']*100`% reduction in metabolic rate between MCP and Cabosil groups in the light and a  `r coefficients(dark.lm.lean)['Particulate.TreatmentMCP']/coefficients(dark.lm.lean)['(Intercept)']*100`% reduction in the dark.
+
+Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Lean Body Mass and the Particulate treatment.  A Chi-squared test comparing a model with or without the Particulate treatment yielded a p-value of `r anova(complete.lme.lean, no.treatment.lme.lean)$"Pr(>Chisq)"[2]`.  Post-hoc tests for the effects of particulate treatment are shown in the table below.  According to this MCP treatment reduces VO2 by `r summary(lme.ph.lean, test=adjusted(type='none'))$test$coefficients[4]/summary(lme.ph.lean, test=adjusted(type='none'))$test$coefficients[1]*100`%, p=`r summary(lme.ph.lean, test=adjusted(type='none'))$test$pvalue[4]`.
+
+```{r Dark-Light-Correlation,dev=c('png','pdf')}
+with(annotated.data.o2, plot(Light.raw, Dark.raw,
+                         ylim=c(0,max(Light.raw)),
+                         xlim=c(0,max(Dark.raw)),
+                         pch=19, las=1, ylab="Light", xlab="Dark", main='VO2', col=Particulate.Treatment))
+legend("bottomleft", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+dark.light.lm <- lm(Dark.raw~Light.raw, data=combined.data)
+abline(dark.light.lm, lty=2, col='red')
+```
+
+# Body Weights and Composition
+
+```{r body-composition,dev=c('png','pdf')}
+library(plyr)
+annotated.data.o2$Pct.Fat <- annotated.data.o2$Fat/annotated.data.o2$Weight*100
+composition.summary <- ddply(annotated.data.o2, ~Particulate.Treatment, summarize,
+                            Total.mean = mean(Weight),
+                            Total.sd = sd(Weight),
+                            Total.se = se(Weight),
+                            Lean.mean = mean(Lean),
+                            Lean.sd = sd(Lean),
+                            Lean.se = se(Lean),
+                            Fat.mean = mean(Fat),
+                            Fat.sd = sd(Fat),
+                            Fat.se = se(Fat),
+                            Pct.Fat.mean = mean(Pct.Fat),
+                            Pct.Fat.sd = sd(Pct.Fat),
+                            Pct.Fat.se = se(Pct.Fat),
+                            n = length(Fat))
+par(mfrow=c(1,2))
+ymax = max(composition.summary$Lean.mean) + max(composition.summary$Lean.se)
+plot <- barplot(cbind(composition.summary$Fat.mean, composition.summary$Lean.mean), 
+        beside=T, col=palette()[1:3], las=1,
+        ylab="Weight (g)", ylim=c(0,ymax),
+        names.arg=c("Fat Mass", "Lean Mass"))
+superpose.eb(plot, cbind(composition.summary$Fat.mean, composition.summary$Lean.mean),
+             cbind(composition.summary$Fat.se, composition.summary$Lean.se))
+
+ymax = max(composition.summary$Pct.Fat.mean) + max(composition.summary$Pct.Fat.se)
+plot <- barplot(composition.summary$Pct.Fat.mean, ylab="Percent Fat Mass",
+                col=palette()[1:3], las=2, ylim=c(0,ymax),
+                names.arg= composition.summary$Particulate.Treatment)
+superpose.eb(plot, composition.summary$Pct.Fat.mean,
+            composition.summary$Pct.Fat.se)
+
+total.mass.aov <- aov(Weight~Particulate.Treatment, data=annotated.data.o2)
+fat.mass.aov <- aov(Fat~Particulate.Treatment, data=annotated.data.o2)
+lean.mass.aov <- aov(Lean~Particulate.Treatment, data=annotated.data.o2)
+pct.fat.mass.aov <- aov(Pct.Fat~Particulate.Treatment, data=annotated.data.o2)
+
+library(car)
+total.mass.levene <- leveneTest(Weight~Particulate.Treatment, data=annotated.data.o2)
+fat.mass.levene <- leveneTest(Fat~Particulate.Treatment, data=annotated.data.o2)
+lean.mass.levene <- leveneTest(Lean~Particulate.Treatment, data=annotated.data.o2)
+pct.fat.mass.levene <- leveneTest(Pct.Fat~Particulate.Treatment, data=annotated.data.o2)
+
+total.mass.kw <- kruskal.test(Weight~Particulate.Treatment, data=annotated.data.o2)
+fat.mass.kw <- kruskal.test(Fat~Particulate.Treatment, data=annotated.data.o2)
+lean.mass.kw <- kruskal.test(Lean~Particulate.Treatment, data=annotated.data.o2)
+pct.fat.mass.kw <- kruskal.test(Pct.Fat~Particulate.Treatment, data=annotated.data.o2)
+```
+
+The assumptions of normality were met via a Shapiro-Wilk Test for Total Mass (p=`r shapiro.test(residuals(total.mass.aov))$p.value`), and Lean Mass (p=`r shapiro.test(residuals(lean.mass.aov))$p.value`).  The assumptions of equal varaince were met for Total Mass (p=`r total.mass.levene$"Pr(>F)"[1]`), and Lean Mass (p=`r lean.mass.levene$"Pr(>F)"[1]`.  Based on this there was no significant differentces in Total Mass (p=`r summary(total.mass.aov)[[1]]$"Pr(>F)"[1]`) or Lean Mass (p=`r summary(lean.mass.aov)[[1]]$"Pr(>F)"[1]`) by ANOVA.
+
+These assumptions or normality were not met for Fat Mass (p=`r shapiro.test(residuals(fat.mass.aov))$p.value`) or Percent Fat Mass (p=`r shapiro.test(residuals(pct.fat.mass.aov))$p.value`), so we did Kruskal-Wallis tests instead.  According to these tests there was no significant differences in these groups either for Fat Mass (p=`r fat.mass.kw $p.value`) or Percent Fat Mass (p=`r pct.fat.mass.kw $p.value`).
+
+# Respiratory Exchange Rate
+
+```{r rer, dev=c('png','pdf')}
+rer.summary <- ddply(RER.data.annotated, ~Particulate.Treatment, summarize,
+                     Dark.mean = mean(Dark),
+                     Dark.sd = sd(Dark),
+                     Dark.se = se(Dark),
+                     Light.mean = mean(Light),
+                     Light.sd = sd(Light),
+                     Light.se = se(Light))
+
+ymax = max(rer.summary$Dark.mean) + max(rer.summary$Dark.se)
+plot <- barplot(cbind(rer.summary$Dark.mean, rer.summary$Light.mean), ylim=c(0.7,1),
+        beside=T, col=palette()[1:3], las=1,xpd=FALSE,
+        ylab="Respiratory Exchange Ratio",
+        names.arg=c("Dark", "Light"))
+axis(side=1,at=plot, labels=FALSE, tick=FALSE)
+
+legend("topright", levels(rer.summary$Particulate.Treatment), fill=palette()[1:3], bty='n')
+superpose.eb(plot,
+             cbind(rer.summary$Dark.mean, rer.summary$Light.mean),
+             cbind(rer.summary$Dark.se, rer.summary$Light.se))
+
+rer.light.aov <- aov(Light~Particulate.Treatment, data=RER.data.annotated)
+rer.light.kw <- kruskal.test(Light~Particulate.Treatment, data=RER.data.annotated)
+rer.light.levene <- leveneTest(Light~Particulate.Treatment, data=RER.data.annotated)
+
+rer.dark.aov <- aov(Dark~Particulate.Treatment, data=RER.data.annotated)
+rer.dark.kw <- kruskal.test(Dark~Particulate.Treatment, data=RER.data.annotated)
+rer.dark.levene <- leveneTest(Dark~Particulate.Treatment, data=RER.data.annotated)
+```
+
+The assumptions of normality was not met for either Light (p=`r shapiro.test(residuals(rer.light.aov))$p.value`) or Dark RER (p=`r shapiro.test(residuals(rer.dark.aov))$p.value`) levels via a Shapiro-Wilk test.  We therefore did a Kruskal-Wallis test and found that while Dark (p=`r rer.dark.kw$p.value`) RER levels not were significantly different, Light RER levels were (p=`r rer.light.kw$p.value`).  Post-hoc tests for Light RER levels are shown in the Table below:
+
+```{rer-summary, results='asis'}
+print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Treatment, p.adjust.method='BH'))$p.value, caption = "Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg", label="tab:light-rer-ph", digits=4),type='html')
+```
+
+# Activity Data
+
+```{r activity, dev=c('png','pdf')}
+activity.summary <- ddply(Activity.data.annotated, ~Particulate.Treatment, summarize,
+                     Dark.mean = mean(Dark),
+                     Dark.sd = sd(Dark),
+                     Dark.se = se(Dark),
+                     Light.mean = mean(Light),
+                     Light.sd = sd(Light),
+                     Light.se = se(Light))
+
+ymax = max(activity.summary$Dark.mean) + max(activity.summary$Dark.se)
+plot <- barplot(cbind(activity.summary$Dark.mean, activity.summary$Light.mean), ylim=c(0,ymax),
+        beside=T, col=palette()[1:3], las=1,
+        ylab="Activity",
+        names.arg=c("Dark", "Light"))
+
+legend("topright", levels(activity.summary$Particulate.Treatment), fill=palette()[1:3], bty='n')
+superpose.eb(plot,
+             cbind(activity.summary$Dark.mean, activity.summary$Light.mean),
+             cbind(activity.summary$Dark.se, activity.summary$Light.se))
+
+activity.light.aov <- aov(Light~Particulate.Treatment, data=Activity.data.annotated)
+activity.light.kw <- kruskal.test(Light~Particulate.Treatment, data=Activity.data.annotated)
+activity.light.levene <- leveneTest(Light~Particulate.Treatment, data=Activity.data.annotated)
+
+activity.dark.aov <- aov(Dark~Particulate.Treatment, data=Activity.data.annotated)
+activity.dark.kw <- kruskal.test(Dark~Particulate.Treatment, data=Activity.data.annotated)
+activity.dark.levene <- leveneTest(Dark~Particulate.Treatment, data=Activity.data.annotated)
+```
+
+The assumptions of normality was met for both Light (p=`r shapiro.test(residuals(activity.light.aov))$p.value`) or Dark activity (p=`r shapiro.test(residuals(activity.dark.aov))$p.value`) levels via a Shapiro-Wilk test.  As for the assumptions of equal variance, both Dark (p=`r activity.dark.levene$"Pr(>F)"[1]`), and Light activity levels (p=`r activity.light.levene$"Pr(>F)"[1]`) met this assumption via Levene's test.  We therefore did an ANOVA and found that while Dark (p=`r summary(activity.dark.aov)[[1]]$"Pr(>F)"[1]`) activity levels not were significantly different, Light activity levels were (p=`r summary(activity.light.aov)[[1]]$"Pr(>F)"[1]`).  Post-hoc tests for Light activity levels are shown in the table below:
+
+```{r activity-summary, results='asis'}
+library(xtable)
+
+print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Treatment, p.adjust.method='BH', pool.sd=T, var.eq=T))$p.value, caption = "Pairwise Student's T-Tests, corrected by Benjamini-Hochberg", label="tab:light-activity-ph", digits=4), type='html')
+```
+
+# Food Intake
+
+```{r food-intake, dev=c('png','pdf')}
+food.max <- 25
+food.summary <- ddply(all.data.clean, ~Subject, summarize,
+      Total=max(Feed.Acc..1))
+food.summary.clean <- food.summary[food.summary$Total < food.max,]
+
+
+food.summary.annotated <- merge(food.summary.clean, sample_key, by.x='Subject', by.y='Mouse.ID')
+ymax <- max(food.summary.annotated$Total)
+plot <- barplot(with(food.summary.annotated, tapply(Total, Particulate.Treatment, mean)), col=palette()[1:3],
+                ylab="Cumulative Food Intake (g)",
+                las=1, ylim=c(0,17))
+superpose.eb(plot,
+             with(food.summary.annotated, tapply(Total, Particulate.Treatment, mean)),
+             with(food.summary.annotated, tapply(Total, Particulate.Treatment, se)))
+
+food.aov <- aov(Total~Particulate.Treatment, data=food.summary.annotated)
+food.kw <- kruskal.test(Total~Particulate.Treatment, data=food.summary.annotated)
+food.levene <- leveneTest(Total~Particulate.Treatment, data=food.summary.annotated)
+```
+
+We next looked at cumulative food intake accross the groups, removing amy cages that looked to eat >`r food.max`g as these were likely associated with a mouse manually removing a pellet rather than eating it.  We looked at whether these data were normally distributed by a Shapiro-Wilk test and found that they were (p=`r shapiro.test(residuals(food.aov))$p.value`).  The variances were also equally distributed, via a Levene's test  (p=`r food.levene$"Pr(>F)"[1]`).  We therefore performed an ANOVA and found that these groups were not significantly different (p=`r summary(food.aov)[[1]]$"Pr(>F)"[1]`).
+
+## Session Information
+```{r sessionInfo}
+sessionInfo()
+```
