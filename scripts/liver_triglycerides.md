@@ -2,7 +2,7 @@
 Kathryn Cyrus, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
 
-This only looks at animals treated *in utero* and these values are from mice which were fasted 16-20h.  These data were most recently updated on Sun Nov 16 09:52:25 2014.
+This only looks at animals treated *in utero* and these values are from mice which were fasted 16-20h.  These data were most recently updated on Sun Nov 16 12:03:53 2014.
 
 
 ```r
@@ -19,6 +19,7 @@ library(xlsx)
 
 ```r
 data <- read.xlsx2(filename, sheetName=worksheet)
+data <- subset(data, Mouse.ID != '206')
 data$TG <- as.numeric(as.character(data$TGs..microgram.milligrams.of.tissue.))
 
 library(plyr)
@@ -43,16 +44,16 @@ print(xtable(summary, caption = "Summary Data, based on treating mice individual
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 09:52:27 2014 -->
+<!-- Sun Nov 16 12:03:55 2014 -->
 <table border=1>
 <caption align="bottom"> Summary Data, based on treating mice individually.  Triglycerides are in mmoles/mg of tissue </caption>
 <tr> <th> Treatment </th> <th> mean </th> <th> sd </th> <th> se </th> <th> n </th> <th> shapiro </th>  </tr>
   <tr> <td> Saline </td> <td align="right"> 3.57 </td> <td align="right"> 1.27 </td> <td align="right"> 0.34 </td> <td align="right">  14 </td> <td align="right"> 0.77 </td> </tr>
-  <tr> <td> Treatment </td> <td align="right"> 3.83 </td> <td align="right"> 1.45 </td> <td align="right"> 0.44 </td> <td align="right">  11 </td> <td align="right"> 0.12 </td> </tr>
+  <tr> <td> Treatment </td> <td align="right"> 4.19 </td> <td align="right"> 0.90 </td> <td align="right"> 0.29 </td> <td align="right">  10 </td> <td align="right"> 0.37 </td> </tr>
    <a name=tab:summary-statistics></a>
 </table>
 
-According to a Shapiro-Wilk Test, the data fit a normal distribution (p>0.1247884).  A Levene's test suggested that the variance can be presumed to be equal (p=0.821563).  Based on this, a Student's T-test has a p-value of `r t.test(TG~Treatment, data=data, var.equal=T)$p.value.
+According to a Shapiro-Wilk Test, the data fit a normal distribution (p>0.3707028).  A Levene's test suggested that the variance can be presumed to be equal (p=0.285091).  Based on this, a Student's T-test has a p-value of 0.2023664.
 
 
 ```r
