@@ -1,0 +1,62 @@
+---
+title: "Fasting Glucose Analysis for Particulate Treatment Study"
+author: Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania
+  Cormier and Dave Bridges
+date: "November 13, 2014"
+output:
+  html_document:
+    keep_md: true
+---
+
+This only looks at animals treated *in utero*.  These data were most recently updated on `r date()`.
+
+```{r data-entry, echo=FALSE}
+filename <- '../data/Blood Glucose - Maternal.csv'
+
+data <- read.csv(filename, row.names='X')
+
+library(plyr)
+summary <- ddply(data, .(Treatment, experiment.feeding_state), summarize,
+                 mean = mean(Glucose, na.rm=T),
+                 sd = sd(Glucose, na.rm=T),
+                 se = sd(Glucose, na.rm=T)/sqrt(length(Glucose)),
+                 n = length(Glucose),
+                 shapiro = shapiro.test(Glucose)$p.value)
+
+library(car)
+levene.result <- leveneTest(Glucose~Treatment, data=subset(data, experiment.feeding_state=='fasted'))
+```
+
+The data is located in the file`r filename`.  These data are summarized in the Table below and graphed in the figure.  
+
+
+```{r summary-tables, results='asis', echo=FALSE}
+library(xtable)
+print(xtable(summary, caption = "Summary Data, based on treating mice individually.  Triglycerides are in mmoles/mg of tissue", label="tab:summary-statistics"), include.rownames=F, type='html')
+```
+
+According to a Shapiro-Wilk Test, the data fit a normal distribution (p>`r min(summary$shapiro)`).  A Levene's test suggested that the variance can be presumed to be equal (p=`r levene.result$"Pr(>F)"[1]`).  Based on this, a Student's T-test has a p-value of `r t.test(Glucose~Treatment, data=subset(data, experiment.feeding_state == 'fasted'), var.equal=T)$p.value`.
+
+```{r barplot-individual,echo=FALSE, dev=c('png','pdf')}
+ymax <- max(summary$mean) + max(summary$se)
+
+plot <- with(subset(summary, experiment.feeding_state == 'fasted'), plot <- barplot(mean,
+                   beside=T,
+                   las=1,
+                   ylab ="Blood Glucose (mg/dL)",
+                   names.arg = Treatment,
+                   ylim = c(0,ymax)))
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, subset(summary, 
+            experiment.feeding_state == 'fasted')$mean, 
+             subset(summary, experiment.feeding_state == 'fasted')$se)
+```
+
+## Session Information
+```{r sessionInfo, echo=F}
+sessionInfo()
+```
