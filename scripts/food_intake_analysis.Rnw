@@ -1,0 +1,134 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Analysis of Food Intake for High Fat Diet and Particulate Treatment Study}
+\author{Matt Peloquin, Sridhar Jaligama, Jyothi Parvathareddy, Stephania Cormier and Dave Bridges}
+\date{\today}
+\maketitle
+
+This part of the study involved just one arm, animals treated \textit{in utero}.  This file was most recently updated on \Sexpr{date()}.
+
+<<data-entry, echo=FALSE>>=
+input_file <- '../data/Food Worksheet.xlsx'
+sheet_used <- 'Maternal-Summary'
+library(xlsx)
+raw.data <- read.xlsx2(input_file, sheetName=sheet_used, colClasses=c('character','character','numeric','numeric'))
+raw.data$Cage <- as.factor(raw.data$Cage)
+raw.data$Treatment <- as.factor(raw.data$Treatment)
+raw.data$Week <- as.integer(raw.data$Week)
+
+library(plyr)
+
+weekly.summary <- ddply(raw.data, .(Treatment, Week), summarize,
+                        mean = mean(Calories),
+                        sd = sd(Calories),
+                        se = sd(Calories)/sqrt(length(Calories)),
+                        n = length(Calories))
+
+cumulative.data <- ddply(raw.data, .(Cage,Treatment), transform,
+                                   Cumulative.Calories = cumsum(Calories))
+
+weekly.summary.cumulative  <- ddply(cumulative.data, .(Treatment, Week), summarize,
+                        mean = mean(Cumulative.Calories),
+                        sd = sd(Cumulative.Calories),
+                        se = sd(Cumulative.Calories)/sqrt(length(Cumulative.Calories)),
+                        n = length(Cumulative.Calories))
+@
+
+This data comes from the file \Sexpr{input_file} using the worksheet \Sexpr{sheet_used}.  These data are saved in \verb+\Sexpr{getwd()}+.
+
+\section*{Animals Treated with Particulate Matter as Pups}
+
+\begin{figure}
+\begin{center}
+<<label=weekly-food-intake,fig=TRUE,echo=FALSE>>=
+ymax <- max(weekly.summary$se + weekly.summary$mean)
+plot <- with(subset(weekly.summary, Treatment=="Control"), plot(Week, mean,
+             pch=18, las=1, ylab="Calories per mouse per week", ylim=c(0,ymax)))
+
+with(subset(weekly.summary, Treatment=="Particulate"), points(Week, mean, pch=18, col="red"))
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+#lines
+abline(lm(mean~Week, data=subset(weekly.summary, Treatment=="Control")), col="black")
+abline(lm(mean~Week, data=subset(weekly.summary, Treatment=="Particulate")), col="red")
+
+#error bars
+superpose.eb(subset(weekly.summary, Treatment=="Control")$Week,
+             subset(weekly.summary, Treatment=="Control")$mean,
+             subset(weekly.summary, Treatment=="Control")$se)
+
+superpose.eb(subset(weekly.summary, Treatment=="Particulate")$Week,
+             subset(weekly.summary, Treatment=="Particulate")$mean,
+             subset(weekly.summary, Treatment=="Particulate")$se, col="red")
+
+legend("bottomleft", levels(raw.data$Treatment), col=c("black",'red'), pch=18, bty="n", lty=1)
+
+@
+\end{center}
+\caption{Food intake by week}
+\label{fig:weekly-food-intake}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=weekly-food-intake-cumulative,fig=TRUE,echo=FALSE>>=
+ymax <- max(weekly.summary.cumulative$se + weekly.summary.cumulative$mean)
+plot <- with(subset(weekly.summary.cumulative, Treatment=="Control"), plot(Week, mean,
+             pch=18, las=1, ylab="Cumulative Calories Per Mouse", ylim=c(0,ymax)))
+
+with(subset(weekly.summary.cumulative, Treatment=="Particulate"), points(Week, mean, pch=18, col="red"))
+
+#lines
+abline(lm(mean~Week-1, data=subset(weekly.summary.cumulative, Treatment=="Control")), col="black")
+abline(lm(mean~Week-1, data=subset(weekly.summary.cumulative, Treatment=="Particulate")), col="red")
+
+#error bars
+superpose.eb(subset(weekly.summary.cumulative, Treatment=="Control")$Week,
+             subset(weekly.summary.cumulative, Treatment=="Control")$mean,
+             subset(weekly.summary.cumulative, Treatment=="Control")$se)
+
+superpose.eb(subset(weekly.summary.cumulative, Treatment=="Particulate")$Week,
+             subset(weekly.summary.cumulative, Treatment=="Particulate")$mean,
+             subset(weekly.summary.cumulative, Treatment=="Particulate")$se, col="red")
+
+legend("topleft", levels(raw.data$Treatment), col=c("black",'red'), pch=18, bty="n", lty=1)
+
+@
+\end{center}
+\caption{Food intake by week}
+\label{fig:weekly-food-intake-cumulative}
+\end{figure}
+
+
+<<statistics, echo=FALSE>>=
+library(lme4)
+food.lme <- lmer(Calories ~ Treatment*Week + (1|Cage), data=raw.data, REML=T)
+food.lme.no.treatment <- lmer(Calories ~ Week + (1|Cage), data=raw.data, REML=T)
+
+food.lme.cumulative <- lmer(Cumulative.Calories ~ Week + Treatment:Week -1 + (1|Cage), data=cumulative.data, REML=T)
+food.lme.cumulative.no.treatment <- lmer(Cumulative.Calories ~ Week -1 + (1|Cage), data=cumulative.data, REML=T)
+@
+
+We tested by F-test whether there is a difference between mixed models considering the amount of food eaten and the treatment.  The residuals of this model fit a normal distribution (p=\Sexpr{round(shapiro.test(residuals(food.lme))$p.value,3)} from a Shapiro-Wilk Test).  The p-value for that test is $\chi$\textsuperscript{2} =\Sexpr{round(anova(food.lme, food.lme.no.treatment)$`Chisq`[2],3)}, p=\Sexpr{round(anova(food.lme, food.lme.no.treatment)$`Pr(>Chisq)`[2],3)} so there is no evidence of a difference between the treatments.
+
+If we look at the cumulative food intake, the residuals are still normally distributed (p=\Sexpr{round(shapiro.test(residuals(food.lme.cumulative))$p.value,3)} from Shapiro-Wilk Test).  Comparing mixed linear models with an interaction term, and the slope forced to zero there was a significant difference between the two groups by $\chi$\textsuperscript{2} = \Sexpr{round(anova(food.lme.cumulative, food.lme.cumulative.no.treatment)$Chisq[2],4)} and \textbf{p=\Sexpr{round(anova(food.lme.cumulative, food.lme.cumulative.no.treatment)$`Pr(>Chisq)`[2],5)}}.  Based on this, the control group ate \Sexpr{round(fixef(food.lme.cumulative)['Week:TreatmentControl'],2)}kcal of food more per mouse per week, or a total of \Sexpr{round(fixef(food.lme.cumulative)['Week:TreatmentControl']*12,2)} kcal throughout the diet.  This corresponds to a decrease of \Sexpr{round(fixef(food.lme.cumulative)['Week:TreatmentControl']/(fixef(food.lme.cumulative)['Week:TreatmentControl']+fixef(food.lme.cumulative)['Week']),1)*100}\% of caloric intake
+
+\section*{Session Information}
+<<sessionInfo, results=tex, echo=F>>=
+toLatex(sessionInfo())
+@
+
+
+\end{document}

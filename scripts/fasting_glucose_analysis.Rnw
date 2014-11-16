@@ -1,0 +1,132 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Analysis of Blood Glucose Levels in Maternal Particulate Livers}
+\author{Kathryn Cyrus and Dave Bridges}
+\date{\today}
+\maketitle
+
+This only looks at animals treated \textit{in utero}.  These data are located in \verb+\Sexpr{getwd()}+ and was most recently updated on \Sexpr{date()}.
+
+<<data-entry, echo=FALSE>>=
+filename <- 'Blood Glucose - Maternal.csv'
+ library(rjson)
+ library(RCurl)
+
+update.data <- function(x) {
+  
+all.c57bl6.url.group1 <- 'http://bridgeslab.uthsc.edu/mousedb/api/v1/data/?format=json&username=davebridges&api_key=fce3fde2a9a2e5dc9e04c20aad90120a621c50b3&limit=0&animal__strain__Strain__icontains=C57&animal__MouseID__isnull=False&assay__assay=Plasma%20Glucose'
+
+all.c57bl6.url.group2 <- 'http://bridgeslab.uthsc.edu/mousedb/api/v1/data/?format=json&username=davebridges&api_key=fce3fde2a9a2e5dc9e04c20aad90120a621c50b3&limit=0&offset=3000&animal__strain__Strain__icontains=C57&animal__MouseID__isnull=False&assay__assay=Plasma%20Glucose'
+
+all.c57bl6.url.group3 <- 'http://bridgeslab.uthsc.edu/mousedb/api/v1/data/?format=json&username=davebridges&api_key=fce3fde2a9a2e5dc9e04c20aad90120a621c50b3&limit=0&offset=2000&animal__strain__Strain__icontains=C57&animal__MouseID__isnull=False&assay__assay=Plasma%20Glucose'
+                            
+all.c57bl6.json.group1 <- fromJSON(getURL(all.c57bl6.url.group1))
+all.c57bl6.json.group2 <- fromJSON(getURL(all.c57bl6.url.group2))
+all.c57bl6.json.group3 <- fromJSON(getURL(all.c57bl6.url.group3))
+
+library(plyr)
+all.c57bl6 <-  rbind(ldply(lapply(all.c57bl6.json.group1[[2]],function(x) do.call(c,unlist(x,r=F))),as.data.frame),
+                     ldply(lapply(all.c57bl6.json.group2[[2]],function(x) do.call(c,unlist(x,r=F))),as.data.frame),
+                      ldply(lapply(all.c57bl6.json.group3[[2]],function(x) do.call(c,unlist(x,r=F))),as.data.frame))
+
+#determine mouse ids for maternally control pups
+maternal.control.url <- 'http://bridgeslab.uthsc.edu/mousedb/api/v1/treatment/?format=json&username=davebridges&api_key=fce3fde2a9a2e5dc9e04c20aad90120a621c50b3&limit=0&treatment=Maternal%20Particulate%20-%20Saline'
+maternal.control.json <- fromJSON(getURL(maternal.control.url))
+maternal.control.mouseids <- as.factor(unlist(maternal.control.json[[2]][[1]]['animals'])[names(unlist(maternal.control.json[[2]][[1]]['animals'])) == 'animals.id'])
+
+#determine mouse ids for maternally treated pups
+maternal.particulate.url <- 'http://bridgeslab.uthsc.edu/mousedb/api/v1/treatment/?format=json&username=davebridges&api_key=fce3fde2a9a2e5dc9e04c20aad90120a621c50b3&limit=0&treatment=Maternal%20Particulate%20Inhalation'
+maternal.particulate.json <- fromJSON(getURL(maternal.particulate.url))
+maternal.particulate.mouseids <- as.factor(unlist(maternal.particulate.json[[2]][[1]]['animals'])[names(unlist(maternal.particulate.json[[2]][[1]]['animals'])) == 'animals.id'])
+ 
+data.maternal.control <- droplevels(all.c57bl6[all.c57bl6$animal.id  %in% maternal.control.mouseids,])
+data.maternal.particulate <- droplevels(all.c57bl6[all.c57bl6$animal.id  %in% maternal.particulate.mouseids,])
+# 
+#set the treatment column
+data.maternal.control$Treatment <- as.factor(rep("Control", dim(data.maternal.control)[1]))
+data.maternal.particulate$Treatment <- as.factor(rep("Particulate", dim(data.maternal.particulate)[1]))
+# 
+data.maternal <- rbind(data.maternal.control, data.maternal.particulate)
+data.maternal$Glucose <- as.numeric(as.character(data.maternal$values))
+#calculated the week based on the age of the measurement
+#what age were the mice at the start
+data.maternal$Start.Age <- rep(NA, dim(data.maternal)[1])
+for (mouse in levels(data.maternal$animal.MouseID)) {
+  if (data.maternal[data.maternal$animal.MouseID==mouse,'Treatment'] == "Particulate") {
+    data.maternal[data.maternal$animal.MouseID==mouse,]$Start.Age <- rep(data.maternal[data.maternal$animal.MouseID==mouse&data.maternal$experiment.date=='2014-04-09',]$age, dim(data.maternal[data.maternal$animal.MouseID==mouse,])[1])
+  }
+  else 
+    data.maternal[data.maternal$animal.MouseID==mouse,]$Start.Age <- rep(data.maternal[data.maternal$animal.MouseID==mouse&data.maternal$experiment.date=='2014-04-16',]$age, dim(data.maternal[data.maternal$animal.MouseID==mouse,])[1])
+}
+
+data.maternal$Week <- as.integer(round((data.maternal$age - data.maternal$Start.Age)/7,0))
+
+write.csv(data.maternal, filename)
+}
+#uncomment to update
+#update.data
+
+data <- read.csv(filename, row.names='X')
+
+library(plyr)
+summary <- ddply(data, .(Treatment, experiment.feeding_state), summarize,
+                 mean = mean(Glucose, na.rm=T),
+                 sd = sd(Glucose, na.rm=T),
+                 se = sd(Glucose, na.rm=T)/sqrt(length(Glucose)),
+                 n = length(Glucose),
+                 shapiro = shapiro.test(Glucose)$p.value)
+
+library(car)
+levene.result <- leveneTest(Glucose~Treatment, data=subset(data, experiment.feeding_state=='fasted'))
+@
+
+The data is located in the file \verb+\Sexpr{filename}+.  These data are summarized in Table \ref{tab:summary-statistics} and graphed in Figure \ref{fig:barplot-individual}.  
+
+
+<<summary-tables, results=tex, echo=FALSE>>=
+library(xtable)
+print(xtable(summary, caption = "Summary Data, based on treating mice individually.  Triglycerides are in mmoles/mg of tissue", label="tab:summary-statistics"), include.rownames=F)
+@
+
+According to a Shapiro-Wilk Test, the data fit a normal distribution (p>\Sexpr{round(min(summary$shapiro),3)}).  A Levene's test suggested that the variance can be presumed to be equal (p=\Sexpr{round(levene.result$`Pr(>F)`[1],3)}).  Based on this, a Student's T-test has a p-value of \Sexpr{round(t.test(Glucose~Treatment, data=subset(data, experiment.feeding_state == 'fasted'), var.equal=T)$p.value, 3)}.
+
+\begin{figure}
+\begin{center}
+<<label=barplot-individual,fig=TRUE,echo=FALSE>>=
+ymax <- max(summary$mean) + max(summary$se)
+
+plot <- with(subset(summary, experiment.feeding_state == 'fasted'), plot <- barplot(mean,
+                   beside=T,
+                   las=1,
+                   ylab ="Blood Glucose (mg/dL)",
+                   names.arg = Treatment,
+                   ylim = c(0,ymax)))
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, subset(summary, 
+            experiment.feeding_state == 'fasted')$mean, 
+             subset(summary, experiment.feeding_state == 'fasted')$se)
+@
+\end{center}
+\caption{Blood glucose from fasted mice.  This treats each mouse separately.}
+\label{fig:barplot-individual}
+\end{figure}
+
+\section*{Session Information}
+<<sessionInfo, results=tex, echo=F>>=
+toLatex(sessionInfo())
+@
+
+
+\end{document}
