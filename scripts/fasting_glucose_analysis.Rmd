@@ -10,7 +10,7 @@ output:
 
 This only looks at animals treated *in utero*.  These data were most recently updated on `r date()`.
 
-```{r data-entry, echo=FALSE}
+```{r data-entry}
 filename <- '../data/Blood Glucose - Maternal.csv'
 
 data <- read.csv(filename, row.names='X')
@@ -30,14 +30,14 @@ levene.result <- leveneTest(Glucose~Treatment, data=subset(data, experiment.feed
 The data is located in the file`r filename`.  These data are summarized in the Table below and graphed in the figure.  
 
 
-```{r summary-tables, results='asis', echo=FALSE}
+```{r summary-tables, results='asis'}
 library(xtable)
 print(xtable(summary, caption = "Summary Data, based on treating mice individually.  Triglycerides are in mmoles/mg of tissue", label="tab:summary-statistics"), include.rownames=F, type='html')
 ```
 
 According to a Shapiro-Wilk Test, the data fit a normal distribution (p>`r min(summary$shapiro)`).  A Levene's test suggested that the variance can be presumed to be equal (p=`r levene.result$"Pr(>F)"[1]`).  Based on this, a Student's T-test has a p-value of `r t.test(Glucose~Treatment, data=subset(data, experiment.feeding_state == 'fasted'), var.equal=T)$p.value`.
 
-```{r barplot-individual,echo=FALSE, dev=c('png','pdf')}
+```{r barplot-individual,dev=c('png','pdf')}
 ymax <- max(summary$mean) + max(summary$se)
 
 plot <- with(subset(summary, experiment.feeding_state == 'fasted'), plot <- barplot(mean,
@@ -57,6 +57,6 @@ superpose.eb(plot, subset(summary,
 ```
 
 ## Session Information
-```{r sessionInfo, echo=F}
+```{r sessionInfo}
 sessionInfo()
 ```
