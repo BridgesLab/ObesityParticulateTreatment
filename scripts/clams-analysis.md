@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
-This was the data from the CLAMMS study performed on the 9 week old mice.  This script was most recently run on Sun Nov 16 14:06:29 2014.
+This was the data from the CLAMMS study performed on the 9 week old mice.  This script was most recently run on Sun Nov 16 15:25:34 2014.
 
 
 ```r
@@ -174,7 +174,7 @@ print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear mode
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 14:06:34 2014 -->
+<!-- Sun Nov 16 15:25:39 2014 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -195,7 +195,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 14:06:34 2014 -->
+<!-- Sun Nov 16 15:25:39 2014 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -215,6 +215,7 @@ with(annotated.data.o2, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
                          pch=19, las=2, ylab="VO2", main='Dark',col=Particulate.Treatment))
 legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
 
+#anova
 dark.lm.lean <- lm(Dark.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
 dark.aov.lean <- aov(Dark.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
 
@@ -246,6 +247,79 @@ superpose.eb(combined.data$Lean, combined.data$Light.raw, combined.data.err$Dark
 Using the lean mass as the covariate, we checked whether normality was maintained in the residuals from the ANCOVA.  The normality assumption was met for both Dark (p=0.3594005) and Light (p=0.2121161) via Shapiro-Wilk test.  
 
 According to this analysis there was no significant effect of the treatment group on the body weight-adjusted VO2 levels under either Dark (p=0.0681103) or Light (p=0.058354) conditions.  There was also no effect of body weight in either Dark (p=0.6657277) or Light (p=0.6296405) conditions.  Analysed this way, we detected a -13.0493475% reduction in metabolic rate between MCP and Cabosil groups in the light and a  -16.1924413% reduction in the dark.
+
+There was no significant difference between Cabosil and Saline (p=0.9065775 from a *t* test between linear models).  We therefore repeated this analysis but combined Cabosil and Saline to get more statistical power.
+
+
+```r
+#combined the control groups
+annotated.data.o2$ParticulateTF <- annotated.data.o2$Particulate.Treatment == 'MCP'
+
+for (row in rownames(annotated.data.o2)) {
+  if (annotated.data.o2[row,]$ParticulateTF == TRUE) {
+    annotated.data.o2[row,'Particulate'] <- "MCP230"
+  }
+  else 
+    annotated.data.o2[row,'Particulate'] <- "Controls"
+}
+annotated.data.o2$Particulate <- as.factor(annotated.data.o2$Particulate)
+
+with(annotated.data.o2, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+
+#anova
+dark.lm.lean.ctl <- lm(Dark.raw~Lean+Particulate, data=annotated.data.o2)
+dark.aov.lean.ctl <- aov(Dark.raw~Lean+Particulate, data=annotated.data.o2)
+
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/VO2-by-LBM-controls-combined-1.png) 
+
+```r
+with(annotated.data.o2, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+light.lm.lean.ctl <- lm(Light.raw~Lean+Particulate, data=annotated.data.o2)
+light.aov.lean.ctl <- aov(Light.raw~Lean+Particulate, data=annotated.data.o2)
+
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/VO2-by-LBM-controls-combined-2.png) 
+
+```r
+#combined plots
+par(mfrow=c(1,2))
+with(annotated.data.o2, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+
+with(annotated.data.o2, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/VO2-by-LBM-controls-combined-3.png) 
+
+
+According to this analysis there was a significant effect of the treatment group on the body weight-adjusted VO2 levels under either Dark (p=0.0196841) or Light (p=0.0311206) conditions.  There was no effect of body weight in either Dark (p=0.6611484) or Light (p=0.6301495) conditions.  Analysed this way, we detected a -19.0935727% reduction in metabolic rate between MCP and Control groups in the light and a  -16.7802716% reduction in the dark.
+
 
 Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Lean Body Mass and the Particulate treatment.  A Chi-squared test comparing a model with or without the Particulate treatment yielded a p-value of 0.0702343.  Post-hoc tests for the effects of particulate treatment are shown in the table below.  According to this MCP treatment reduces VO2 by -5.0212268%, p=0.0802365.
 
@@ -368,7 +442,7 @@ print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 14:06:35 2014 -->
+<!-- Sun Nov 16 15:25:40 2014 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -423,7 +497,7 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 14:06:35 2014 -->
+<!-- Sun Nov 16 15:25:40 2014 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -431,6 +505,50 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
   <tr> <td align="right"> Saline </td> <td align="right"> 0.0661 </td> <td align="right"> 0.0041 </td> </tr>
    <a name=tab:light-activity-ph></a>
 </table>
+
+Since the cabosil and saline treated groups were not significantly different (p=0.1476566), we combined these groups.
+
+
+```r
+#combined the control groups
+Activity.data.annotated$ParticulateTF <- Activity.data.annotated$Particulate.Treatment == 'MCP'
+
+for (row in rownames(Activity.data.annotated)) {
+  if (Activity.data.annotated[row,]$ParticulateTF == TRUE) {
+    Activity.data.annotated[row,'Particulate'] <- "MCP230"
+  }
+  else 
+    Activity.data.annotated[row,'Particulate'] <- "Controls"
+}
+
+activity.summary.ctl <- ddply(Activity.data.annotated, ~Particulate, summarize,
+                     Dark.mean = mean(Dark),
+                     Dark.sd = sd(Dark),
+                     Dark.se = se(Dark),
+                     Light.mean = mean(Light),
+                     Light.sd = sd(Light),
+                     Light.se = se(Light),
+                     shapiro.light = shapiro.test(Dark)$p.value,
+                     shapiro.dark = shapiro.test(Light)$p.value)
+
+ymax = max(activity.summary.ctl$Dark.mean) + max(activity.summary.ctl$Dark.se)
+plot <- barplot(cbind(activity.summary.ctl$Dark.mean, activity.summary.ctl$Light.mean), ylim=c(0,ymax),
+        beside=T, col=palette()[1:2], las=1,
+        ylab="Activity",
+        names.arg=c("Dark", "Light"))
+
+legend("topright", activity.summary.ctl$Particulate, fill=palette()[1:2], bty='n')
+superpose.eb(plot,
+             cbind(activity.summary.ctl$Dark.mean, activity.summary.ctl$Light.mean),
+             cbind(activity.summary.ctl$Dark.se, activity.summary.ctl$Light.se))
+```
+
+![](clams-analysis_files/figure-html/activity-controls-combined-1.png) 
+
+
+After combining these groups, the assumptions of normality (Dark p > 0.5248028; Light 0.6252547) and equal variance were still (Dark p=0.8047055; Light p=0.4951072) met.
+
+Based on these data, there was a -21.4592238 % reduction in activity in the dark phase (p=0.0398173) and a -26.2357835 % reduction in activity in the light phase (p=0.0099319).
 
 # Food Intake
 
