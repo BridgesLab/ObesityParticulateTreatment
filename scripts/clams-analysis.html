@@ -59,7 +59,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<p>This was the data from the CLAMS study performed on the 9 week old mice. This script was most recently run on Tue Nov 18 09:22:15 2014.</p>
+<p>This was the data from the CLAMS study performed on the 9 week old mice. This script was most recently run on Tue Nov 18 09:56:07 2014.</p>
 <pre class="r"><code>sample_key_file &lt;- '../data/CLAMS/mouse_treatments.csv'
 sample_key &lt;- read.csv(sample_key_file)
 
@@ -179,7 +179,7 @@ tukey.table &lt;- data.frame(
 
 print(xtable(tukey.table, caption=&quot;Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected.&quot;, label='tab:vo2-lme-ph', digits=c(0,0,3)), type='html')</code></pre>
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:21 2014 -->
+<!-- Tue Nov 18 09:56:12 2014 -->
 <table border="1">
 <caption align="bottom"> 
 Post-hoc Dunnett’s tests of mixed linear model correcting for effects of light cycle and total body mass on V02. P-values are not corrected.
@@ -234,7 +234,7 @@ Particulate.TreatmentSaline
 
 print(xtable(tukey.table.lean, caption=&quot;Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected.&quot;, label='tab:vo2-lme-lean-ph', digits=c(0,0,3)), type='html')</code></pre>
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:21 2014 -->
+<!-- Tue Nov 18 09:56:12 2014 -->
 <table border="1">
 <caption align="bottom"> 
 Post-hoc Dunnett’s sests of mixed linear model correcting for effects of light cycle and lean body mass on V02. P-values are not corrected.
@@ -520,7 +520,7 @@ rer.dark.levene &lt;- leveneTest(Dark~Particulate.Treatment, data=RER.data.annot
 <p>The assumptions of normality was not met for either Light (p=0.0175864) or Dark RER (p=0.0140537) levels via a Shapiro-Wilk test. We therefore did a Kruskal-Wallis test and found that while Dark (p=0.102436) RER levels not were significantly different, Light RER levels were (p=0.02815). Post-hoc tests for Light RER levels are shown in the Table below:</p>
 <pre class="r"><code>print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Treatment, p.adjust.method='BH'))$p.value, caption = &quot;Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg&quot;, label=&quot;tab:light-rer-ph&quot;, digits=4),type='html')</code></pre>
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:22 2014 -->
+<!-- Tue Nov 18 09:56:14 2014 -->
 <table border="1">
 <caption align="bottom"> 
 Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg
@@ -580,7 +580,7 @@ activity.dark.levene &lt;- leveneTest(Dark~Particulate.Treatment, data=Activity.
 
 print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Treatment, p.adjust.method='BH', pool.sd=T, var.eq=T))$p.value, caption = &quot;Pairwise Student's T-Tests, corrected by Benjamini-Hochberg&quot;, label=&quot;tab:light-activity-ph&quot;, digits=4), type='html')</code></pre>
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:22 2014 -->
+<!-- Tue Nov 18 09:56:14 2014 -->
 <table border="1">
 <caption align="bottom"> 
 Pairwise Student’s T-Tests, corrected by Benjamini-Hochberg

@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
-This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Nov 18 09:22:15 2014.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Nov 18 09:56:07 2014.
 
 
 ```r
@@ -174,7 +174,7 @@ print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear mode
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:21 2014 -->
+<!-- Tue Nov 18 09:56:12 2014 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -195,7 +195,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:21 2014 -->
+<!-- Tue Nov 18 09:56:12 2014 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -511,7 +511,7 @@ print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:22 2014 -->
+<!-- Tue Nov 18 09:56:14 2014 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -566,7 +566,7 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:22:22 2014 -->
+<!-- Tue Nov 18 09:56:14 2014 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
