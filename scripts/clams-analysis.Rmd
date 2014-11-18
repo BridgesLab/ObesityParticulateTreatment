@@ -7,7 +7,7 @@ output:
   html_document:
     keep_md: true
 ---
-This was the data from the CLAMMS study performed on the 9 week old mice.  This script was most recently run on `r date()`.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on `r date()`.
 
 ```{r data-entry}
 sample_key_file <- '../data/CLAMS/mouse_treatments.csv'
@@ -250,6 +250,38 @@ with(annotated.data.o2, plot(Light.raw, Dark.raw,
 legend("bottomleft", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
 dark.light.lm <- lm(Dark.raw~Light.raw, data=combined.data)
 abline(dark.light.lm, lty=2, col='red')
+```
+
+```{r time-course-o2, dev=c('png','pdf')}
+#add control column to sample key
+all.data.clean.annotated <- merge(all.data.clean, sample_key, by.x='Subject', by.y='Mouse.ID')
+#intervals are 25 mins
+interval_time <- 41-16
+interval_hours <- interval_time/60
+all.data.clean.annotated$Hours <- (all.data.clean.annotated$Interval-41) * interval_hours
+
+library(dplyr)
+time.course.data <-
+  all.data.clean.annotated %>%
+  group_by(Hours, Particulate.Treatment) %>%
+  summarize(mean = mean(Volume.O2),
+            se = sd(Volume.O2)/sqrt(length(Volume.O2)),
+            n = length(Volume.O2))
+
+y.axis <- c(3500, max(time.course.data$mean))
+with(subset(time.course.data, Particulate.Treatment!='MCP'), 
+     plot(Hours, mean, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Volume O2 Consumed/min/kg"))
+#shaded in night times
+first_dark_cycle = 7.55
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+
+with(subset(time.course.data, Particulate.Treatment!='MCP'), lines(Hours, mean, col=palette()[1]))
+with(subset(time.course.data, Particulate.Treatment=='MCP'), lines(Hours, mean, col=palette()[2]))
+legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
 ```
 
 # Body Weights and Composition

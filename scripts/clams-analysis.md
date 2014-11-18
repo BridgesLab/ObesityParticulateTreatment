@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
-This was the data from the CLAMMS study performed on the 9 week old mice.  This script was most recently run on Sun Nov 16 15:25:34 2014.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Nov 18 09:22:15 2014.
 
 
 ```r
@@ -174,7 +174,7 @@ print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear mode
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 15:25:39 2014 -->
+<!-- Tue Nov 18 09:22:21 2014 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -195,7 +195,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 15:25:39 2014 -->
+<!-- Tue Nov 18 09:22:21 2014 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -336,11 +336,80 @@ abline(dark.light.lm, lty=2, col='red')
 
 ![](clams-analysis_files/figure-html/Dark-Light-Correlation-1.png) 
 
+
+```r
+#add control column to sample key
+all.data.clean.annotated <- merge(all.data.clean, sample_key, by.x='Subject', by.y='Mouse.ID')
+#intervals are 25 mins
+interval_time <- 41-16
+interval_hours <- interval_time/60
+all.data.clean.annotated$Hours <- (all.data.clean.annotated$Interval-41) * interval_hours
+
+library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+time.course.data <-
+  all.data.clean.annotated %>%
+  group_by(Hours, Particulate.Treatment) %>%
+  summarize(mean = mean(Volume.O2),
+            se = sd(Volume.O2)/sqrt(length(Volume.O2)),
+            n = length(Volume.O2))
+
+y.axis <- c(3500, max(time.course.data$mean))
+with(subset(time.course.data, Particulate.Treatment!='MCP'), 
+     plot(Hours, mean, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Volume O2 Consumed/min/kg"))
+#shaded in night times
+first_dark_cycle = 7.55
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+
+with(subset(time.course.data, Particulate.Treatment!='MCP'), lines(Hours, mean, col=palette()[1]))
+with(subset(time.course.data, Particulate.Treatment=='MCP'), lines(Hours, mean, col=palette()[2]))
+legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
+```
+
+![](clams-analysis_files/figure-html/time-course-o2-1.png) 
+
 # Body Weights and Composition
 
 
 ```r
 library(plyr)
+```
+
+```
+## -------------------------------------------------------------------------
+## You have loaded plyr after dplyr - this is likely to cause problems.
+## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+## library(plyr); library(dplyr)
+## -------------------------------------------------------------------------
+## 
+## Attaching package: 'plyr'
+## 
+## The following objects are masked from 'package:dplyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+```
+
+```r
 annotated.data.o2$Pct.Fat <- annotated.data.o2$Fat/annotated.data.o2$Weight*100
 composition.summary <- ddply(annotated.data.o2, ~Particulate.Treatment, summarize,
                             Total.mean = mean(Weight),
@@ -442,7 +511,7 @@ print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 15:25:40 2014 -->
+<!-- Tue Nov 18 09:22:22 2014 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -497,7 +566,7 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 15:25:40 2014 -->
+<!-- Tue Nov 18 09:22:22 2014 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -598,15 +667,16 @@ sessionInfo()
 ## [8] base     
 ## 
 ## other attached packages:
-##  [1] car_2.0-21      plyr_1.8.1      xtable_1.7-4    multcomp_1.3-7 
-##  [5] TH.data_1.0-4   survival_2.37-7 mvtnorm_1.0-1   lme4_1.1-7     
-##  [9] Rcpp_0.11.3     Matrix_1.1-4    reshape2_1.4    xlsx_0.5.7     
-## [13] xlsxjars_0.6.1  rJava_0.9-6    
+##  [1] car_2.0-21      plyr_1.8.1      dplyr_0.3.0.2   xtable_1.7-4   
+##  [5] multcomp_1.3-7  TH.data_1.0-4   survival_2.37-7 mvtnorm_1.0-1  
+##  [9] lme4_1.1-7      Rcpp_0.11.3     Matrix_1.1-4    reshape2_1.4   
+## [13] xlsx_0.5.7      xlsxjars_0.6.1  rJava_0.9-6    
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.4     evaluate_0.5.5   formatR_1.0      grid_3.1.1      
-##  [5] htmltools_0.2.6  knitr_1.8        lattice_0.20-29  MASS_7.3-35     
-##  [9] minqa_1.2.4      nlme_3.1-118     nloptr_1.0.4     nnet_7.3-8      
-## [13] rmarkdown_0.3.10 sandwich_2.3-2   stringr_0.6.2    tools_3.1.1     
-## [17] yaml_2.1.13      zoo_1.7-11
+##  [1] assertthat_0.1   DBI_0.3.1        digest_0.6.4     evaluate_0.5.5  
+##  [5] formatR_1.0      grid_3.1.1       htmltools_0.2.6  knitr_1.8       
+##  [9] lattice_0.20-29  lazyeval_0.1.9   magrittr_1.0.1   MASS_7.3-35     
+## [13] minqa_1.2.4      nlme_3.1-118     nloptr_1.0.4     nnet_7.3-8      
+## [17] parallel_3.1.1   rmarkdown_0.3.10 sandwich_2.3-2   stringr_0.6.2   
+## [21] tools_3.1.1      yaml_2.1.13      zoo_1.7-11
 ```
