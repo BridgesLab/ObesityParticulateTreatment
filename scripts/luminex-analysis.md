@@ -42,6 +42,13 @@ Treatment.colors <- rep(c('Black','Red'),2)
 
 ```r
 library(plyr)
+```
+
+```
+## Warning: package 'plyr' was built under R version 3.1.3
+```
+
+```r
 #define se
 se <- function(x) sd(x, na.rm=T)/sqrt(length(x))
 
@@ -121,6 +128,13 @@ Leptin.aov <- aov(Leptin~FeedingState*Treatment, data=data)
 Insulin.aov <- aov(Insulin~FeedingState*Treatment, data=data)
 
 library(car)
+```
+
+```
+## Warning: package 'car' was built under R version 3.1.3
+```
+
+```r
 Resistin.levene <- leveneTest(Resistin~FeedingState*Treatment, data=data)
 GIP.levene <- leveneTest(GIP~FeedingState*Treatment, data=data)
 PAI1.levene <- leveneTest(PAI1~FeedingState*Treatment, data=data)
@@ -147,7 +161,7 @@ print(xtable(anova.summary.verified, caption = "Summaries for Two-Way ANOVA Anal
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 11:50:51 2014 -->
+<!-- Wed Sep 23 15:49:53 2015 -->
 <table border=1>
 <caption align="bottom"> Summaries for Two-Way ANOVA Analyses, for the genes under which the ANOVA assumptions were met </caption>
 <tr> <th>  </th> <th> Shapiro </th> <th> Levene </th> <th> FeedingState </th> <th> Treatment </th> <th> Interaction </th>  </tr>
@@ -191,7 +205,7 @@ print(xtable(wilcoxon.summary, caption = "Summaries of Wilcoxon Rank Sum tests, 
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 11:50:51 2014 -->
+<!-- Wed Sep 23 15:49:54 2015 -->
 <table border=1>
 <caption align="bottom"> Summaries of Wilcoxon Rank Sum tests, comparing treatment groups separately in fasted and refed states </caption>
 <tr> <th>  </th> <th> Fasted </th> <th> Fed </th>  </tr>
@@ -211,6 +225,10 @@ require(reshape2)
 
 ```
 ## Loading required package: reshape2
+```
+
+```
+## Warning: package 'reshape2' was built under R version 3.1.3
 ```
 
 ```r
@@ -505,20 +523,28 @@ sessionInfo()
 
 ```
 ## R version 3.1.1 (2014-07-10)
-## Platform: x86_64-apple-darwin13.1.0 (64-bit)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
 ## 
 ## locale:
-## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## [1] LC_COLLATE=English_United States.1252 
+## [2] LC_CTYPE=English_United States.1252   
+## [3] LC_MONETARY=English_United States.1252
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.1252    
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] reshape2_1.4   car_2.0-21     xtable_1.7-4   plyr_1.8.1    
+## [1] reshape2_1.4.1 car_2.0-25     xtable_1.7-4   plyr_1.8.3    
 ## [5] xlsx_0.5.7     xlsxjars_0.6.1 rJava_0.9-6   
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.4     evaluate_0.5.5   formatR_1.0      htmltools_0.2.6 
-##  [5] knitr_1.8        MASS_7.3-35      nnet_7.3-8       Rcpp_0.11.3     
-##  [9] rmarkdown_0.3.10 stringr_0.6.2    tools_3.1.1      yaml_2.1.13
+##  [1] digest_0.6.8    evaluate_0.7    formatR_1.2     grid_3.1.1     
+##  [5] htmltools_0.2.6 knitr_1.10.5    lattice_0.20-29 lme4_1.1-7     
+##  [9] magrittr_1.5    MASS_7.3-33     Matrix_1.1-4    mgcv_1.8-0     
+## [13] minqa_1.2.4     nlme_3.1-117    nloptr_1.0.4    nnet_7.3-8     
+## [17] parallel_3.1.1  pbkrtest_0.4-2  quantreg_5.11   Rcpp_0.11.6    
+## [21] rmarkdown_0.7   SparseM_1.6     splines_3.1.1   stringi_0.4-1  
+## [25] stringr_1.0.0   tools_3.1.1     yaml_2.1.13
 ```
