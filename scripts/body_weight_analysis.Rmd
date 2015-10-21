@@ -1,6 +1,6 @@
 ---
 title: "Analysis of Body Weights for High Fat Diet Particulate Treatment Study"
-author: Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania
+author: Alyse Ragauskas, Erin Stephenson, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania
   Cormier and Dave Bridges
 date: "November 13, 2014"
 output:
