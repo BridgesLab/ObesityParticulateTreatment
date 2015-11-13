@@ -1,6 +1,6 @@
 ---
 title: "Fasting Luminex Data for Particulate Treatment Study"
-author: Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania
+author: Erin Stephenson, Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania
   Cormier and Dave Bridges
 date: "November 13, 2014"
 output:
@@ -10,7 +10,7 @@ output:
 
 # Summary
 
-Pregnant mice were exposed to respiratory particulates or saline. The offspring of these mice were placed on a HFD at 10 wk of age for 12 wk. Blood was collected in heparinized tubes via retro orbital bleed both before and after a 16 hr fast. Samples were allowed to clot over ice before being separated via centrifugation and serum was collected. The values presented here are the results of serum analyses using the BioRad Bio-Plex Pro Mouse Diabetes Panel (8-plex, Cat. No.171-F7001M).    
+Pregnant mice were exposed to respiratory particulates or saline. The offspring of these mice were placed on a HFD at 10 wk of age for 12 wk. Blood was collected in heparinized tubes via retro orbital bleed both before and after a 16 hr fast. Samples were allowed to clot over ice before being separated via centrifugation and serum was collected. The values presented here are the results of serum analyses using the BioRad Bio-Plex Pro Mouse Diabetes Panel (8-plex, Cat. No.171-F7001M).This Assay was performed by Erin Stephenson, with the assistance of Alyse Ragauskas. Jordy Saravia calculated the concentrations of each hormone analyzed.     
 
 ```{r data-entry}
 input_file <- "../data/Luminex Data.xlsx"
