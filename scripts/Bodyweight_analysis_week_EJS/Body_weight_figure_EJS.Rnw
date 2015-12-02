@@ -1,0 +1,92 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Analysis of Body composition of C57BL6/J mice exposed in utero to MCP230 and saline}
+\author{Erin Stephenson}
+\date{\toWeek}
+\maketitle
+
+\section*{Data}
+<<data-entry, echo=FALSE>>=
+input_file <- "Bodyweight_analysis_week.xlsx"
+sheet_name <- "Sheet1"
+library(xlsx)
+data <- read.xlsx2(input_file, sheetName=sheet_name)
+sub_data <-data[data$Mouse!="206", ]
+sub_data$Mouse <- as.factor(sub_data$Mouse)
+data$Treatment <- relevel(data$Treatment, ref='MCP230')
+data$Week <- as.numeric(as.character(data$Week))
+data$Weight <- as.numeric(as.character(data$'Weight'))
+
+
+#set color palette
+palette( c('red','black','black','black'))
+Treatment.colors <- c('red','black','black','black')
+@
+This script uses the \verb+\Sexpr{sheet_name}+ from \verb+\Sexpr{input_file}+ and is located in the \verb+\Sexpr{getwd()}+ directory.  This analysis was most recently run on \Sexpr{date()}.  
+
+\section*{Data Summary}
+<<summary, echo=FALSE>>=
+library(plyr)
+MCP230 <- subset(data, sub_data$Treatment =='MCP230')
+Saline <- subset(data, sub_data$Treatment =='Saline')
+sub_data$Treatment <-relevel (sub_data$Treatment, ref="Saline")
+
+
+se <- function(x) sd(x, na.rm=T)/sqrt(length(x))
+
+library(dplyr)
+summary.weight <-
+  data %>%
+  group_by(Week, Treatment) %>%
+  summarize(mean = mean(Weight, na.rm=T),
+                     se = se(Weight),
+                     sd = sd(Weight, na.rm=T),
+                     rel.sd = sd(Weight, na.rm=T)/mean(Weight, na.rm=T)*100,
+                     n = length(Weight))
+library(lme4)
+
+#fit.lme.MCP230.indiv <- lmer(Weight~Week + Treatment + (1|Mouse), data=sub_data, REML=T)
+#fit.lme.no.treatment.indiv <- lmer(Weight~Week + (1|Mouse)+(1+Treatment|Mouse), data=sub_data, REML=T)
+
+#treatment_effect <- anova(fit.lme.no.treatment.indiv,fit.lme.MCP230.indiv)
+
+@
+\Section*{Figures}
+
+\begin{figure}
+\begin{center}
+<<label=lineplotWeight,fig=TRUE,echo=FALSE>>=
+
+with(summary.weight, plot(Week,mean, type='p', col=Treatment,
+     ylab="Weight (g)", xlab="Weeks on diet", las=1, pch=18, ylim=c(25,50))) 
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+with(subset(summary.weight,Treatment=="Saline"), lines(Week, mean, col='black'))
+#with(subset(summary.weight,Treatment=="Saline"), abline(lm(mean~Week), col='black'))
+
+with(subset(summary.weight,Treatment=="MCP230"), lines(Week, mean, col='red'))
+with(summary.weight, superpose.eb(Week, mean, se, col=Treatment))
+legend("topleft", c('MCP230','Saline'), fill=Treatment.colors, bty="n")
+@
+\end{center}
+\caption{Lineplot of fed weights}
+\label{fig:lineplotweight}
+\end{figure}
+@
+
+\section*{Session Information}
+<<sessionInfo, results=tex, echo=F>>=
+toLatex(sessionInfo())
+@
+\end{document}
