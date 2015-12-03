@@ -52,11 +52,12 @@ summary.weight <-
                      rel.sd = sd(Weight, na.rm=T)/mean(Weight, na.rm=T)*100,
                      n = length(Weight))
 library(lme4)
+sub_data$Weight <- as.numeric(as.character(sub_data$Weight))
+sub_data$Week <- as.numeric(as.character(sub_data$Week))
+fit.lme.MCP230.indiv <- lmer(Weight~Week + Treatment + Treatment:Week + (1|Mouse), data=sub_data, REML=F)
+fit.lme.no.treatment.indiv <- lmer(Weight~Week + Treatment +  (1|Mouse), data=sub_data, REML=F)
 
-#fit.lme.MCP230.indiv <- lmer(Weight~Week + Treatment + (1|Mouse), data=sub_data, REML=T)
-#fit.lme.no.treatment.indiv <- lmer(Weight~Week + (1|Mouse)+(1+Treatment|Mouse), data=sub_data, REML=T)
-
-#treatment_effect <- anova(fit.lme.no.treatment.indiv,fit.lme.MCP230.indiv)
+treatment_effect <- anova(fit.lme.no.treatment.indiv,fit.lme.MCP230.indiv)
 
 @
 \Section*{Figures}

@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.10.7)  2 DEC 2015 16:10
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.10.7)  3 DEC 2015 12:24
 entering extended mode
 **Body_weight_figure_EJS.tex
 
-(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Body_we
-ight_figure_EJS.tex
+(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Bodywei
+ght_analysis_week_EJS\Body_weight_figure_EJS.tex
 LaTeX2e <2011/06/27>
 Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
 abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
@@ -607,8 +607,8 @@ LaTeX Font Info:    Try loading font information for T1+aer on input line 100.
 ("C:\Program Files (x86)\MiKTeX 2.9A\tex\latex\ae\t1aer.fd"
 File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
 ))))
-(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Body_we
-ight_figure_EJS.aux)
+(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Bodywei
+ght_analysis_week_EJS\Body_weight_figure_EJS.aux)
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 9.
 LaTeX Font Info:    ... okay on input line 9.
 LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 9.
@@ -654,10 +654,10 @@ LaTeX Info: Redefining \ref on input line 9.
 LaTeX Info: Redefining \pageref on input line 9.
 LaTeX Info: Redefining \nameref on input line 9.
 
-(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Body_we
-ight_figure_EJS.out)
-(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Body_we
-ight_figure_EJS.out)
+(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Bodywei
+ght_analysis_week_EJS\Body_weight_figure_EJS.out)
+(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Bodywei
+ght_analysis_week_EJS\Body_weight_figure_EJS.out)
 \@outlinefile=\write4
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
@@ -676,8 +676,8 @@ Package caption Info: End \AtBeginDocument code.
 \makeMPintoPDFobject=\count108
 \everyMPtoPDFconversion=\toks18
 )
-(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Body_we
-ight_figure_EJS-concordance.tex)
+(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Bodywei
+ght_analysis_week_EJS\Body_weight_figure_EJS-concordance.tex)
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <12> on input line 16.
 LaTeX Font Info:    External font `cmex10' loaded for size
@@ -700,11 +700,11 @@ LaTeX Font Info:    Try loading font information for T1+aett on input line 18.
 ("C:\Program Files (x86)\MiKTeX 2.9A\tex\latex\ae\t1aett.fd"
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 )
-Overfull \hbox (279.43083pt too wide) in paragraph at lines 18--19
+Overfull \hbox (431.39055pt too wide) in paragraph at lines 18--19
 \T1/aer/m/n/10 This script uses the []\T1/aett/m/n/10 Sheet1 \T1/aer/m/n/10 fro
 m []\T1/aett/m/n/10 Bodyweight_analysis_week.xlsx \T1/aer/m/n/10 and is lo-cate
 d in the []\T1/aett/m/n/10 C:/Users/esteph16/Documents/GitHub/ObesityParticulat
-eTreatment/scripts
+eTreatment/scripts/Bodyweight_analysis_week_EJS
  []
 
 ! Undefined control sequence.
@@ -734,12 +734,12 @@ Package atveryend Info: Empty hook `BeforeClearDocument' on input line 43.
  [1
 
 {C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}] [2 <C:/Users/esteph16/Doc
-uments/GitHub/ObesityParticulateTreatment/scripts/Body_weight_figure_EJS-linepl
-otWeight.pdf>]
+uments/GitHub/ObesityParticulateTreatment/scripts/Bodyweight_analysis_week_EJS/
+Body_weight_figure_EJS-lineplotWeight.pdf>]
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 43.
 
-(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Body_we
-ight_figure_EJS.aux)
+(C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Bodywei
+ght_analysis_week_EJS\Body_weight_figure_EJS.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 43.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 43.
 Package rerunfilecheck Info: File `Body_weight_figure_EJS.out' has not changed.
@@ -749,12 +749,12 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 43.
  ) 
 Here is how much of TeX's memory you used:
  7457 strings out of 493921
- 113372 string characters out of 3144466
+ 113749 string characters out of 3144466
  182570 words of memory out of 3000000
  10648 multiletter control sequences out of 15000+200000
  20631 words of font info for 48 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 36i,6n,38p,358b,324s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 36i,6n,38p,387b,324s stack positions out of 5000i,500n,10000p,200000b,50000s
  <C:\Users\esteph16\AppData\Local\MiKTeX\2.9\fonts\pk\ljfour\jknappen\ec\dpi6
 00\tcrm1000.pk><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/
 cm/cmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/c
@@ -762,7 +762,7 @@ m/cmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/
 cmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/cm
 r17.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/cmtt
 10.pfb>
-Output written on Body_weight_figure_EJS.pdf (2 pages, 82422 bytes).
+Output written on Body_weight_figure_EJS.pdf (2 pages, 82247 bytes).
 PDF statistics:
  53 PDF objects out of 1000 (max. 8388607)
  7 named destinations out of 1000 (max. 500000)
