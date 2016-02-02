@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
-This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Feb  2 11:32:12 2016.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Feb  2 15:42:20 2016.
 
 
 ```r
@@ -165,7 +165,7 @@ print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear mode
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 11:32:16 2016 -->
+<!-- Tue Feb  2 15:42:24 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -186,7 +186,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 11:32:16 2016 -->
+<!-- Tue Feb  2 15:42:24 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -452,7 +452,7 @@ print(xtable(tukey.table.heat, caption="Post-hoc Dunnett's tests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 11:32:17 2016 -->
+<!-- Tue Feb  2 15:42:26 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -473,7 +473,7 @@ print(xtable(tukey.table.lean.heat, caption="Post-hoc Dunnett's sests of mixed l
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 11:32:17 2016 -->
+<!-- Tue Feb  2 15:42:26 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -752,7 +752,7 @@ print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 11:32:18 2016 -->
+<!-- Tue Feb  2 15:42:27 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -807,7 +807,7 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 11:32:18 2016 -->
+<!-- Tue Feb  2 15:42:27 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -890,6 +890,147 @@ food.levene <- leveneTest(Total~Particulate.Treatment, data=food.summary.annotat
 
 We next looked at cumulative food intake accross the groups, removing amy cages that looked to eat >25g as these were likely associated with a mouse manually removing a pellet rather than eating it.  We looked at whether these data were normally distributed by a Shapiro-Wilk test and found that they were (p=0.1833746).  The variances were also equally distributed, via a Levene's test  (p=0.9596503).  We therefore performed an ANOVA and found that these groups were not significantly different (p=0.4185288).
 
+## Detailed Food Intake Analysis
+
+
+```r
+feeding_folder <- '../data/CLAMS/Feeding bouts/'
+feeding_data <- data.frame(matrix(ncol = 10, nrow = 0))
+####
+##Make a function that read the food intake from each animal to a dataframe
+##Parameters: directory - the directory contains all the food intake files
+##           start_ID - the smallest animal ID 
+##           stop_ID - the biggest animal ID. We assume that animal_IDs are
+##all consecutive numbers.
+##           eliminate_ID - IDs of non-existing animals
+##           out_data - the data that save the combined food intake
+####
+read.input <- function(directory, start_ID, stop_ID, eliminate_ID, out_data){
+  for (i in start_ID:stop_ID){
+    if (!(i %in% eliminate_ID)){
+      feeding_file <- paste(directory, i, ".csv", sep="")
+      data <- read.csv(feeding_file)
+      names(data)[2] <- "Sample"
+      names(data)[4] <- "Light_Dark"
+      names(data)[7] <- "Duration"
+      names(data)[8] <- "Weight"
+      names(data)[9] <- "Accumulated"
+      names(data)[10] <- "Animal_ID"
+      data$Animal_ID <- i
+      names(out_data) <- names(data)
+      out_data <- rbind(out_data, data)
+    }
+  }
+  return(out_data)
+}
+
+#load in all the feeding bouts
+feeding_data.1 <-read.input(feeding_folder, 1096, 1122, NA, feeding_data)
+feeding_data.2 <-read.input(feeding_folder, 1208, 1220, NA, feeding_data)
+feeding_data <- rbind(feeding_data.1, feeding_data.2)
+feeding_max <- 0.5
+duration_max <- 300
+library(lubridate)
+```
+
+```
+## Warning: package 'lubridate' was built under R version 3.2.3
+```
+
+```
+## 
+## Attaching package: 'lubridate'
+## 
+## The following object is masked from 'package:plyr':
+## 
+##     here
+```
+
+```r
+feeding_data$Date.Time <- mdy_hms(feeding_data$Date.Time)
+
+feeding_bout_animal <-
+  feeding_data %>%
+  filter(Weight>0&Weight<feeding_max&Duration<duration_max) %>%
+  group_by(Animal_ID) %>%
+  dplyr::summarize(Average.Duration = mean(Duration),
+            Average.Weight = mean(Weight),
+            Bouts = length(Weight),
+            Time = max(Date.Time)-min(Date.Time)) %>%
+  mutate(Bouts.Time = Bouts/as.double(Time)) %>%
+  inner_join(sample_key, by=c("Animal_ID" = "Mouse.ID"))
+
+min_bouts <- 100
+feeding_bout_summary <-
+  subset(feeding_bout_animal, Bouts>min_bouts)%>%
+  group_by(Particulate.Treatment) %>%
+  dplyr::summarize(Duration = mean(Average.Duration),
+                   Duration.se = se(Average.Duration),
+                   Duration.shapiro = shapiro.test(Average.Duration)$p.value,
+                   Weight = mean(Average.Weight)*1000,
+                   Weight.se = se(Average.Weight)*1000,
+                   Weight.shapiro = shapiro.test(Average.Weight)$p.value,
+                   Feeding.Bouts = mean(Bouts.Time),
+                   Feeding.Bouts.se = se(Bouts.Time),
+                   Feeding.Bouts.shapiro = shapiro.test(Bouts.Time)$p.value)
+par(mfrow=c(1,3))
+ymax <- max(feeding_bout_summary$Duration + feeding_bout_summary$Duration.se)
+plot <- with(feeding_bout_summary, barplot(Duration,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   ylab="Average Feeding Duration (s)"))
+superpose.eb(plot,feeding_bout_summary$Duration, feeding_bout_summary$Duration.se)
+
+ymax <- max(feeding_bout_summary$Weight + feeding_bout_summary$Weight.se)
+plot <- with(feeding_bout_summary, barplot(Weight,
+                                   names.arg=Particulate.Treatment,
+                                   las=2,ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   ylab="Average Feeding Amount (mg)"))
+superpose.eb(plot,feeding_bout_summary$Weight, feeding_bout_summary$Weight.se)
+
+ymax <- max(feeding_bout_summary$Feeding.Bouts + feeding_bout_summary$Feeding.Bouts.se)
+plot <- with(feeding_bout_summary, barplot(Feeding.Bouts,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   ylab="Feeding Bouts per Day"))
+superpose.eb(plot,feeding_bout_summary$Feeding.Bouts, feeding_bout_summary$Feeding.Bouts.se)
+```
+
+![](clams-analysis_files/figure-html/feeding-bouts-1.png) 
+
+These data can be found in the folder ../data/CLAMS/Feeding bouts/.  We calculated an average duration and average feeding amount, after excluding feeding bouts >0.5g and feeding amounts >300s.  Greater than 100 feeding bouts had to be detected per animal.  
+
+### Feeding Amount
+Normality can be assumed for all feeding amounts (p>0.2662583) based on Shapiro-Wilk tests.  An ANOVA between the groups has a p-value of 0.2019674, so no significant differences are detected.  
+
+
+### Feeding Duration
+Normality can be assumed for feeding duration (p=0.042545).  An ANOVA shows significant difference between feeding durations (p=9.2500492\times 10^{-4}.  Equal variance can also be assumed (p=0.048568 via Levene's Test).  Pairwise Studen't *t*-tests are shown below:
+
+
+```r
+library(knitr)
+kable(with(feeding_bout_animal, 
+           pairwise.wilcox.test(Average.Duration,Particulate.Treatment, p.adjust.method = "BH", var.equal=T))$p.value, 
+      caption="Pairwise Wilcox Rank Sum tests, adjusted by the method of Benjamini and Hochberg")
+```
+
+
+
+Table: Pairwise Wilcox Rank Sum tests, adjusted by the method of Benjamini and Hochberg
+
+            Cabosil         MCP
+-------  ----------  ----------
+MCP       0.0470543          NA
+Saline    0.0070765   0.0084359
+
+## Feeding Bouts
+
+Normality cannot be assumed for feeding duration (p=0.0054789).  An Kruskal-Wallis test shows no significant difference between feeding durations (p=0.4882613).  
+
 ## Session Information
 
 ```r
@@ -908,17 +1049,17 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] car_2.1-1       plyr_1.8.3      dplyr_0.4.3     xtable_1.8-0   
-##  [5] multcomp_1.4-1  TH.data_1.0-6   survival_2.38-3 mvtnorm_1.0-3  
-##  [9] lme4_1.1-10     Matrix_1.2-3    reshape2_1.4.1  xlsx_0.5.7     
-## [13] xlsxjars_0.6.1  rJava_0.9-7    
+##  [1] knitr_1.11      lubridate_1.5.0 car_2.1-1       plyr_1.8.3     
+##  [5] dplyr_0.4.3     xtable_1.8-0    multcomp_1.4-1  TH.data_1.0-6  
+##  [9] survival_2.38-3 mvtnorm_1.0-3   lme4_1.1-10     Matrix_1.2-3   
+## [13] reshape2_1.4.1  xlsx_0.5.7      xlsxjars_0.6.1  rJava_0.9-7    
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.2        formatR_1.2.1      nloptr_1.0.4      
-##  [4] tools_3.2.2        digest_0.6.8       evaluate_0.8      
-##  [7] nlme_3.1-122       lattice_0.20-33    mgcv_1.8-10       
-## [10] DBI_0.3.1          yaml_2.1.13        parallel_3.2.2    
-## [13] SparseM_1.7        stringr_1.0.0      knitr_1.11        
+##  [1] Rcpp_0.12.2        highr_0.5.1        formatR_1.2.1     
+##  [4] nloptr_1.0.4       tools_3.2.2        digest_0.6.8      
+##  [7] evaluate_0.8       nlme_3.1-122       lattice_0.20-33   
+## [10] mgcv_1.8-10        DBI_0.3.1          yaml_2.1.13       
+## [13] parallel_3.2.2     SparseM_1.7        stringr_1.0.0     
 ## [16] MatrixModels_0.4-1 nnet_7.3-11        grid_3.2.2        
 ## [19] R6_2.1.1           rmarkdown_0.8.1    minqa_1.2.4       
 ## [22] magrittr_1.5       codetools_0.2-14   htmltools_0.2.6   
