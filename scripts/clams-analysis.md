@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
-This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Nov 18 09:56:07 2014.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Feb  2 11:32:12 2016.
 
 
 ```r
@@ -45,6 +45,7 @@ library(reshape2)
 se <- function(x) sd(x)/sqrt(length(x))
 
 summarized.data <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='Volume.O2')
+summarized.data.heat <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='Heat')
 summarized.data.err <- dcast(Subject~Light.Dark, data=all.data.clean, se, value.var='Volume.O2')
 
 RER.data <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='RER')
@@ -54,15 +55,20 @@ Activity.data.annotated <- merge(Activity.data, sample_key, by.x='Subject', by.y
 Heat.data <- dcast(Subject~Light.Dark, data=all.data.clean, mean, value.var='Heat')
 
 combined.data <- merge(summarized.data, mri_data[,c('Label','Lean','Fat','Weight')], by.x='Subject', by.y="Label")
+combined.data.heat <- merge(summarized.data.heat, mri_data[,c('Label','Lean','Fat','Weight')], by.x='Subject', by.y="Label")
 
 combined.data$Dark.raw <- combined.data$Dark * combined.data$Weight/1000
 combined.data$Light.raw <- combined.data$Light * combined.data$Weight/1000
+
+combined.data.heat$Dark.raw <- combined.data.heat$Dark
+combined.data.heat$Light.raw <- combined.data.heat$Light
 
 combined.data.err <- merge(summarized.data.err, mri_data[,c('Label','Lean','Fat','Weight')], by.x='Subject', by.y="Label")
 
 combined.data.err$Dark.raw <- combined.data.err$Dark * combined.data.err$Weight/1000
 combined.data.err$Light.raw <- combined.data.err$Light * combined.data.err$Weight/1000
 annotated.data.o2 <- merge(combined.data, sample_key, by.x='Subject', by.y='Mouse.ID')
+annotated.data.heat <- merge(combined.data.heat, sample_key, by.x='Subject', by.y='Mouse.ID')
 
 #for linear mixed effects
 
@@ -75,7 +81,6 @@ library(lme4)
 
 ```
 ## Loading required package: Matrix
-## Loading required package: Rcpp
 ```
 
 ```r
@@ -87,28 +92,14 @@ library(multcomp)
 
 ```
 ## Loading required package: mvtnorm
-```
-
-```
-## Warning: package 'mvtnorm' was built under R version 3.1.2
-```
-
-```
 ## Loading required package: survival
-## Loading required package: splines
 ## Loading required package: TH.data
-```
-
-```
-## Warning: package 'TH.data' was built under R version 3.1.2
 ```
 
 ```r
 lme.ph <- glht(complete.lme, infct=mcp(Particulate.Treatment='Dunnett'))
-
 complete.lme.lean <- lmer(Volume.O2 ~ Light.Dark + Lean + Particulate.Treatment + (1|Subject), data=full.annotated.data, REML=T)
 no.treatment.lme.lean <- lmer(Volume.O2 ~ Light.Dark + Lean + (1|Subject), data=full.annotated.data, REML=T)
-
 lme.ph.lean <- glht(complete.lme.lean, infct=mcp(Particulate.Treatment='Dunnett'))
 ```
 
@@ -161,7 +152,7 @@ We first checked whether normality was maintained in the residuals from the ANCO
 
 According to this analysis there was no significant effect of the treatment group on the body weight-adjusted VO2 levels under either Dark (p=0.05111) or Light (p=0.0544828) conditions.  There was also no significant effect of body weight in either Dark (p=0.2272615) or Light (p=0.233403) conditions.  We detected a -18.1114954% reduction in metabolic rate between MCP and Cabosil groups in the light and a -22.7307049% reduction in the dark.
 
-Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Weight and the Particulate treatment.  A F-test comparing a model with or without the Particulate treatment yielded a p-value of 0.0451512.  Post-hoc tests for the effects of particulate treatment are shown in the Table below.  According to this MCP treatment reduces VO2 by -6.2655659%, p=0.0525794.
+Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Weight and the Particulate treatment.  A F-test comparing a model with or without the Particulate treatment yielded a p-value of 0.0451512.  Post-hoc tests for the effects of particulate treatment are shown in the Table below.  According to this MCP treatment reduces VO2 by -6.2655659%, p=0.0525793.
 
 
 ```r
@@ -173,8 +164,8 @@ tukey.table <- data.frame(
 print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected.", label='tab:vo2-lme-ph', digits=c(0,0,3)), type='html')
 ```
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:56:12 2014 -->
+<!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
+<!-- Tue Feb  2 11:32:16 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -194,8 +185,8 @@ tukey.table.lean <- data.frame(
 print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected.", label='tab:vo2-lme-lean-ph', digits=c(0,0,3)), type='html')
 ```
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:56:12 2014 -->
+<!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
+<!-- Tue Feb  2 11:32:16 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -321,7 +312,7 @@ abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean
 According to this analysis there was a significant effect of the treatment group on the body weight-adjusted VO2 levels under either Dark (p=0.0196841) or Light (p=0.0311206) conditions.  There was no effect of body weight in either Dark (p=0.6611484) or Light (p=0.6301495) conditions.  Analysed this way, we detected a -19.0935727% reduction in metabolic rate between MCP and Control groups in the light and a  -16.7802716% reduction in the dark.
 
 
-Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Lean Body Mass and the Particulate treatment.  A Chi-squared test comparing a model with or without the Particulate treatment yielded a p-value of 0.0702343.  Post-hoc tests for the effects of particulate treatment are shown in the table below.  According to this MCP treatment reduces VO2 by -5.0212268%, p=0.0802365.
+Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Lean Body Mass and the Particulate treatment.  A Chi-squared test comparing a model with or without the Particulate treatment yielded a p-value of 0.0702343.  Post-hoc tests for the effects of particulate treatment are shown in the table below.  According to this MCP treatment reduces VO2 by -5.0212268%, p=0.0802363.
 
 
 ```r
@@ -343,7 +334,7 @@ all.data.clean.annotated <- merge(all.data.clean, sample_key, by.x='Subject', by
 #intervals are 25 mins
 interval_time <- 41-16
 interval_hours <- interval_time/60
-all.data.clean.annotated$Hours <- (all.data.clean.annotated$Interval-41) * interval_hours
+all.data.clean.annotated$Hours <- round((all.data.clean.annotated$Interval-41) * interval_hours)
 
 library(dplyr)
 ```
@@ -352,9 +343,9 @@ library(dplyr)
 ## 
 ## Attaching package: 'dplyr'
 ## 
-## The following object is masked from 'package:stats':
+## The following objects are masked from 'package:stats':
 ## 
-##     filter
+##     filter, lag
 ## 
 ## The following objects are masked from 'package:base':
 ## 
@@ -368,6 +359,13 @@ time.course.data <-
   summarize(mean = mean(Volume.O2),
             se = sd(Volume.O2)/sqrt(length(Volume.O2)),
             n = length(Volume.O2))
+
+time.course.data.heat <-
+  all.data.clean.annotated %>%
+  group_by(Hours, Particulate.Treatment) %>%
+  summarize(mean = mean(Heat),
+            se = sd(Heat)/sqrt(length(Heat)),
+            n = length(Heat))
 
 y.axis <- c(3500, max(time.course.data$mean))
 with(subset(time.course.data, Particulate.Treatment!='MCP'), 
@@ -386,6 +384,242 @@ legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
 ```
 
 ![](clams-analysis_files/figure-html/time-course-o2-1.png) 
+
+## Calorimetry by Heat Production
+
+Another way to present these data is to evaluate this by heat instead of VO2.  The equation for Heat production from the CLAMS is the Lusk Equation:
+
+$$(3.815 + 1.232 * RER)*VO2$$
+
+To analyse these data we performed an ANCOVA analysis using body weight as the primary covariate. 
+
+
+```r
+par(mfrow=c(1,2))
+with(annotated.data.heat, plot(Weight, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Production (kcal/h)", main='Dark', col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+
+dark.lm <- lm(Dark.raw~Weight+Particulate.Treatment, data=annotated.data.heat)
+dark.aov <- aov(Dark.raw~Weight+Particulate.Treatment, data=annotated.data.heat)
+
+abline(a=coefficients(dark.lm)[1],
+       b=coefficients(dark.lm)[2], col=palette()[1])
+abline(a=coefficients(dark.lm)[1]+coefficients(dark.lm)['Particulate.TreatmentMCP'],
+       b=coefficients(dark.lm)[2], col=palette()[2])
+abline(a=coefficients(dark.lm)[1]+coefficients(dark.lm)['Particulate.TreatmentSaline'],
+       b=coefficients(dark.lm)[2], col=palette()[3])
+
+with(annotated.data.heat, plot(Weight, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Production (kcal/h)", main='Light',col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+light.lm <- lm(Light.raw~Weight+Particulate.Treatment, data=annotated.data.heat)
+light.aov <- aov(Light.raw~Weight+Particulate.Treatment, data=annotated.data.heat)
+
+abline(a=coefficients(light.lm)[1],
+       b=coefficients(light.lm)[2], col=palette()[1])
+abline(a=coefficients(light.lm)[1]+coefficients(light.lm)['Particulate.TreatmentMCP'],
+       b=coefficients(light.lm)[2], col=palette()[2])
+abline(a=coefficients(light.lm)[1]+coefficients(light.lm)['Particulate.TreatmentSaline'],
+       b=coefficients(light.lm)[2], col=palette()[3])
+```
+
+![](clams-analysis_files/figure-html/heat-by-weight-1.png) 
+
+```r
+#for heat production
+complete.lme.heat <- lmer(Heat ~ Light.Dark + Weight + Particulate.Treatment + (1|Subject), data=full.annotated.data, REML=F)
+no.treatment.lme.heat <- lmer(Heat ~ Light.Dark + Weight + (1|Subject), data=full.annotated.data, REML=F)
+lme.ph.heat <- glht(complete.lme.heat, infct=mcp(Particulate.Treatment='Dunnett'))
+complete.lme.lean.heat <- lmer(Heat ~ Light.Dark + Lean + Particulate.Treatment + (1|Subject), data=full.annotated.data, REML=F)
+no.treatment.lme.lean.heat<- lmer(Heat ~ Light.Dark + Lean + (1|Subject), data=full.annotated.data, REML=F)
+lme.ph.lean.heat <- glht(complete.lme.lean.heat, infct=mcp(Particulate.Treatment='Dunnett'))
+```
+
+We first checked whether normality was maintained in the residuals from the ANCOVA.  The normality assumption was met for both Dark (p=0.2175834) and Light (p=0.2533367) via Shapiro-Wilk test.  
+
+According to this analysis there was no significant effect of the treatment group on the body weight-adjusted heat production levels under either Dark (p=0.0530584) or Light (p=0.0472109) conditions.  There was also no significant effect of body weight in either Dark (p=0.2547262) or Light (p=0.2570017) conditions.  We detected a -16.9555928% reduction in metabolic rate between MCP and Cabosil groups in the light and a -21.57765% reduction in the dark.
+
+Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Weight and the Particulate treatment.  A F-test comparing a model with or without the Particulate treatment yielded a p-value of 1.  Post-hoc tests for the effects of particulate treatment are shown in the Table below.  According to this MCP treatment reduces heat production by -16.2679288%, p=0.0374003.
+
+
+```r
+tukey.table.heat <- data.frame(
+  Coefficient = summary(lme.ph.heat, test=adjusted(type='BH'))$test$coefficients,
+  p.value = summary(lme.ph.heat,test=adjusted(type='none'))$test$pvalue[1:5])
+
+print(xtable(tukey.table.heat, caption="Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on heat production.  P-values are not corrected.", label='tab:heat-lme-ph', digits=c(0,0,3)), type='html')
+```
+
+<!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
+<!-- Tue Feb  2 11:32:17 2016 -->
+<table border=1>
+<caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on heat production.  P-values are not corrected. </caption>
+<tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
+  <tr> <td align="right"> (Intercept) </td> <td align="right"> 0 </td> <td align="right"> 0.072 </td> </tr>
+  <tr> <td align="right"> Light.DarkLight </td> <td align="right"> -0 </td> <td align="right"> 0.000 </td> </tr>
+  <tr> <td align="right"> Weight </td> <td align="right"> 0 </td> <td align="right"> 0.121 </td> </tr>
+  <tr> <td align="right"> Particulate.TreatmentMCP </td> <td align="right"> -0 </td> <td align="right"> 0.037 </td> </tr>
+  <tr> <td align="right"> Particulate.TreatmentSaline </td> <td align="right"> 0 </td> <td align="right"> 0.528 </td> </tr>
+   <a name=tab:heat-lme-ph></a>
+</table>
+
+```r
+tukey.table.lean.heat <- data.frame(
+  Coefficient = summary(lme.ph.lean.heat, test=adjusted(type='BH'))$test$coefficients,
+  p.value = summary(lme.ph.lean.heat,test=adjusted(type='none'))$test$pvalue[1:5])
+
+print(xtable(tukey.table.lean.heat, caption="Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on heat production.  P-values are not corrected.", label='tab:heat-lme-lean-ph', digits=c(0,0,3)), type='html')
+```
+
+<!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
+<!-- Tue Feb  2 11:32:17 2016 -->
+<table border=1>
+<caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on heat production.  P-values are not corrected. </caption>
+<tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
+  <tr> <td align="right"> (Intercept) </td> <td align="right"> 0 </td> <td align="right"> 0.045 </td> </tr>
+  <tr> <td align="right"> Light.DarkLight </td> <td align="right"> -0 </td> <td align="right"> 0.000 </td> </tr>
+  <tr> <td align="right"> Lean </td> <td align="right"> 0 </td> <td align="right"> 0.367 </td> </tr>
+  <tr> <td align="right"> Particulate.TreatmentMCP </td> <td align="right"> -0 </td> <td align="right"> 0.060 </td> </tr>
+  <tr> <td align="right"> Particulate.TreatmentSaline </td> <td align="right"> 0 </td> <td align="right"> 0.412 </td> </tr>
+   <a name=tab:heat-lme-lean-ph></a>
+</table>
+
+## Normalization by Lean Body Mass
+
+
+```r
+par(mfrow=c(1,2))
+with(annotated.data.heat, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Production (kcal/h)", main='Dark',col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.heat$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+
+#anova
+dark.lm.lean <- lm(Dark.raw~Lean+Particulate.Treatment, data=annotated.data.heat)
+dark.aov.lean <- aov(Dark.raw~Lean+Particulate.Treatment, data=annotated.data.heat)
+
+abline(a=coefficients(dark.lm.lean)[1],
+       b=coefficients(dark.lm.lean)[2], col=palette()[1])
+abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.TreatmentMCP'],
+       b=coefficients(dark.lm.lean)[2], col=palette()[2])
+abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.TreatmentSaline'],
+       b=coefficients(dark.lm.lean)[2], col=palette()[3])
+superpose.eb(combined.data$Lean, combined.data$Dark.raw, combined.data.err$Dark.raw)
+
+with(annotated.data.heat, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Production (kcal/h)", main='Light',col=Particulate.Treatment))
+legend("bottomright", levels(annotated.data.heat$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
+light.lm.lean <- lm(Light.raw~Lean+Particulate.Treatment, data=annotated.data.heat)
+light.aov.lean <- aov(Light.raw~Lean+Particulate.Treatment, data=annotated.data.heat)
+
+abline(a=coefficients(light.lm.lean)[1],
+       b=coefficients(light.lm.lean)[2], col=palette()[1])
+abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate.TreatmentMCP'],
+       b=coefficients(light.lm.lean)[2], col=palette()[2])
+abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate.TreatmentSaline'],
+       b=coefficients(light.lm.lean)[2], col=palette()[3])
+superpose.eb(combined.data$Lean, combined.data$Light.raw, combined.data.err$Dark.raw)
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-1.png) 
+
+Using the lean mass as the covariate, we checked whether normality was maintained in the residuals from the ANCOVA.  The normality assumption was met for both Dark (p=0.2575001) and Light (p=0.2384855) via Shapiro-Wilk test.  
+
+According to this analysis there was no significant effect of the treatment group on the body weight-adjusted heat produciton levels under either Dark (p=0.0695758) or Light (p=0.0506229) conditions.  There was also no effect of body weight in either Dark (p=0.7251683) or Light (p=0.6904664) conditions.  Analysed this way, we detected a -11.9637293% reduction in metabolic rate between MCP and Cabosil groups in the light and a  -15.1484627% reduction in the dark.
+
+There was no significant difference between Cabosil and Saline (p=0.7906698 from a *t* test between linear models).  We therefore repeated this analysis but combined Cabosil and Saline to get more statistical power.
+
+
+```r
+#combined the control groups
+annotated.data.heat$ParticulateTF <- annotated.data.heat$Particulate.Treatment == 'MCP'
+
+for (row in rownames(annotated.data.heat)) {
+  if (annotated.data.heat[row,]$ParticulateTF == TRUE) {
+    annotated.data.heat[row,'Particulate'] <- "MCP230"
+  }
+  else 
+    annotated.data.heat[row,'Particulate'] <- "Controls"
+}
+annotated.data.heat$Particulate <- as.factor(annotated.data.heat$Particulate)
+
+with(annotated.data.heat, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Production (kcal/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+
+#anova
+dark.lm.lean.ctl <- lm(Dark.raw~Lean+Particulate, data=annotated.data.heat)
+dark.aov.lean.ctl <- aov(Dark.raw~Lean+Particulate, data=annotated.data.heat)
+
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-1.png) 
+
+```r
+with(annotated.data.heat, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Production (kcal/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+light.lm.lean.ctl <- lm(Light.raw~Lean+Particulate, data=annotated.data.heat)
+light.aov.lean.ctl <- aov(Light.raw~Lean+Particulate, data=annotated.data.heat)
+
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-2.png) 
+
+```r
+#combined plots
+par(mfrow=c(1,2))
+with(annotated.data.heat, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Production (kcal/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+
+with(annotated.data.heat, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
+                         pch=19, las=2, ylab="Heat Produciton (kcal/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-3.png) 
+
+
+According to this analysis there was a significant effect of the treatment group on the body weight-adjusted heat produciton levels under either Dark (p=0.0208645) or Light (p=0.0315519) conditions.  There was no effect of body weight in either Dark (p=0.7215461) or Light (p=0.6922278) conditions.  Analysed this way, we detected a -18.4166427% reduction in metabolic rate between MCP and Control groups in the light and a  -16.4380874% reduction in the dark.
+
+
+Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Lean Body Mass and the Particulate treatment.  A Chi-squared test comparing a model with or without the Particulate treatment yielded a p-value of 0.0408196.  Post-hoc tests for the effects of particulate treatment are shown in the table below.  According to this MCP treatment reduces heat production by -11.8799657%, p=0.0601864.
+
+
+```r
+y.axis <- c(min(time.course.data.heat$mean, na.rm=T), max(time.course.data.heat$mean, na.rm=T))
+with(subset(time.course.data.heat, Particulate.Treatment!='MCP230'), 
+     plot(Hours, mean, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Heat Production (kcal/h)"))
+#shaded in night times
+first_dark_cycle = 7.55
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+with(subset(time.course.data.heat, Particulate.Treatment!='MCP'), lines(Hours, mean, col=palette()[1]))
+with(subset(time.course.data.heat, Particulate.Treatment=='MCP'), lines(Hours, mean, col=palette()[2]))
+legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
+```
+
+![](clams-analysis_files/figure-html/time-course-heat-1.png) 
 
 # Body Weights and Composition
 
@@ -451,6 +685,13 @@ lean.mass.aov <- aov(Lean~Particulate.Treatment, data=annotated.data.o2)
 pct.fat.mass.aov <- aov(Pct.Fat~Particulate.Treatment, data=annotated.data.o2)
 
 library(car)
+```
+
+```
+## Warning: package 'car' was built under R version 3.2.3
+```
+
+```r
 total.mass.levene <- leveneTest(Weight~Particulate.Treatment, data=annotated.data.o2)
 fat.mass.levene <- leveneTest(Fat~Particulate.Treatment, data=annotated.data.o2)
 lean.mass.levene <- leveneTest(Lean~Particulate.Treatment, data=annotated.data.o2)
@@ -510,8 +751,8 @@ The assumptions of normality was not met for either Light (p=0.0175864) or Dark 
 print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Treatment, p.adjust.method='BH'))$p.value, caption = "Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg", label="tab:light-rer-ph", digits=4),type='html')
 ```
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:56:14 2014 -->
+<!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
+<!-- Tue Feb  2 11:32:18 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -565,8 +806,8 @@ library(xtable)
 print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Treatment, p.adjust.method='BH', pool.sd=T, var.eq=T))$p.value, caption = "Pairwise Student's T-Tests, corrected by Benjamini-Hochberg", label="tab:light-activity-ph", digits=4), type='html')
 ```
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Tue Nov 18 09:56:14 2014 -->
+<!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
+<!-- Tue Feb  2 11:32:18 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -656,27 +897,32 @@ sessionInfo()
 ```
 
 ```
-## R version 3.1.1 (2014-07-10)
-## Platform: x86_64-apple-darwin13.1.0 (64-bit)
+## R version 3.2.2 (2015-08-14)
+## Platform: x86_64-apple-darwin13.4.0 (64-bit)
+## Running under: OS X 10.11.3 (El Capitan)
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 ## 
 ## attached base packages:
-## [1] splines   stats     graphics  grDevices utils     datasets  methods  
-## [8] base     
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] car_2.0-21      plyr_1.8.1      dplyr_0.3.0.2   xtable_1.7-4   
-##  [5] multcomp_1.3-7  TH.data_1.0-4   survival_2.37-7 mvtnorm_1.0-1  
-##  [9] lme4_1.1-7      Rcpp_0.11.3     Matrix_1.1-4    reshape2_1.4   
-## [13] xlsx_0.5.7      xlsxjars_0.6.1  rJava_0.9-6    
+##  [1] car_2.1-1       plyr_1.8.3      dplyr_0.4.3     xtable_1.8-0   
+##  [5] multcomp_1.4-1  TH.data_1.0-6   survival_2.38-3 mvtnorm_1.0-3  
+##  [9] lme4_1.1-10     Matrix_1.2-3    reshape2_1.4.1  xlsx_0.5.7     
+## [13] xlsxjars_0.6.1  rJava_0.9-7    
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] assertthat_0.1   DBI_0.3.1        digest_0.6.4     evaluate_0.5.5  
-##  [5] formatR_1.0      grid_3.1.1       htmltools_0.2.6  knitr_1.8       
-##  [9] lattice_0.20-29  lazyeval_0.1.9   magrittr_1.0.1   MASS_7.3-35     
-## [13] minqa_1.2.4      nlme_3.1-118     nloptr_1.0.4     nnet_7.3-8      
-## [17] parallel_3.1.1   rmarkdown_0.3.10 sandwich_2.3-2   stringr_0.6.2   
-## [21] tools_3.1.1      yaml_2.1.13      zoo_1.7-11
+##  [1] Rcpp_0.12.2        formatR_1.2.1      nloptr_1.0.4      
+##  [4] tools_3.2.2        digest_0.6.8       evaluate_0.8      
+##  [7] nlme_3.1-122       lattice_0.20-33    mgcv_1.8-10       
+## [10] DBI_0.3.1          yaml_2.1.13        parallel_3.2.2    
+## [13] SparseM_1.7        stringr_1.0.0      knitr_1.11        
+## [16] MatrixModels_0.4-1 nnet_7.3-11        grid_3.2.2        
+## [19] R6_2.1.1           rmarkdown_0.8.1    minqa_1.2.4       
+## [22] magrittr_1.5       codetools_0.2-14   htmltools_0.2.6   
+## [25] MASS_7.3-45        splines_3.2.2      pbkrtest_0.4-4    
+## [28] assertthat_0.1     quantreg_5.19      sandwich_2.3-4    
+## [31] stringi_1.0-1      lazyeval_0.1.10    zoo_1.7-12
 ```
