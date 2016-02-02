@@ -721,6 +721,15 @@ duration_max <- 300
 library(lubridate)
 feeding_data$Date.Time <- mdy_hms(feeding_data$Date.Time)
 
+for (row in rownames(feeding_data)) {
+  if (hour(feeding_data[row,]$Date.Time)>7&hour(feeding_data[row,]$Date.Time)<19){
+    feeding_data[row,'Dark.Light'] <- 'Light'
+  }
+  else
+    feeding_data[row,'Dark.Light'] <- 'Dark'
+}
+feeding_data$Dark.Light <- as.factor(feeding_data$Dark.Light)
+
 feeding_bout_animal <-
   feeding_data %>%
   filter(Weight>0&Weight<feeding_max&Duration<duration_max) %>%
@@ -790,6 +799,93 @@ kable(with(feeding_bout_animal,
 ## Feeding Bouts
 
 Normality cannot be assumed for feeding duration (p=`r min(feeding_bout_summary$Feeding.Bouts.shapiro)`).  An Kruskal-Wallis test shows no significant difference between feeding durations (p=`r kruskal.test(Bouts~Particulate.Treatment, data=feeding_bout_animal)$p.value`).  
+
+## Separating Feeding Behavior by Day and Night
+
+```{r feeding-day-night}
+feeding_bout_animal_dn <-
+  feeding_data %>%
+  filter(Weight>0&Weight<feeding_max&Duration<duration_max) %>%
+  group_by(Animal_ID, Dark.Light) %>%
+  dplyr::summarize(Average.Duration = mean(Duration),
+            Average.Weight = mean(Weight),
+            Bouts = length(Weight),
+            Time = max(Date.Time)-min(Date.Time)) %>%
+  mutate(Bouts.Time = Bouts/as.double(Time)) %>%
+  inner_join(sample_key, by=c("Animal_ID" = "Mouse.ID"))
+
+feeding_bout_summary_dn <-
+  subset(feeding_bout_animal_dn, Bouts>min_bouts)%>%
+  group_by(Particulate.Treatment, Dark.Light) %>%
+  dplyr::summarize(Duration = mean(Average.Duration),
+                   Duration.se = se(Average.Duration),
+                   Weight = mean(Average.Weight)*1000,
+                   Weight.se = se(Average.Weight)*1000,
+                   Feeding.Bouts = mean(Bouts.Time),
+                   Feeding.Bouts.se = se(Bouts.Time))
+
+par(mfrow=c(2,3))
+ymax <- max(feeding_bout_summary_dn$Duration + feeding_bout_summary_dn$Duration.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Duration,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Dark Duration",
+                                   ylab="Average Feeding Duration (s)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
+     superpose.eb(plot,Duration, Duration.se))
+
+ymax <- max(feeding_bout_summary_dn$Weight + feeding_bout_summary_dn$Weight.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Weight,
+                                   names.arg=Particulate.Treatment,
+                                   las=2,ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Dark Food per Meal",
+                                   ylab="Average Feeding Amount (mg)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
+     superpose.eb(plot,Weight, Weight.se))
+
+ymax <- max(feeding_bout_summary_dn$Feeding.Bouts + feeding_bout_summary_dn$Feeding.Bouts.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Feeding.Bouts,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Dark Meals",
+                                   ylab="Feeding Bouts per Day"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
+     superpose.eb(plot,Feeding.Bouts, Feeding.Bouts.se))
+
+ymax <- max(feeding_bout_summary_dn$Duration + feeding_bout_summary_dn$Duration.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Duration,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Light Duration",
+                                   ylab="Average Feeding Duration (s)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
+     superpose.eb(plot,Duration, Duration.se))
+
+ymax <- max(feeding_bout_summary_dn$Weight + feeding_bout_summary_dn$Weight.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Weight,
+                                   names.arg=Particulate.Treatment,
+                                   las=2,ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Light Food per Meal",
+                                   ylab="Average Feeding Amount (mg)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
+     superpose.eb(plot,Weight, Weight.se))
+
+ymax <- max(feeding_bout_summary_dn$Feeding.Bouts + feeding_bout_summary_dn$Feeding.Bouts.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Feeding.Bouts,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Light Meals",
+                                   ylab="Feeding Bouts per Day"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
+     superpose.eb(plot,Feeding.Bouts, Feeding.Bouts.se))
+
+```
 
 ## Session Information
 ```{r sessionInfo}

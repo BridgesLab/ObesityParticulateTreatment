@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
-This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Feb  2 15:42:20 2016.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Feb  2 17:31:33 2016.
 
 
 ```r
@@ -165,7 +165,7 @@ print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear mode
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 15:42:24 2016 -->
+<!-- Tue Feb  2 17:31:37 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -186,7 +186,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 15:42:24 2016 -->
+<!-- Tue Feb  2 17:31:37 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -452,7 +452,7 @@ print(xtable(tukey.table.heat, caption="Post-hoc Dunnett's tests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 15:42:26 2016 -->
+<!-- Tue Feb  2 17:31:39 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -473,7 +473,7 @@ print(xtable(tukey.table.lean.heat, caption="Post-hoc Dunnett's sests of mixed l
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 15:42:26 2016 -->
+<!-- Tue Feb  2 17:31:39 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -752,7 +752,7 @@ print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 15:42:27 2016 -->
+<!-- Tue Feb  2 17:31:40 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -807,7 +807,7 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 15:42:27 2016 -->
+<!-- Tue Feb  2 17:31:40 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -949,6 +949,15 @@ library(lubridate)
 ```r
 feeding_data$Date.Time <- mdy_hms(feeding_data$Date.Time)
 
+for (row in rownames(feeding_data)) {
+  if (hour(feeding_data[row,]$Date.Time)>7&hour(feeding_data[row,]$Date.Time)<19){
+    feeding_data[row,'Dark.Light'] <- 'Light'
+  }
+  else
+    feeding_data[row,'Dark.Light'] <- 'Dark'
+}
+feeding_data$Dark.Light <- as.factor(feeding_data$Dark.Light)
+
 feeding_bout_animal <-
   feeding_data %>%
   filter(Weight>0&Weight<feeding_max&Duration<duration_max) %>%
@@ -1030,6 +1039,95 @@ Saline    0.0070765   0.0084359
 ## Feeding Bouts
 
 Normality cannot be assumed for feeding duration (p=0.0054789).  An Kruskal-Wallis test shows no significant difference between feeding durations (p=0.4882613).  
+
+## Separating Feeding Behavior by Day and Night
+
+
+```r
+feeding_bout_animal_dn <-
+  feeding_data %>%
+  filter(Weight>0&Weight<feeding_max&Duration<duration_max) %>%
+  group_by(Animal_ID, Dark.Light) %>%
+  dplyr::summarize(Average.Duration = mean(Duration),
+            Average.Weight = mean(Weight),
+            Bouts = length(Weight),
+            Time = max(Date.Time)-min(Date.Time)) %>%
+  mutate(Bouts.Time = Bouts/as.double(Time)) %>%
+  inner_join(sample_key, by=c("Animal_ID" = "Mouse.ID"))
+
+feeding_bout_summary_dn <-
+  subset(feeding_bout_animal_dn, Bouts>min_bouts)%>%
+  group_by(Particulate.Treatment, Dark.Light) %>%
+  dplyr::summarize(Duration = mean(Average.Duration),
+                   Duration.se = se(Average.Duration),
+                   Weight = mean(Average.Weight)*1000,
+                   Weight.se = se(Average.Weight)*1000,
+                   Feeding.Bouts = mean(Bouts.Time),
+                   Feeding.Bouts.se = se(Bouts.Time))
+
+par(mfrow=c(2,3))
+ymax <- max(feeding_bout_summary_dn$Duration + feeding_bout_summary_dn$Duration.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Duration,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Dark Duration",
+                                   ylab="Average Feeding Duration (s)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
+     superpose.eb(plot,Duration, Duration.se))
+
+ymax <- max(feeding_bout_summary_dn$Weight + feeding_bout_summary_dn$Weight.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Weight,
+                                   names.arg=Particulate.Treatment,
+                                   las=2,ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Dark Food per Meal",
+                                   ylab="Average Feeding Amount (mg)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
+     superpose.eb(plot,Weight, Weight.se))
+
+ymax <- max(feeding_bout_summary_dn$Feeding.Bouts + feeding_bout_summary_dn$Feeding.Bouts.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Feeding.Bouts,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Dark Meals",
+                                   ylab="Feeding Bouts per Day"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
+     superpose.eb(plot,Feeding.Bouts, Feeding.Bouts.se))
+
+ymax <- max(feeding_bout_summary_dn$Duration + feeding_bout_summary_dn$Duration.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Duration,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Light Duration",
+                                   ylab="Average Feeding Duration (s)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
+     superpose.eb(plot,Duration, Duration.se))
+
+ymax <- max(feeding_bout_summary_dn$Weight + feeding_bout_summary_dn$Weight.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Weight,
+                                   names.arg=Particulate.Treatment,
+                                   las=2,ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Light Food per Meal",
+                                   ylab="Average Feeding Amount (mg)"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
+     superpose.eb(plot,Weight, Weight.se))
+
+ymax <- max(feeding_bout_summary_dn$Feeding.Bouts + feeding_bout_summary_dn$Feeding.Bouts.se)
+plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Feeding.Bouts,
+                                   names.arg=Particulate.Treatment,
+                                   las=2, ylim=c(0,ymax),
+                                   col=palette()[1:3],
+                                   main="Light Meals",
+                                   ylab="Feeding Bouts per Day"))
+with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
+     superpose.eb(plot,Feeding.Bouts, Feeding.Bouts.se))
+```
+
+![](clams-analysis_files/figure-html/feeding-day-night-1.png) 
 
 ## Session Information
 
