@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
-Alyse Ragauskas, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
+Dave Bridges, Alyse Ragauskas, Erin Stephenson, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Joan Han  
 November 13, 2014  
-This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Tue Feb  2 17:31:33 2016.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Wed Feb  3 12:42:31 2016.
 
 
 ```r
@@ -165,7 +165,7 @@ print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear mode
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 17:31:37 2016 -->
+<!-- Wed Feb  3 12:42:35 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -186,7 +186,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 17:31:37 2016 -->
+<!-- Wed Feb  3 12:42:35 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -452,7 +452,7 @@ print(xtable(tukey.table.heat, caption="Post-hoc Dunnett's tests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 17:31:39 2016 -->
+<!-- Wed Feb  3 12:42:37 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -473,7 +473,7 @@ print(xtable(tukey.table.lean.heat, caption="Post-hoc Dunnett's sests of mixed l
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 17:31:39 2016 -->
+<!-- Wed Feb  3 12:42:37 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -752,7 +752,7 @@ print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 17:31:40 2016 -->
+<!-- Wed Feb  3 12:42:38 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -807,7 +807,7 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Tue Feb  2 17:31:40 2016 -->
+<!-- Wed Feb  3 12:42:38 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -865,9 +865,10 @@ Based on these data, there was a -21.4592238 % reduction in activity in the dark
 
 ```r
 food.max <- 25
+food.min <- 0
 food.summary <- ddply(all.data.clean, ~Subject, summarize,
       Total=max(Feed.Acc..1))
-food.summary.clean <- food.summary[food.summary$Total < food.max,]
+food.summary.clean <- food.summary[food.summary$Total < food.max&food.summary$Total>0,]
 
 
 food.summary.annotated <- merge(food.summary.clean, sample_key, by.x='Subject', by.y='Mouse.ID')
@@ -888,7 +889,7 @@ food.kw <- kruskal.test(Total~Particulate.Treatment, data=food.summary.annotated
 food.levene <- leveneTest(Total~Particulate.Treatment, data=food.summary.annotated)
 ```
 
-We next looked at cumulative food intake accross the groups, removing amy cages that looked to eat >25g as these were likely associated with a mouse manually removing a pellet rather than eating it.  We looked at whether these data were normally distributed by a Shapiro-Wilk test and found that they were (p=0.1833746).  The variances were also equally distributed, via a Levene's test  (p=0.9596503).  We therefore performed an ANOVA and found that these groups were not significantly different (p=0.4185288).
+We next looked at cumulative food intake accross the groups, removing amy cages that looked to eat >25g as these were likely associated with a mouse manually removing a pellet rather than eating it.  We looked at whether these data were normally distributed by a Shapiro-Wilk test and found that they were (p=0.0466032).  The variances were also equally distributed, via a Levene's test  (p=0.6206792).  We therefore performed an ANOVA and found that these groups were not significantly different (p=0.6496725).
 
 ## Detailed Food Intake Analysis
 
@@ -962,8 +963,8 @@ feeding_bout_animal <-
   feeding_data %>%
   filter(Weight>0&Weight<feeding_max&Duration<duration_max) %>%
   group_by(Animal_ID) %>%
-  dplyr::summarize(Average.Duration = mean(Duration),
-            Average.Weight = mean(Weight),
+  dplyr::summarize(Median.Duration = median(Duration),
+            Median.Weight = median(Weight),
             Bouts = length(Weight),
             Time = max(Date.Time)-min(Date.Time)) %>%
   mutate(Bouts.Time = Bouts/as.double(Time)) %>%
@@ -973,12 +974,12 @@ min_bouts <- 100
 feeding_bout_summary <-
   subset(feeding_bout_animal, Bouts>min_bouts)%>%
   group_by(Particulate.Treatment) %>%
-  dplyr::summarize(Duration = mean(Average.Duration),
-                   Duration.se = se(Average.Duration),
-                   Duration.shapiro = shapiro.test(Average.Duration)$p.value,
-                   Weight = mean(Average.Weight)*1000,
-                   Weight.se = se(Average.Weight)*1000,
-                   Weight.shapiro = shapiro.test(Average.Weight)$p.value,
+  dplyr::summarize(Duration = mean(Median.Duration),
+                   Duration.se = se(Median.Duration),
+                   Duration.shapiro = shapiro.test(Median.Duration)$p.value,
+                   Weight = mean(Median.Weight)*1000,
+                   Weight.se = se(Median.Weight)*1000,
+                   Weight.shapiro = shapiro.test(Median.Weight)$p.value,
                    Feeding.Bouts = mean(Bouts.Time),
                    Feeding.Bouts.se = se(Bouts.Time),
                    Feeding.Bouts.shapiro = shapiro.test(Bouts.Time)$p.value)
@@ -988,7 +989,7 @@ plot <- with(feeding_bout_summary, barplot(Duration,
                                    names.arg=Particulate.Treatment,
                                    las=2, ylim=c(0,ymax),
                                    col=palette()[1:3],
-                                   ylab="Average Feeding Duration (s)"))
+                                   ylab="Median Feeding Duration (s)"))
 superpose.eb(plot,feeding_bout_summary$Duration, feeding_bout_summary$Duration.se)
 
 ymax <- max(feeding_bout_summary$Weight + feeding_bout_summary$Weight.se)
@@ -996,7 +997,7 @@ plot <- with(feeding_bout_summary, barplot(Weight,
                                    names.arg=Particulate.Treatment,
                                    las=2,ylim=c(0,ymax),
                                    col=palette()[1:3],
-                                   ylab="Average Feeding Amount (mg)"))
+                                   ylab="Median Feeding Amount (mg)"))
 superpose.eb(plot,feeding_bout_summary$Weight, feeding_bout_summary$Weight.se)
 
 ymax <- max(feeding_bout_summary$Feeding.Bouts + feeding_bout_summary$Feeding.Bouts.se)
@@ -1010,21 +1011,36 @@ superpose.eb(plot,feeding_bout_summary$Feeding.Bouts, feeding_bout_summary$Feedi
 
 ![](clams-analysis_files/figure-html/feeding-bouts-1.png) 
 
-These data can be found in the folder ../data/CLAMS/Feeding bouts/.  We calculated an average duration and average feeding amount, after excluding feeding bouts >0.5g and feeding amounts >300s.  Greater than 100 feeding bouts had to be detected per animal.  
+These data can be found in the folder ../data/CLAMS/Feeding bouts/.  We calculated an median duration and median feeding amount, after excluding feeding bouts >0.5g and feeding amounts >300s.  Greater than 100 feeding bouts had to be detected per animal.  
 
 ### Feeding Amount
-Normality can be assumed for all feeding amounts (p>0.2662583) based on Shapiro-Wilk tests.  An ANOVA between the groups has a p-value of 0.2019674, so no significant differences are detected.  
+Normality can be assumed for all feeding amounts (p>0.0313524) based on Shapiro-Wilk tests.  An ANOVA between the groups has a p-value of 0.3753436, so no significant differences are detected.  
 
 
 ### Feeding Duration
-Normality can be assumed for feeding duration (p=0.042545).  An ANOVA shows significant difference between feeding durations (p=9.2500492\times 10^{-4}.  Equal variance can also be assumed (p=0.048568 via Levene's Test).  Pairwise Studen't *t*-tests are shown below:
+Normality can be assumed for feeding duration (p=2.3193452\times 10^{-4}).  An ANOVA shows significant difference between feeding durations (p=0.0016197.  Equal variance can also be assumed (p=0.0088431 via Levene's Test).  Pairwise Studen't *t*-tests are shown below:
 
 
 ```r
 library(knitr)
 kable(with(feeding_bout_animal, 
-           pairwise.wilcox.test(Average.Duration,Particulate.Treatment, p.adjust.method = "BH", var.equal=T))$p.value, 
+           pairwise.wilcox.test(Median.Duration,Particulate.Treatment, p.adjust.method = "BH", var.equal=T))$p.value, 
       caption="Pairwise Wilcox Rank Sum tests, adjusted by the method of Benjamini and Hochberg")
+```
+
+```
+## Warning in wilcox.test.default(xi, xj, paired = paired, ...): cannot
+## compute exact p-value with ties
+```
+
+```
+## Warning in wilcox.test.default(xi, xj, paired = paired, ...): cannot
+## compute exact p-value with ties
+```
+
+```
+## Warning in wilcox.test.default(xi, xj, paired = paired, ...): cannot
+## compute exact p-value with ties
 ```
 
 
@@ -1033,8 +1049,8 @@ Table: Pairwise Wilcox Rank Sum tests, adjusted by the method of Benjamini and H
 
             Cabosil         MCP
 -------  ----------  ----------
-MCP       0.0470543          NA
-Saline    0.0070765   0.0084359
+MCP       0.6025176          NA
+Saline    0.0211995   0.0211995
 
 ## Feeding Bouts
 
@@ -1048,8 +1064,8 @@ feeding_bout_animal_dn <-
   feeding_data %>%
   filter(Weight>0&Weight<feeding_max&Duration<duration_max) %>%
   group_by(Animal_ID, Dark.Light) %>%
-  dplyr::summarize(Average.Duration = mean(Duration),
-            Average.Weight = mean(Weight),
+  dplyr::summarize(Median.Duration = median(Duration),
+            Median.Weight = median(Weight),
             Bouts = length(Weight),
             Time = max(Date.Time)-min(Date.Time)) %>%
   mutate(Bouts.Time = Bouts/as.double(Time)) %>%
@@ -1058,10 +1074,10 @@ feeding_bout_animal_dn <-
 feeding_bout_summary_dn <-
   subset(feeding_bout_animal_dn, Bouts>min_bouts)%>%
   group_by(Particulate.Treatment, Dark.Light) %>%
-  dplyr::summarize(Duration = mean(Average.Duration),
-                   Duration.se = se(Average.Duration),
-                   Weight = mean(Average.Weight)*1000,
-                   Weight.se = se(Average.Weight)*1000,
+  dplyr::summarize(Duration = mean(Median.Duration),
+                   Duration.se = se(Median.Duration),
+                   Weight = mean(Median.Weight)*1000,
+                   Weight.se = se(Median.Weight)*1000,
                    Feeding.Bouts = mean(Bouts.Time),
                    Feeding.Bouts.se = se(Bouts.Time))
 
@@ -1072,7 +1088,7 @@ plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Durati
                                    las=2, ylim=c(0,ymax),
                                    col=palette()[1:3],
                                    main="Dark Duration",
-                                   ylab="Average Feeding Duration (s)"))
+                                   ylab="Median Feeding Duration (s)"))
 with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
      superpose.eb(plot,Duration, Duration.se))
 
@@ -1082,7 +1098,7 @@ plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"), barplot(Weight
                                    las=2,ylim=c(0,ymax),
                                    col=palette()[1:3],
                                    main="Dark Food per Meal",
-                                   ylab="Average Feeding Amount (mg)"))
+                                   ylab="Median Feeding Amount (mg)"))
 with(subset(feeding_bout_summary_dn, Dark.Light=="Dark"),
      superpose.eb(plot,Weight, Weight.se))
 
@@ -1102,7 +1118,7 @@ plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Durat
                                    las=2, ylim=c(0,ymax),
                                    col=palette()[1:3],
                                    main="Light Duration",
-                                   ylab="Average Feeding Duration (s)"))
+                                   ylab="Median Feeding Duration (s)"))
 with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
      superpose.eb(plot,Duration, Duration.se))
 
@@ -1112,7 +1128,7 @@ plot <- with(subset(feeding_bout_summary_dn, Dark.Light=="Light"), barplot(Weigh
                                    las=2,ylim=c(0,ymax),
                                    col=palette()[1:3],
                                    main="Light Food per Meal",
-                                   ylab="Average Feeding Amount (mg)"))
+                                   ylab="Median Feeding Amount (mg)"))
 with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
      superpose.eb(plot,Weight, Weight.se))
 
@@ -1128,6 +1144,51 @@ with(subset(feeding_bout_summary_dn, Dark.Light=="Light"),
 ```
 
 ![](clams-analysis_files/figure-html/feeding-day-night-1.png) 
+
+### Individualized Feeding Behavior
+
+
+```r
+feeding_bout_animal$Animal_ID <- factor(feeding_bout_animal$Animal_ID)
+combined_feeding <- inner_join(feeding_bout_animal, mri_data, by=c("Animal_ID"="Label"))
+combined_feeding <- inner_join(combined_feeding, food.summary.clean, by=c("Animal_ID"="Subject"))
+combined_feeding$Food.Day <- combined_feeding$Total/as.double(combined_feeding$Time)
+
+#total food intake
+
+with(combined_feeding, plot(Lean,Food.Day, pch=19, las=2,
+                            col=Particulate.Treatment,
+                            xlab="Fat Free Mass (g)",
+                            ylim=c(0,max(Food.Day)),
+                            ylab="Daily Food Intake (g)"))
+```
+
+![](clams-analysis_files/figure-html/feeding-individual-1.png) 
+
+```r
+combined_feeding$Particulate.Treatment <- relevel(combined_feeding$Particulate.Treatment, ref="MCP")
+
+par(mfrow=c(1,3))
+with(combined_feeding, plot(Lean,Median.Duration, pch=19, las=2,
+                            col=Particulate.Treatment,
+                            xlab="Fat Free Mass (g)",
+                            ylim=c(0,max(Median.Duration)),
+                            ylab="Median Feeding Duration (s)"))
+
+with(combined_feeding, plot(Lean,Median.Weight*1000, pch=19, las=2,
+                            col=Particulate.Treatment,
+                            xlab="Fat Free Mass (g)",
+                            ylim=c(0,max(Median.Weight)*1000),
+                            ylab="Median Feeding Amount (mg)"))
+
+with(combined_feeding, plot(Lean,Bouts.Time, pch=19, las=2,
+                            col=Particulate.Treatment,
+                            xlab="Fat Free Mass (g)",
+                            ylim=c(0,max(Bouts.Time)),
+                            ylab="Feeding Bouts per Day"))
+```
+
+![](clams-analysis_files/figure-html/feeding-individual-2.png) 
 
 ## Session Information
 
