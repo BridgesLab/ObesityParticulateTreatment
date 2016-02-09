@@ -1,0 +1,324 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Analysis of Mitochondrial OXPHOS protein Levels in the Quadriceps from Gestationally Treated MCP230 Mice on a High Fat Diet}
+\author{Erin Stephenson}
+\date{2016-01-21}
+\maketitle
+
+\section*{Details}
+{Protein lysates were prepared using standard protocols and quantified via Bradford assay. Equal protein was loaded into 2x 12 well gradient gels. Proteins were separated by SDS-PAGE and transferred to Nitrocellulose membranes. Membranes were blotted using the mitochondrial OXPHOS antibody cocktail from ABCAM. Protein content was determined from fluorescent images obtained on a LiCor Odyssey and quantified using Image Studio Lite software. Protein expression was normalized to total AMPK expression -which was not different between groups- and is presented here relative to the saline control group}
+\section*{Data analysis}
+<<data-input, echo=FALSE>>=
+library(xlsx)
+data_file <- "PostReviewMitoWesterns.xlsx"
+data <- read.xlsx2(data_file, sheetName="Sheet1")
+
+data$Treatment <- relevel(data$Treatment, ref='Saline')
+
+data$PGC1a <- as.numeric(as.character(data$'PGC1a'))
+data$NDUFB8 <- as.numeric(as.character(data$'NDUFB8'))
+data$SDHB <- as.numeric(as.character(data$'SDHB'))
+data$MtCO1 <- as.numeric(as.character(data$'MtCO1'))
+data$UQCRC2 <- as.numeric(as.character(data$'UQCRC2'))
+data$ATP5A <- as.numeric(as.character(data$'ATP5A'))
+
+Treatment.Colors <- c('black','red')
+@
+
+The data is saved in \verb+\Sexpr{getwd()}+.  The raw data file for the first run is named \verb+\Sexpr{data_file}+.  
+
+<<summary, echo=FALSE>>=
+library(plyr)
+#define se
+se <- function(x) sd(x, na.rm=T)/sqrt(length(x))
+PGC1a <- ddply(data, .(Treatment), summarize,
+                     mean = mean(PGC1a, na.rm=T),
+                     se = se(PGC1a),
+                     sd = sd(PGC1a, na.rm=T),
+                     rel.sd = sd(PGC1a, na.rm=T)/mean(PGC1a, na.rm=T)*100,
+                     n = length(PGC1a))
+
+NDUFB8 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(NDUFB8, na.rm=T),
+                     se = se(NDUFB8),
+                     sd = sd(NDUFB8, na.rm=T),
+                     rel.sd = sd(NDUFB8, na.rm=T)/mean(NDUFB8, na.rm=T)*100,
+                     n = length(NDUFB8))
+SDHB <- ddply(data, .(Treatment), summarize,
+                     mean = mean(SDHB, na.rm=T),
+                     se = se(SDHB),
+                     sd = sd(SDHB, na.rm=T),
+                     rel.sd = sd(SDHB, na.rm=T)/mean(SDHB, na.rm=T)*100,
+                     n = length(SDHB))
+MtCO1 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(MtCO1, na.rm=T),
+                     se = se(MtCO1),
+                     sd = sd(MtCO1, na.rm=T),
+                     rel.sd = sd(MtCO1, na.rm=T)/mean(MtCO1, na.rm=T)*100,
+                     n = length(MtCO1))
+UQCRC2 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(UQCRC2, na.rm=T),
+                     se = se(UQCRC2),
+                     sd = sd(UQCRC2, na.rm=T),
+                     rel.sd = sd(UQCRC2, na.rm=T)/mean(UQCRC2, na.rm=T)*100,
+                     n = length(UQCRC2))
+ATP5A <- ddply(data, .(Treatment), summarize,
+                     mean = mean(ATP5A, na.rm=T),
+                     se = se(ATP5A),
+                     sd = sd(ATP5A, na.rm=T),
+                     rel.sd = sd(ATP5A, na.rm=T)/mean(ATP5A, na.rm=T)*100,
+                     n = length(ATP5A))
+
+@
+\section*{Statistics}
+<<statistics, echo=FALSE>>=
+PGC1a.aov <- aov(PGC1a~Treatment, data=data)
+NDUFB8.aov <- aov(NDUFB8~Treatment, data=data)
+SDHB.aov <- aov(SDHB~Treatment, data=data)
+MtCO1.aov <- aov(MtCO1~Treatment, data=data)
+UQCRC2.aov <- aov(UQCRC2~Treatment, data=data)
+ATP5A.aov <- aov(ATP5A~Treatment, data=data)
+
+#Assess normality of the sample groups
+PGC1a.shapiro <- shapiro.test(residuals(PGC1a.aov))
+NDUFB8.shapiro <- shapiro.test(residuals(NDUFB8.aov))
+SDHB.shapiro <- shapiro.test(residuals(SDHB.aov))
+MtCO1.shapiro <- shapiro.test(residuals(MtCO1.aov))
+#Use Wilcoxon rank sum test for MtCO1 since Shapiro-Wilk test was significant
+UQCRC2.shapiro <- shapiro.test(residuals(UQCRC2.aov))
+ATP5A.shapiro <- shapiro.test(residuals(ATP5A.aov))
+
+#Assess homogeneity of variance of the sample groups
+library(car)
+PGC1a.levene <- leveneTest(PGC1a~Treatment, data=data)
+NDUFB8.levene <- leveneTest(NDUFB8~Treatment, data=data)
+SDHB.levene <- leveneTest(SDHB~Treatment, data=data)
+MtCO1.levene <- leveneTest(MtCO1~Treatment, data=data)
+UQCRC2.levene <- leveneTest(UQCRC2~Treatment, data=data)
+ATP5A.levene <- leveneTest(ATP5A~Treatment, data=data)
+
+#Run appropriate statistical comparison
+PGC1a.ttest <- t.test(PGC1a~Treatment, var.equal=T, data=data)$p.value
+NDUFB8.wilcox <- wilcox.test(NDUFB8~Treatment, data=data)$p.value
+SDHB.ttest <- t.test(SDHB~Treatment, var.equal=T, data=data)$p.value
+MtCO1.wilcox <- wilcox.test(SDHB~Treatment, data=data)$p.value
+UQCRC2.ttest <- t.test(UQCRC2~Treatment, var.equal=T, data=data)$p.value
+ATP5A.ttest <- t.test(ATP5A~Treatment, var.equal=T, data=data)$p.value
+@
+\section*{Figures}
+
+
+\begin{figure}
+\begin{center}
+<<label=barplotPGC1a,fig=TRUE,echo=FALSE>>=
+ymax <- max(PGC1a$mean + PGC1a$se)
+plot <- barplot(PGC1a$mean, names.arg=PGC1a$Treatment,
+        las=1, 
+        ylab="Relative expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="PGC1a")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, PGC1a$mean, PGC1a$se)
+
+@
+\end{center}
+\caption{Barplot of Relative PGC1a Protein Expression in Quadriceps Muscle, Saline versus MPI}
+\label{fig:barplotPGC1a}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotNDUFB8,fig=TRUE,echo=FALSE>>=
+ymax <- max(NDUFB8$mean + NDUFB8$se)
+plot <- barplot(NDUFB8$mean, names.arg=NDUFB8$Treatment,
+        las=1, 
+        ylab="Relative expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="NDUFB8")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, NDUFB8$mean, NDUFB8$se)
+
+@
+\end{center}
+\caption{Barplot of Relative NDUFB8 Protein Expression in Quadriceps Muscle, Saline versus MPI}
+\label{fig:barplotNDUFB8}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotSDHB,fig=TRUE,echo=FALSE>>=
+ymax <- max(SDHB$mean + SDHB$se)
+plot <- barplot(SDHB$mean, names.arg=SDHB$Treatment,
+        las=1, 
+        ylab="Relative expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="SDHB")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, SDHB$mean, SDHB$se)
+
+@
+\end{center}
+\caption{Barplot of Relative SDHB Protein Expression in Quadriceps Muscle, Saline versus MPI}
+\label{fig:barplotSDHB}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotMtCO1,fig=TRUE,echo=FALSE>>=
+ymax <- max(MtCO1$mean + MtCO1$se)
+plot <- barplot(MtCO1$mean, names.arg=MtCO1$Treatment,
+        las=1, 
+        ylab="Relative expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="MtCO1")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, MtCO1$mean, MtCO1$se)
+
+@
+\end{center}
+\caption{Barplot of Relative MtCo1 Protein Expression in Quadriceps Muscle, Saline versus MPI}
+\label{fig:barplotMtCO1}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotUQCRC2,fig=TRUE,echo=FALSE>>=
+ymax <- max(UQCRC2$mean + UQCRC2$se)
+plot <- barplot(UQCRC2$mean, names.arg=UQCRC2$Treatment,
+        las=1, 
+        ylab="Relative expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="UQCRC2")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, UQCRC2$mean, UQCRC2$se)
+
+@
+\end{center}
+\caption{Barplot of Relative UQCRC2 Protein Expression in Quadriceps Muscle, Saline versus MPI}
+\label{fig:barplotUQCRC2}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotATP5A,fig=TRUE,echo=FALSE>>=
+ymax <- max(ATP5A$mean + ATP5A$se)
+plot <- barplot(ATP5A$mean, names.arg=ATP5A$Treatment,
+        las=1, 
+        ylab="Relative expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="ATP5A")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, ATP5A$mean, ATP5A$se)
+
+@
+\end{center}
+\caption{Barplot of Relative ATP5A Protein Expression in Quadriceps Muscle, Saline versus MPI}
+\label{fig:barplotATP5A}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplot-combined,fig=TRUE,echo=FALSE>>=
+par(mfrow=c(2,3))
+
+ymax <- max(PGC1a$mean + PGC1a$se)
+plot <- barplot(PGC1a$mean, names.arg=PGC1a$Treatment,
+        las=1, 
+        ylab="Relative protein expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,1.5), main="PGC1a")
+superpose.eb(plot, PGC1a$mean, PGC1a$se)
+
+ymax <- max(NDUFB8$mean + NDUFB8$se)
+plot <- barplot(NDUFB8$mean, names.arg=NDUFB8$Treatment,
+        las=1, 
+        ylab="Relative protein expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,1.5), main="NDUFB8")
+superpose.eb(plot, NDUFB8$mean, NDUFB8$se)
+
+ymax <- max(SDHB$mean + SDHB$se)
+plot <- barplot(SDHB$mean, names.arg=SDHB$Treatment,
+        las=1, 
+        ylab="Relative protein expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,1.5), main="SDHB")
+superpose.eb(plot, SDHB$mean, SDHB$se)
+
+ymax <- max(MtCO1$mean + MtCO1$se)
+plot <- barplot(MtCO1$mean, names.arg=MtCO1$Treatment,
+        las=1, 
+        ylab="Relative protein expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,1.5), main="MtCO1")
+
+superpose.eb(plot, MtCO1$mean, MtCO1$se)
+
+ymax <- max(UQCRC2$mean + UQCRC2$se)
+plot <- barplot(UQCRC2$mean, names.arg=UQCRC2$Treatment,
+        las=1, 
+        ylab="Relative protein expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,1.5), main="UQCRC2")
+
+superpose.eb(plot, UQCRC2$mean, UQCRC2$se)
+
+ymax <- max(ATP5A$mean + ATP5A$se)
+plot <- barplot(ATP5A$mean, names.arg=ATP5A$Treatment,
+        las=1, 
+        ylab="Relative protein expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,1.5), main="ATP5A")
+
+superpose.eb(plot, ATP5A$mean, ATP5A$se)
+@
+\end{center}
+\caption{Barplot of the OXPHOS proteins}
+\label{fig:barplot-combined}
+\end{figure}
+
+\section*{Session Information}
+<<sessionInfo, results=tex, echo=F>>=
+toLatex(sessionInfo())
+@
+
+
+\end{document}

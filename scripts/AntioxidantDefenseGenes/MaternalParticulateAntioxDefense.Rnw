@@ -1,0 +1,287 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Analysis of antioxidant defense genes in quadriceps muscle from the pups of the maternal particulate inhalation study}
+\author{Erin Stephenson}
+\date{\today}
+\maketitle
+
+<<data-entry, echo=FALSE>>=
+input_file <- "AntioxDefense.xlsx"
+sheet_name <- "Sheet1"
+library(xlsx)
+data <- read.xlsx2(input_file, sheetName=sheet_name)
+#set the reference treatment
+data$Treatment <- relevel(data$Treatment, ref='Saline')
+
+data$Sod1 <- as.numeric(as.character(data$'Sod1'))
+data$Sod2 <- as.numeric(as.character(data$'Sod2'))
+data$Cat <- as.numeric(as.character(data$'Cat'))
+data$Gpx1 <- as.numeric(as.character(data$'Gpx1'))
+data$Gclm <- as.numeric(as.character(data$'Gclm'))
+
+#set color palette
+Treatment.colors <- c('black','red')
+@
+This script uses the \verb+\Sexpr{sheet_name}+ from \verb+\Sexpr{input_file}+ and is located in the \verb+\Sexpr{getwd()}+ directory.  This analysis was most recently run on \Sexpr{date()}.  
+
+<<summary, echo=FALSE>>=
+library(plyr)
+#define se
+se <- function(x) sd(x, na.rm=T)/sqrt(length(x))
+
+Sod1 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Sod1, na.rm=T),
+                     se = se(Sod1),
+                     sd = sd(Sod1, na.rm=T),
+                     rel.sd = sd(Sod1, na.rm=T)/mean(Sod1, na.rm=T)*100,
+                     n = length(Sod1))
+
+Sod2 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Sod2, na.rm=T),
+                     se = se(Sod2),
+                     sd = sd(Sod2, na.rm=T),
+                     rel.sd = sd(Sod2, na.rm=T)/mean(Sod2, na.rm=T)*100,
+                     n = length(Sod2))
+
+Cat <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Cat, na.rm=T),
+                     se = se(Cat),
+                     sd = sd(Cat, na.rm=T),
+                     rel.sd = sd(Cat, na.rm=T)/mean(Cat, na.rm=T)*100,
+                     n = length(Cat))
+
+Gpx1 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Gpx1, na.rm=T),
+                     se = se(Gpx1),
+                     sd = sd(Gpx1, na.rm=T),
+                     rel.sd = sd(Gpx1, na.rm=T)/mean(Gpx1, na.rm=T)*100,
+                     n = length(Gpx1))
+
+Gclm <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Gclm, na.rm=T),
+                     se = se(Gclm),
+                     sd = sd(Gclm, na.rm=T),
+                     rel.sd = sd(Gclm, na.rm=T)/mean(Gclm, na.rm=T)*100,
+                     n = length(Gclm))
+
+
+@
+\section*{Statistics}
+<<statistics, echo=FALSE>>=
+Sod1.aov <- aov(Sod1~Treatment, data=data)
+Sod2.aov <- aov(Sod2~Treatment, data=data)
+Cat.aov <- aov(Cat~Treatment, data=data)
+Gpx1.aov <- aov(Gpx1~Treatment, data=data)
+Gclm.aov <- aov(Gclm~Treatment, data=data)
+
+
+
+#Assess normality of the sample groups
+Sod1.shapiro <- shapiro.test(residuals(Sod1.aov))
+Sod2.shapiro <- shapiro.test(residuals(Sod2.aov))
+Cat.shapiro <- shapiro.test(residuals(Cat.aov))
+Gpx1.shapiro <- shapiro.test(residuals(Gpx1.aov))
+Gclm.shapiro <- shapiro.test(residuals(Gclm.aov))
+
+
+
+#Assess homogeneity of variance of the sample groups
+library(car)
+Sod1.levene <- leveneTest(Sod1~Treatment, data=data)
+Sod2.levene <- leveneTest(Sod2~Treatment, data=data)
+Cat.levene <- leveneTest(Cat~Treatment, data=data)
+Gpx1.levene <- leveneTest(Gpx1~Treatment, data=data)
+Gclm.levene <- leveneTest(Gclm~Treatment, data=data)
+
+
+#p value for the Sod1 Shapiro >0.05, Levene's test<0.05
+Sod1.ttest <- t.test(Sod1~Treatment, var.equal=F, data=data)$p.value
+#p value for the Sod2 Shapiro >0.05, Levene's test <0.05
+Sod2.ttest <- t.test(Sod2~Treatment, var.equal=F, data=data)$p.value
+#p value for the Cat Shapiro & Levene's tests were both >0.05
+Cat.ttest <- t.test(Cat~Treatment, var.equal=T, data=data)$p.value
+#p value for the Nfr1 Shapiro & Levene's tests were both <0.05
+Gpx1.wilcox <- wilcox.test(Gpx1~Treatment, data=data)$p.value
+#p value for the Gclm Shapiro & Levene's tests were both <0.05
+Gclm.ttest <- t.test(Gclm~Treatment, var.equal=T, data=data)$p.value
+Gclm.wilcox <- wilcox.test(Gclm~Treatment, data=data)$p.value
+
+@
+\begin{figure}
+\begin{center}
+<<label=barplotSod1,fig=TRUE,echo=FALSE>>=
+ymax <- max(Sod1$mean + Sod1$se)
+plot <- barplot(Sod1$mean, names.arg=Sod1$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Sod1")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Sod1$mean, Sod1$se)
+@
+\end{center}
+\caption{Barplot of Sod1 mRNA}
+\label{fig:barplotSod1}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotSod2,fig=TRUE,echo=FALSE>>=
+ymax <- max(Sod2$mean + Sod2$se)
+plot <- barplot(Sod2$mean, names.arg=Sod2$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Sod2")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Sod2$mean, Sod2$se)
+@
+\end{center}
+\caption{Barplot of Sod2 mRNA}
+\label{fig:barplotSod2}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotCat,fig=TRUE,echo=FALSE>>=
+ymax <- max(Cat$mean + Cat$se)
+plot <- barplot(Cat$mean, names.arg=Cat$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Cat")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Cat$mean, Cat$se)
+@
+\end{center}
+\caption{Barplot of Cat mRNA}
+\label{fig:barplotCat}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotGpx1,fig=TRUE,echo=FALSE>>=
+ymax <- max(Gpx1$mean + Gpx1$se)
+plot <- barplot(Gpx1$mean, names.arg=Gpx1$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Gpx1")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Gpx1$mean, Gpx1$se)
+@
+\end{center}
+\caption{Barplot of Gpx1 mRNA}
+\label{fig:barplotGpx1}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotGclm,fig=TRUE,echo=FALSE>>=
+ymax <- max(Gclm$mean + Gclm$se)
+plot <- barplot(Gclm$mean, names.arg=Gclm$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Gclm")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Gclm$mean, Gclm$se)
+@
+\end{center}
+\caption{Barplot of Gclm mRNA}
+\label{fig:barplotGclm}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplot-combined,fig=TRUE,echo=FALSE>>=
+par(mfrow=c(1,5))
+
+ymax <- max(Sod1$mean + Sod1$se)
+plot <- barplot(Sod1$mean, names.arg=Sod1$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,8), main="Sod1")
+superpose.eb(plot, Sod1$mean, Sod1$se)
+
+ymax <- max(Sod2$mean + Sod2$se)
+plot <- barplot(Sod2$mean, names.arg=Sod2$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,8), main="Sod2")
+superpose.eb(plot, Sod2$mean, Sod2$se)
+
+ymax <- max(Cat$mean + Cat$se)
+plot <- barplot(Cat$mean, names.arg=Cat$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,8), main="Cat")
+
+superpose.eb(plot, Cat$mean, Cat$se)
+
+ymax <- max(Gpx1$mean + Gpx1$se)
+plot <- barplot(Gpx1$mean, names.arg=Gpx1$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,8), main="Gpx1")
+
+superpose.eb(plot, Gpx1$mean, Gpx1$se)
+
+ymax <- max(Gclm$mean + Gclm$se)
+plot <- barplot(Gclm$mean, names.arg=Gclm$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,8), main="Gclm")
+
+superpose.eb(plot, Gclm$mean, Gclm$se)
+
+@
+\end{center}
+\caption{Barplot of the Antioxidant defense genes}
+\label{fig:barplot-combined}
+\end{figure}
+
+@
+\section*{Session Information}
+<<sessionInfo, results=tex, echo=F>>=
+toLatex(sessionInfo())
+@
+\end{document}

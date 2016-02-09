@@ -1,0 +1,324 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Analysis of mitochondrial biogenesis genes in quadriceps muscle from the pups of the maternal particulate inhalation study}
+\author{Erin Stephenson}
+\date{\today}
+\maketitle
+
+<<data-entry, echo=FALSE>>=
+input_file <- "MaternalParticulatemtMitoBiogen.xlsx"
+sheet_name <- "Sheet1"
+library(xlsx)
+data <- read.xlsx2(input_file, sheetName=sheet_name)
+#set the reference treatment
+data$Treatment <- relevel(data$Treatment, ref='Saline')
+
+data$Ppard <- as.numeric(as.character(data$'Ppard'))
+data$Ppargc1a <- as.numeric(as.character(data$'Ppargc1a'))
+data$Ppargc1b <- as.numeric(as.character(data$'Ppargc1b'))
+data$Nrf1 <- as.numeric(as.character(data$'Nrf1'))
+data$Nfe2l2 <- as.numeric(as.character(data$'Nfe2l2'))
+data$Tfam <- as.numeric(as.character(data$'Tfam'))
+
+#set color palette
+Treatment.colors <- c('black','red')
+@
+This script uses the \verb+\Sexpr{sheet_name}+ from \verb+\Sexpr{input_file}+ and is located in the \verb+\Sexpr{getwd()}+ directory.  This analysis was most recently run on \Sexpr{date()}.  
+
+<<summary, echo=FALSE>>=
+library(plyr)
+#define se
+se <- function(x) sd(x, na.rm=T)/sqrt(length(x))
+
+Ppard <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Ppard, na.rm=T),
+                     se = se(Ppard),
+                     sd = sd(Ppard, na.rm=T),
+                     rel.sd = sd(Ppard, na.rm=T)/mean(Ppard, na.rm=T)*100,
+                     n = length(Ppard))
+
+Ppargc1a <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Ppargc1a, na.rm=T),
+                     se = se(Ppargc1a),
+                     sd = sd(Ppargc1a, na.rm=T),
+                     rel.sd = sd(Ppargc1a, na.rm=T)/mean(Ppargc1a, na.rm=T)*100,
+                     n = length(Ppargc1a))
+
+Ppargc1b <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Ppargc1b, na.rm=T),
+                     se = se(Ppargc1b),
+                     sd = sd(Ppargc1b, na.rm=T),
+                     rel.sd = sd(Ppargc1b, na.rm=T)/mean(Ppargc1b, na.rm=T)*100,
+                     n = length(Ppargc1b))
+
+Nrf1 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Nrf1, na.rm=T),
+                     se = se(Nrf1),
+                     sd = sd(Nrf1, na.rm=T),
+                     rel.sd = sd(Nrf1, na.rm=T)/mean(Nrf1, na.rm=T)*100,
+                     n = length(Nrf1))
+
+Nfe2l2 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Nfe2l2, na.rm=T),
+                     se = se(Nfe2l2),
+                     sd = sd(Nfe2l2, na.rm=T),
+                     rel.sd = sd(Nfe2l2, na.rm=T)/mean(Nfe2l2, na.rm=T)*100,
+                     n = length(Nfe2l2))
+
+Tfam <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Tfam, na.rm=T),
+                     se = se(Tfam),
+                     sd = sd(Tfam, na.rm=T),
+                     rel.sd = sd(Tfam, na.rm=T)/mean(Tfam, na.rm=T)*100,
+                     n = length(Tfam))
+@
+\section*{Statistics}
+<<statistics, echo=FALSE>>=
+Ppard.aov <- aov(Ppard~Treatment, data=data)
+Ppargc1a.aov <- aov(Ppargc1a~Treatment, data=data)
+Ppargc1b.aov <- aov(Ppargc1b~Treatment, data=data)
+Nrf1.aov <- aov(Nrf1~Treatment, data=data)
+Nfe2l2.aov <- aov(Nfe2l2~Treatment, data=data)
+Tfam.aov <- aov(Tfam~Treatment, data=data)
+
+
+#Assess normality of the sample groups
+Ppard.shapiro <- shapiro.test(residuals(Ppard.aov))
+Ppargc1a.shapiro <- shapiro.test(residuals(Ppargc1a.aov))
+Ppargc1b.shapiro <- shapiro.test(residuals(Ppargc1b.aov))
+Nrf1.shapiro <- shapiro.test(residuals(Nrf1.aov))
+Nfe2l2.shapiro <- shapiro.test(residuals(Nfe2l2.aov))
+Tfam.shapiro <- shapiro.test(residuals(Tfam.aov))
+
+
+#Assess homogeneity of variance of the sample groups
+library(car)
+Ppard.levene <- leveneTest(Ppard~Treatment, data=data)
+Ppargc1a.levene <- leveneTest(Ppargc1a~Treatment, data=data)
+Ppargc1b.levene <- leveneTest(Ppargc1b~Treatment, data=data)
+Nrf1.levene <- leveneTest(Nrf1~Treatment, data=data)
+Nfe2l2.levene <- leveneTest(Nfe2l2~Treatment, data=data)
+Tfam.levene <- leveneTest(Tfam~Treatment, data=data)
+
+
+#p value for the Ppard Shapiro & Levene's tests were >0.05
+Ppard.ttest <- t.test(Ppard~Treatment, var.equal=T, data=data)$p.value
+#p value for the Ppargc1a Shapiro & Levene's tests were >0.05
+Ppargc1a.ttest <- t.test(Ppargc1a~Treatment, var.equal=T, data=data)$p.value
+#p value for the Ppargc1b Shapiro test was 0.01732 and Levene's test was >0.05
+Ppargc1b.wilcox <- wilcox.test(Ppargc1b~Treatment, data=data)$p.value
+#p value for the Nfr1 Shapiro test was 0.0015 and Levene's test was >0.05
+Nrf1.wilcox <- wilcox.test(Nrf1~Treatment, data=data)$p.value
+#p value for the Nfe2l2 Shapiro test was 0.0524 and Levene's test was >0.05
+Nfe2l2.ttest <- t.test(Nfe2l2~Treatment, var.equal=T, data=data)$p.value
+Nfe2l2.wilcox <- wilcox.test(Nfe2l2~Treatment, data=data)$p.value
+#p value for the Tfam Shapiro & Levene's tests were >0.05
+Tfam.ttest <- t.test(Tfam~Treatment, var.equal=T, data=data)$p.value
+@
+\begin{figure}
+\begin{center}
+<<label=barplotPpard,fig=TRUE,echo=FALSE>>=
+ymax <- max(Ppard$mean + Ppard$se)
+plot <- barplot(Ppard$mean, names.arg=Ppard$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Ppard")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Ppard$mean, Ppard$se)
+@
+\end{center}
+\caption{Barplot of Ppard mRNA}
+\label{fig:barplotPpard}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotPpargc1a,fig=TRUE,echo=FALSE>>=
+ymax <- max(Ppargc1a$mean + Ppargc1a$se)
+plot <- barplot(Ppargc1a$mean, names.arg=Ppargc1a$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Ppargc1a")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Ppargc1a$mean, Ppargc1a$se)
+@
+\end{center}
+\caption{Barplot of Ppargc1a mRNA}
+\label{fig:barplotPpargc1a}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotPpargc1b,fig=TRUE,echo=FALSE>>=
+ymax <- max(Ppargc1b$mean + Ppargc1b$se)
+plot <- barplot(Ppargc1b$mean, names.arg=Ppargc1b$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Ppargc1b")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Ppargc1b$mean, Ppargc1b$se)
+@
+\end{center}
+\caption{Barplot of Ppargc1b mRNA}
+\label{fig:barplotPpargc1b}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotNrf1,fig=TRUE,echo=FALSE>>=
+ymax <- max(Nrf1$mean + Nrf1$se)
+plot <- barplot(Nrf1$mean, names.arg=Nrf1$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Nrf1")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Nrf1$mean, Nrf1$se)
+@
+\end{center}
+\caption{Barplot of Nrf1 mRNA}
+\label{fig:barplotNrf1}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotNfe2l2,fig=TRUE,echo=FALSE>>=
+ymax <- max(Nfe2l2$mean + Nfe2l2$se)
+plot <- barplot(Nfe2l2$mean, names.arg=Nfe2l2$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Nfe2l2")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Nfe2l2$mean, Nfe2l2$se)
+@
+\end{center}
+\caption{Barplot of Nfe2l2 mRNA}
+\label{fig:barplotNfe2l2}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotTfam,fig=TRUE,echo=FALSE>>=
+ymax <- max(Tfam$mean + Tfam$se)
+plot <- barplot(Tfam$mean, names.arg=Tfam$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Tfam")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Tfam$mean, Tfam$se)
+@
+\end{center}
+\caption{Barplot of Tfam mRNA}
+\label{fig:barplotTfam}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplot-combined,fig=TRUE,echo=FALSE>>=
+par(mfrow=c(2,3))
+
+ymax <- max(Ppard$mean + Ppard$se)
+plot <- barplot(Ppard$mean, names.arg=Ppard$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,3.5), main="Ppard")
+superpose.eb(plot, Ppard$mean, Ppard$se)
+
+ymax <- max(Ppargc1a$mean + Ppargc1a$se)
+plot <- barplot(Ppargc1a$mean, names.arg=Ppargc1a$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,1.4), main="Ppargc1a")
+superpose.eb(plot, Ppargc1a$mean, Ppargc1a$se)
+
+ymax <- max(Ppargc1b$mean + Ppargc1b$se)
+plot <- barplot(Ppargc1b$mean, names.arg=Ppargc1b$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,4.2), main="Ppargc1b")
+
+superpose.eb(plot, Ppargc1b$mean, Ppargc1b$se)
+
+ymax <- max(Nrf1$mean + Nrf1$se)
+plot <- barplot(Nrf1$mean, names.arg=Nrf1$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,1.4), main="Nrf1")
+
+superpose.eb(plot, Nrf1$mean, Nrf1$se)
+
+ymax <- max(Nfe2l2$mean + Nfe2l2$se)
+plot <- barplot(Nfe2l2$mean, names.arg=Nfe2l2$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,1.8), main="Nfe2l2")
+
+superpose.eb(plot, Nfe2l2$mean, Nfe2l2$se)
+
+ymax <- max(Tfam$mean + Tfam$se)
+plot <- barplot(Tfam$mean, names.arg=Tfam$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,1.2), main="Tfam")
+superpose.eb(plot, Tfam$mean, Tfam$se)
+@
+\end{center}
+\caption{Barplot of the mitochondrial biogenesis genes}
+\label{fig:barplot-combined}
+\end{figure}
+
+@
+\section*{Session Information}
+<<sessionInfo, results=tex, echo=F>>=
+toLatex(sessionInfo())
+@
+\end{document}
