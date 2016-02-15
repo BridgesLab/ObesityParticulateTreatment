@@ -29,6 +29,7 @@ data$SDHB <- as.numeric(as.character(data$'SDHB'))
 data$MtCO1 <- as.numeric(as.character(data$'MtCO1'))
 data$UQCRC2 <- as.numeric(as.character(data$'UQCRC2'))
 data$ATP5A <- as.numeric(as.character(data$'ATP5A'))
+data$SLN <- as.numeric(as.character(data$'SLN'))
 
 Treatment.Colors <- c('black','red')
 @
@@ -76,6 +77,12 @@ ATP5A <- ddply(data, .(Treatment), summarize,
                      sd = sd(ATP5A, na.rm=T),
                      rel.sd = sd(ATP5A, na.rm=T)/mean(ATP5A, na.rm=T)*100,
                      n = length(ATP5A))
+SLN <- ddply(data, .(Treatment), summarize,
+                     mean = mean(SLN, na.rm=T),
+                     se = se(SLN),
+                     sd = sd(SLN, na.rm=T),
+                     rel.sd = sd(SLN, na.rm=T)/mean(SLN, na.rm=T)*100,
+                     n = length(SLN))
 
 @
 \section*{Statistics}
@@ -86,6 +93,7 @@ SDHB.aov <- aov(SDHB~Treatment, data=data)
 MtCO1.aov <- aov(MtCO1~Treatment, data=data)
 UQCRC2.aov <- aov(UQCRC2~Treatment, data=data)
 ATP5A.aov <- aov(ATP5A~Treatment, data=data)
+SLN.aov <- aov(SLN~Treatment, data=data)
 
 #Assess normality of the sample groups
 PGC1a.shapiro <- shapiro.test(residuals(PGC1a.aov))
@@ -95,6 +103,7 @@ MtCO1.shapiro <- shapiro.test(residuals(MtCO1.aov))
 #Use Wilcoxon rank sum test for MtCO1 since Shapiro-Wilk test was significant
 UQCRC2.shapiro <- shapiro.test(residuals(UQCRC2.aov))
 ATP5A.shapiro <- shapiro.test(residuals(ATP5A.aov))
+SLN.shapiro <- shapiro.test(residuals(SLN.aov))
 
 #Assess homogeneity of variance of the sample groups
 library(car)
@@ -104,6 +113,7 @@ SDHB.levene <- leveneTest(SDHB~Treatment, data=data)
 MtCO1.levene <- leveneTest(MtCO1~Treatment, data=data)
 UQCRC2.levene <- leveneTest(UQCRC2~Treatment, data=data)
 ATP5A.levene <- leveneTest(ATP5A~Treatment, data=data)
+SLN.levene <- leveneTest(SLN~Treatment, data=data)
 
 #Run appropriate statistical comparison
 PGC1a.ttest <- t.test(PGC1a~Treatment, var.equal=T, data=data)$p.value
@@ -112,6 +122,10 @@ SDHB.ttest <- t.test(SDHB~Treatment, var.equal=T, data=data)$p.value
 MtCO1.wilcox <- wilcox.test(SDHB~Treatment, data=data)$p.value
 UQCRC2.ttest <- t.test(UQCRC2~Treatment, var.equal=T, data=data)$p.value
 ATP5A.ttest <- t.test(ATP5A~Treatment, var.equal=T, data=data)$p.value
+SLN.ttest <- t.test(SLN~Treatment, var.equal=T, data=data)$p.value
+
+#since Shapiro test for PGC1a was p=0.058, also ran wilcox but this is still not significant
+PGC1a.wilcox <- wilcox.test(PGC1a~Treatment, data=data)$p.value
 @
 \section*{Figures}
 
@@ -256,6 +270,29 @@ superpose.eb(plot, ATP5A$mean, ATP5A$se)
 
 \begin{figure}
 \begin{center}
+<<label=barplotSLN,fig=TRUE,echo=FALSE>>=
+ymax <- max(SLN$mean + SLN$se)
+plot <- barplot(SLN$mean, names.arg=SLN$Treatment,
+        las=1, 
+        ylab="Relative expression (AU)", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="SLN")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, SLN$mean, SLN$se)
+
+@
+\end{center}
+\caption{Barplot of Relative SLN Protein Expression in Quadriceps Muscle, Saline versus MPI}
+\label{fig:barplotSLN}
+\end{figure}
+
+\begin{figure}
+\begin{center}
 <<label=barplot-combined,fig=TRUE,echo=FALSE>>=
 par(mfrow=c(2,3))
 
@@ -264,7 +301,7 @@ plot <- barplot(PGC1a$mean, names.arg=PGC1a$Treatment,
         las=1, 
         ylab="Relative protein expression (AU)", 
         col = Treatment.Colors[1:2],
-        ylim=c(0,1.5), main="PGC1a")
+        ylim=c(0,1.6), main="PGC1a")
 superpose.eb(plot, PGC1a$mean, PGC1a$se)
 
 ymax <- max(NDUFB8$mean + NDUFB8$se)
@@ -272,7 +309,7 @@ plot <- barplot(NDUFB8$mean, names.arg=NDUFB8$Treatment,
         las=1, 
         ylab="Relative protein expression (AU)", 
         col = Treatment.Colors[1:2],
-        ylim=c(0,1.5), main="NDUFB8")
+        ylim=c(0,1.6), main="NDUFB8")
 superpose.eb(plot, NDUFB8$mean, NDUFB8$se)
 
 ymax <- max(SDHB$mean + SDHB$se)
@@ -280,7 +317,7 @@ plot <- barplot(SDHB$mean, names.arg=SDHB$Treatment,
         las=1, 
         ylab="Relative protein expression (AU)", 
         col = Treatment.Colors[1:2],
-        ylim=c(0,1.5), main="SDHB")
+        ylim=c(0,1.6), main="SDHB")
 superpose.eb(plot, SDHB$mean, SDHB$se)
 
 ymax <- max(MtCO1$mean + MtCO1$se)
@@ -288,7 +325,7 @@ plot <- barplot(MtCO1$mean, names.arg=MtCO1$Treatment,
         las=1, 
         ylab="Relative protein expression (AU)", 
         col = Treatment.Colors[1:2],
-        ylim=c(0,1.5), main="MtCO1")
+        ylim=c(0,1.6), main="MtCO1")
 
 superpose.eb(plot, MtCO1$mean, MtCO1$se)
 
@@ -297,7 +334,7 @@ plot <- barplot(UQCRC2$mean, names.arg=UQCRC2$Treatment,
         las=1, 
         ylab="Relative protein expression (AU)", 
         col = Treatment.Colors[1:2],
-        ylim=c(0,1.5), main="UQCRC2")
+        ylim=c(0,1.6), main="UQCRC2")
 
 superpose.eb(plot, UQCRC2$mean, UQCRC2$se)
 
@@ -306,7 +343,7 @@ plot <- barplot(ATP5A$mean, names.arg=ATP5A$Treatment,
         las=1, 
         ylab="Relative protein expression (AU)", 
         col = Treatment.Colors[1:2],
-        ylim=c(0,1.5), main="ATP5A")
+        ylim=c(0,1.6), main="ATP5A")
 
 superpose.eb(plot, ATP5A$mean, ATP5A$se)
 @

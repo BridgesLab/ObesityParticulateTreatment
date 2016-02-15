@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.10.7)  9 FEB 2016 17:37
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.10.7)  15 FEB 2016 11:12
 entering extended mode
 **MaternalParticulateAntioxDefense.tex
 
@@ -678,6 +678,18 @@ Package caption Info: End \AtBeginDocument code.
 )
 (C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Antioxi
 dantDefenseGenes\MaternalParticulateAntioxDefense-concordance.tex)
+! Misplaced alignment tab character &.
+\@title ->Analysis of uncoupling &
+                                   antioxidant defense genes in quadriceps m...
+l.16 
+     
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <12> on input line 16.
 LaTeX Font Info:    External font `cmex10' loaded for size
@@ -685,7 +697,6 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 16.
 LaTeX Font Info:    Try loading font information for T1+aett on input line 17.
-
 ("C:\Program Files (x86)\MiKTeX 2.9A\tex\latex\ae\t1aett.fd"
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 )
@@ -696,93 +707,113 @@ rom []\T1/aett/m/n/10 AntioxDefense.xlsx \T1/aer/m/n/10 and is lo-cated in the
 t/scripts/AntioxidantDefenseGenes
  []
 
-<MaternalParticulateAntioxDefense-barplotSod1.pdf, id=4, 433.62pt x 433.62pt>
+<MaternalParticulateAntioxDefense-barplotUcp2.pdf, id=4, 433.62pt x 433.62pt>
+File: MaternalParticulateAntioxDefense-barplotUcp2.pdf Graphic file (type pdf)
+
+<use MaternalParticulateAntioxDefense-barplotUcp2.pdf>
+Package pdftex.def Info: MaternalParticulateAntioxDefense-barplotUcp2.pdf used 
+on input line 22.
+(pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
+
+<MaternalParticulateAntioxDefense-barplotUcp3.pdf, id=5, 433.62pt x 433.62pt>
+File: MaternalParticulateAntioxDefense-barplotUcp3.pdf Graphic file (type pdf)
+
+<use MaternalParticulateAntioxDefense-barplotUcp3.pdf>
+Package pdftex.def Info: MaternalParticulateAntioxDefense-barplotUcp3.pdf used 
+on input line 30.
+(pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
+
+<MaternalParticulateAntioxDefense-barplotSod1.pdf, id=6, 433.62pt x 433.62pt>
 File: MaternalParticulateAntioxDefense-barplotSod1.pdf Graphic file (type pdf)
 
 <use MaternalParticulateAntioxDefense-barplotSod1.pdf>
 Package pdftex.def Info: MaternalParticulateAntioxDefense-barplotSod1.pdf used 
-on input line 22.
+on input line 38.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
 
-<MaternalParticulateAntioxDefense-barplotSod2.pdf, id=5, 433.62pt x 433.62pt>
+<MaternalParticulateAntioxDefense-barplotSod2.pdf, id=7, 433.62pt x 433.62pt>
 File: MaternalParticulateAntioxDefense-barplotSod2.pdf Graphic file (type pdf)
 
 <use MaternalParticulateAntioxDefense-barplotSod2.pdf>
 Package pdftex.def Info: MaternalParticulateAntioxDefense-barplotSod2.pdf used 
-on input line 30.
+on input line 46.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
 
-<MaternalParticulateAntioxDefense-barplotCat.pdf, id=6, 433.62pt x 433.62pt>
+<MaternalParticulateAntioxDefense-barplotCat.pdf, id=8, 433.62pt x 433.62pt>
 File: MaternalParticulateAntioxDefense-barplotCat.pdf Graphic file (type pdf)
 
 <use MaternalParticulateAntioxDefense-barplotCat.pdf>
 Package pdftex.def Info: MaternalParticulateAntioxDefense-barplotCat.pdf used o
-n input line 38.
+n input line 54.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
 
-<MaternalParticulateAntioxDefense-barplotGpx1.pdf, id=7, 433.62pt x 433.62pt>
+<MaternalParticulateAntioxDefense-barplotGpx1.pdf, id=9, 433.62pt x 433.62pt>
 File: MaternalParticulateAntioxDefense-barplotGpx1.pdf Graphic file (type pdf)
 
 <use MaternalParticulateAntioxDefense-barplotGpx1.pdf>
 Package pdftex.def Info: MaternalParticulateAntioxDefense-barplotGpx1.pdf used 
-on input line 46.
+on input line 62.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
 
-<MaternalParticulateAntioxDefense-barplotGclm.pdf, id=8, 433.62pt x 433.62pt>
+<MaternalParticulateAntioxDefense-barplotGclm.pdf, id=10, 433.62pt x 433.62pt>
 File: MaternalParticulateAntioxDefense-barplotGclm.pdf Graphic file (type pdf)
 
 <use MaternalParticulateAntioxDefense-barplotGclm.pdf>
 Package pdftex.def Info: MaternalParticulateAntioxDefense-barplotGclm.pdf used 
-on input line 54.
+on input line 70.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
 
-<MaternalParticulateAntioxDefense-barplot-combined.pdf, id=9, 433.62pt x 433.62
-pt>
+<MaternalParticulateAntioxDefense-barplot-combined.pdf, id=11, 433.62pt x 433.6
+2pt>
 File: MaternalParticulateAntioxDefense-barplot-combined.pdf Graphic file (type 
 pdf)
  <use MaternalParticulateAntioxDefense-barplot-combined.pdf>
 Package pdftex.def Info: MaternalParticulateAntioxDefense-barplot-combined.pdf 
-used on input line 62.
+used on input line 78.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
-LaTeX Font Info:    Try loading font information for TS1+aer on input line 70.
+LaTeX Font Info:    Try loading font information for TS1+aer on input line 86.
 
 (C:/PROGRA~1/R/R-31~1.1/share/texmf/tex/latex\ts1aer.fd
 File: ts1aer.fd 
 )
 LaTeX Font Info:    Font shape `TS1/aer/m/n' in size <10> not available
-(Font)              Font shape `TS1/cmr/m/n' tried instead on input line 70.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 81.
+(Font)              Font shape `TS1/cmr/m/n' tried instead on input line 86.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 97.
  [1
 
 {C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}] [2 <C:/Users/esteph16/Doc
 uments/GitHub/ObesityParticulateTreatment/scripts/AntioxidantDefenseGenes/Mater
-nalParticulateAntioxDefense-barplotSod1.pdf>] [3 <C:/Users/esteph16/Documents/G
+nalParticulateAntioxDefense-barplotUcp2.pdf>] [3 <C:/Users/esteph16/Documents/G
 itHub/ObesityParticulateTreatment/scripts/AntioxidantDefenseGenes/MaternalParti
-culateAntioxDefense-barplotSod2.pdf>] [4 <C:/Users/esteph16/Documents/GitHub/Ob
+culateAntioxDefense-barplotUcp3.pdf>] [4 <C:/Users/esteph16/Documents/GitHub/Ob
 esityParticulateTreatment/scripts/AntioxidantDefenseGenes/MaternalParticulateAn
-tioxDefense-barplotCat.pdf>] [5 <C:/Users/esteph16/Documents/GitHub/ObesityPart
-iculateTreatment/scripts/AntioxidantDefenseGenes/MaternalParticulateAntioxDefen
-se-barplotGpx1.pdf>] [6 <C:/Users/esteph16/Documents/GitHub/ObesityParticulateT
-reatment/scripts/AntioxidantDefenseGenes/MaternalParticulateAntioxDefense-barpl
-otGclm.pdf>]
+tioxDefense-barplotSod1.pdf>] [5 <C:/Users/esteph16/Documents/GitHub/ObesityPar
+ticulateTreatment/scripts/AntioxidantDefenseGenes/MaternalParticulateAntioxDefe
+nse-barplotSod2.pdf>] [6 <C:/Users/esteph16/Documents/GitHub/ObesityParticulate
+Treatment/scripts/AntioxidantDefenseGenes/MaternalParticulateAntioxDefense-barp
+lotCat.pdf>]
 [7 <C:/Users/esteph16/Documents/GitHub/ObesityParticulateTreatment/scripts/Anti
-oxidantDefenseGenes/MaternalParticulateAntioxDefense-barplot-combined.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 81.
+oxidantDefenseGenes/MaternalParticulateAntioxDefense-barplotGpx1.pdf>] [8 <C:/U
+sers/esteph16/Documents/GitHub/ObesityParticulateTreatment/scripts/AntioxidantD
+efenseGenes/MaternalParticulateAntioxDefense-barplotGclm.pdf>] [9 <C:/Users/est
+eph16/Documents/GitHub/ObesityParticulateTreatment/scripts/AntioxidantDefenseGe
+nes/MaternalParticulateAntioxDefense-barplot-combined.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 97.
 
 (C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\Antioxi
 dantDefenseGenes\MaternalParticulateAntioxDefense.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 81.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 81.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 97.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 97.
 Package rerunfilecheck Info: File `MaternalParticulateAntioxDefense.out' has no
 t changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 81.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 97.
  ) 
 Here is how much of TeX's memory you used:
- 7495 strings out of 493921
- 115384 string characters out of 3144466
- 184570 words of memory out of 3000000
- 10672 multiletter control sequences out of 15000+200000
+ 7511 strings out of 493921
+ 115981 string characters out of 3144466
+ 185570 words of memory out of 3000000
+ 10682 multiletter control sequences out of 15000+200000
  20631 words of font info for 48 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
  36i,6n,38p,381b,324s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -793,10 +824,10 @@ m/cmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/
 cmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/cm
 r17.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/cmtt
 10.pfb>
-Output written on MaternalParticulateAntioxDefense.pdf (7 pages, 106648 bytes).
+Output written on MaternalParticulateAntioxDefense.pdf (9 pages, 117328 bytes).
 
 PDF statistics:
- 116 PDF objects out of 1000 (max. 8388607)
- 16 named destinations out of 1000 (max. 500000)
- 35 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 141 PDF objects out of 1000 (max. 8388607)
+ 20 named destinations out of 1000 (max. 500000)
+ 45 words of extra memory for PDF output out of 10000 (max. 10000000)
 

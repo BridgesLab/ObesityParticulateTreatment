@@ -8,7 +8,7 @@
 \begin{document}
 \SweaveOpts{concordance=TRUE}
 
-\title{Analysis of antioxidant defense genes in quadriceps muscle from the pups of the maternal particulate inhalation study}
+\title{Analysis of uncoupling & antioxidant defense genes in quadriceps muscle from the pups of the maternal particulate inhalation study}
 \author{Erin Stephenson}
 \date{\today}
 \maketitle
@@ -21,6 +21,8 @@ data <- read.xlsx2(input_file, sheetName=sheet_name)
 #set the reference treatment
 data$Treatment <- relevel(data$Treatment, ref='Saline')
 
+data$Ucp2 <- as.numeric(as.character(data$'Ucp2'))
+data$Ucp3 <- as.numeric(as.character(data$'Ucp3'))
 data$Sod1 <- as.numeric(as.character(data$'Sod1'))
 data$Sod2 <- as.numeric(as.character(data$'Sod2'))
 data$Cat <- as.numeric(as.character(data$'Cat'))
@@ -36,6 +38,19 @@ This script uses the \verb+\Sexpr{sheet_name}+ from \verb+\Sexpr{input_file}+ an
 library(plyr)
 #define se
 se <- function(x) sd(x, na.rm=T)/sqrt(length(x))
+Ucp2 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Ucp2, na.rm=T),
+                     se = se(Ucp2),
+                     sd = sd(Ucp2, na.rm=T),
+                     rel.sd = sd(Ucp2, na.rm=T)/mean(Ucp2, na.rm=T)*100,
+                     n = length(Ucp2))
+
+Ucp3 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(Ucp3, na.rm=T),
+                     se = se(Ucp3),
+                     sd = sd(Ucp3, na.rm=T),
+                     rel.sd = sd(Ucp3, na.rm=T)/mean(Ucp3, na.rm=T)*100,
+                     n = length(Ucp3))
 
 Sod1 <- ddply(data, .(Treatment), summarize,
                      mean = mean(Sod1, na.rm=T),
@@ -72,10 +87,11 @@ Gclm <- ddply(data, .(Treatment), summarize,
                      rel.sd = sd(Gclm, na.rm=T)/mean(Gclm, na.rm=T)*100,
                      n = length(Gclm))
 
-
 @
 \section*{Statistics}
 <<statistics, echo=FALSE>>=
+Ucp2.aov <- aov(Ucp2~Treatment, data=data)
+Ucp3.aov <- aov(Ucp3~Treatment, data=data)
 Sod1.aov <- aov(Sod1~Treatment, data=data)
 Sod2.aov <- aov(Sod2~Treatment, data=data)
 Cat.aov <- aov(Cat~Treatment, data=data)
@@ -85,6 +101,8 @@ Gclm.aov <- aov(Gclm~Treatment, data=data)
 
 
 #Assess normality of the sample groups
+Ucp2.shapiro <- shapiro.test(residuals(Ucp2.aov))
+Ucp3.shapiro <- shapiro.test(residuals(Ucp3.aov))
 Sod1.shapiro <- shapiro.test(residuals(Sod1.aov))
 Sod2.shapiro <- shapiro.test(residuals(Sod2.aov))
 Cat.shapiro <- shapiro.test(residuals(Cat.aov))
@@ -95,26 +113,75 @@ Gclm.shapiro <- shapiro.test(residuals(Gclm.aov))
 
 #Assess homogeneity of variance of the sample groups
 library(car)
+Ucp2.levene <- leveneTest(Ucp2~Treatment, data=data)
+Ucp3.levene <- leveneTest(Ucp3~Treatment, data=data)
 Sod1.levene <- leveneTest(Sod1~Treatment, data=data)
 Sod2.levene <- leveneTest(Sod2~Treatment, data=data)
 Cat.levene <- leveneTest(Cat~Treatment, data=data)
 Gpx1.levene <- leveneTest(Gpx1~Treatment, data=data)
 Gclm.levene <- leveneTest(Gclm~Treatment, data=data)
 
-
+#p value for the Ucp2 Shapiro =0.038, Levene's test>0.05
+Ucp2.wilcox <- wilcox.test(Ucp2~Treatment, data=data)$p.value
+#p vavlue for the Ucp3 Shapiro =0.038, Levene's test>0.05
+Ucp3.wilcox <- wilcox.test(Ucp3~Treatment, data=data)$p.value
 #p value for the Sod1 Shapiro >0.05, Levene's test<0.05
 Sod1.ttest <- t.test(Sod1~Treatment, var.equal=F, data=data)$p.value
 #p value for the Sod2 Shapiro >0.05, Levene's test <0.05
 Sod2.ttest <- t.test(Sod2~Treatment, var.equal=F, data=data)$p.value
 #p value for the Cat Shapiro & Levene's tests were both >0.05
 Cat.ttest <- t.test(Cat~Treatment, var.equal=T, data=data)$p.value
-#p value for the Nfr1 Shapiro & Levene's tests were both <0.05
-Gpx1.wilcox <- wilcox.test(Gpx1~Treatment, data=data)$p.value
+#p value for the Gpx1 Shapiro was 0.056 & Levene's tests was 0.02757
+Gpx1.ttest <- t.test(Gpx1~Treatment, var.equal=F, data=data)$p.value
 #p value for the Gclm Shapiro & Levene's tests were both <0.05
-Gclm.ttest <- t.test(Gclm~Treatment, var.equal=T, data=data)$p.value
+#Gclm.ttest <- t.test(Gclm~Treatment, var.equal=T, data=data)$p.value
 Gclm.wilcox <- wilcox.test(Gclm~Treatment, data=data)$p.value
 
 @
+\begin{figure}
+\begin{center}
+<<label=barplotUcp2,fig=TRUE,echo=FALSE>>=
+ymax <- max(Ucp2$mean + Ucp2$se)
+plot <- barplot(Ucp2$mean, names.arg=Ucp2$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Ucp2")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Ucp2$mean, Ucp2$se)
+@
+\end{center}
+\caption{Barplot of Ucp2 mRNA}
+\label{fig:barplotUcp2}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotUcp3,fig=TRUE,echo=FALSE>>=
+ymax <- max(Ucp3$mean + Ucp3$se)
+plot <- barplot(Ucp3$mean, names.arg=Ucp3$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="Ucp3")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, Ucp3$mean, Ucp3$se)
+@
+\end{center}
+\caption{Barplot of Ucp3 mRNA}
+\label{fig:barplotUcp3}
+\end{figure}
+
 \begin{figure}
 \begin{center}
 <<label=barplotSod1,fig=TRUE,echo=FALSE>>=
@@ -228,7 +295,23 @@ superpose.eb(plot, Gclm$mean, Gclm$se)
 \begin{figure}
 \begin{center}
 <<label=barplot-combined,fig=TRUE,echo=FALSE>>=
-par(mfrow=c(1,5))
+par(mfrow=c(2,4))
+
+ymax <- max(Ucp2$mean + Ucp2$se)
+plot <- barplot(Ucp2$mean, names.arg=Ucp2$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,8), main="Ucp2")
+superpose.eb(plot, Ucp2$mean, Ucp2$se)
+
+ymax <- max(Ucp3$mean + Ucp3$se)
+plot <- barplot(Ucp3$mean, names.arg=Ucp3$Treatment,
+        las=1, 
+        ylab="mRNA relative to Rpl13a", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,8), main="Ucp3")
+superpose.eb(plot, Ucp3$mean, Ucp3$se)
 
 ymax <- max(Sod1$mean + Sod1$se)
 plot <- barplot(Sod1$mean, names.arg=Sod1$Treatment,

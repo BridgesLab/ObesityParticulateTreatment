@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.10.7)  9 FEB 2016 16:57
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.10.7)  15 FEB 2016 10:49
 entering extended mode
 **2016-01-21_MitochondrialProteins.tex
 
@@ -747,22 +747,30 @@ Package pdftex.def Info: 2016-01-21_MitochondrialProteins-barplotATP5A.pdf used
  on input line 69.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
 
-<2016-01-21_MitochondrialProteins-barplot-combined.pdf, id=10, 433.62pt x 433.6
+<2016-01-21_MitochondrialProteins-barplotSLN.pdf, id=10, 433.62pt x 433.62pt>
+File: 2016-01-21_MitochondrialProteins-barplotSLN.pdf Graphic file (type pdf)
+
+<use 2016-01-21_MitochondrialProteins-barplotSLN.pdf>
+Package pdftex.def Info: 2016-01-21_MitochondrialProteins-barplotSLN.pdf used o
+n input line 77.
+(pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
+
+<2016-01-21_MitochondrialProteins-barplot-combined.pdf, id=11, 433.62pt x 433.6
 2pt>
 File: 2016-01-21_MitochondrialProteins-barplot-combined.pdf Graphic file (type 
 pdf)
  <use 2016-01-21_MitochondrialProteins-barplot-combined.pdf>
 Package pdftex.def Info: 2016-01-21_MitochondrialProteins-barplot-combined.pdf 
-used on input line 77.
+used on input line 85.
 (pdftex.def)             Requested size: 375.80544pt x 375.8238pt.
-LaTeX Font Info:    Try loading font information for TS1+aer on input line 85.
+LaTeX Font Info:    Try loading font information for TS1+aer on input line 93.
 
 (C:/PROGRA~1/R/R-31~1.1/share/texmf/tex/latex\ts1aer.fd
 File: ts1aer.fd 
 )
 LaTeX Font Info:    Font shape `TS1/aer/m/n' in size <10> not available
-(Font)              Font shape `TS1/cmr/m/n' tried instead on input line 85.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 98.
+(Font)              Font shape `TS1/cmr/m/n' tried instead on input line 93.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 106.
  [1
 
 {C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}] [2 <C:/Users/esteph16/Doc
@@ -778,23 +786,25 @@ ripts/MitoProteinAnalysis/2016-01-21_MitochondrialProteins-barplotUQCRC2.pdf>]
 [7 <C:/Users/esteph16/Documents/GitHub/ObesityParticulateTreatment/scripts/Mito
 ProteinAnalysis/2016-01-21_MitochondrialProteins-barplotATP5A.pdf>] [8 <C:/User
 s/esteph16/Documents/GitHub/ObesityParticulateTreatment/scripts/MitoProteinAnal
-ysis/2016-01-21_MitochondrialProteins-barplot-combined.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 98.
+ysis/2016-01-21_MitochondrialProteins-barplotSLN.pdf>] [9 <C:/Users/esteph16/Do
+cuments/GitHub/ObesityParticulateTreatment/scripts/MitoProteinAnalysis/2016-01-
+21_MitochondrialProteins-barplot-combined.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 106.
 
 (C:\Users\esteph16\Documents\GitHub\ObesityParticulateTreatment\scripts\MitoPro
 teinAnalysis\2016-01-21_MitochondrialProteins.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 98.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 98.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 106.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 106.
 Package rerunfilecheck Info: File `2016-01-21_MitochondrialProteins.out' has no
 t changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 98.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 106.
  ) 
 Here is how much of TeX's memory you used:
- 7506 strings out of 493921
- 115711 string characters out of 3144466
- 186792 words of memory out of 3000000
- 10677 multiletter control sequences out of 15000+200000
+ 7514 strings out of 493921
+ 116004 string characters out of 3144466
+ 187906 words of memory out of 3000000
+ 10682 multiletter control sequences out of 15000+200000
  20631 words of font info for 48 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
  36i,6n,38p,643b,324s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -805,10 +815,10 @@ m/cmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/
 cmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/cm
 r17.pfb><C:/Program Files (x86)/MiKTeX 2.9A/fonts/type1/public/amsfonts/cm/cmtt
 10.pfb>
-Output written on 2016-01-21_MitochondrialProteins.pdf (8 pages, 120101 bytes).
+Output written on 2016-01-21_MitochondrialProteins.pdf (9 pages, 124954 bytes).
 
 PDF statistics:
- 132 PDF objects out of 1000 (max. 8388607)
- 21 named destinations out of 1000 (max. 500000)
- 40 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 144 PDF objects out of 1000 (max. 8388607)
+ 23 named destinations out of 1000 (max. 500000)
+ 45 words of extra memory for PDF output out of 10000 (max. 10000000)
 
