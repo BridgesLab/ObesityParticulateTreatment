@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Dave Bridges, Alyse Ragauskas, Erin Stephenson, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Joan Han  
 November 13, 2014  
-This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Wed Feb  3 12:42:31 2016.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Wed Feb 17 08:50:44 2016.
 
 
 ```r
@@ -165,7 +165,7 @@ print(xtable(tukey.table, caption="Post-hoc Dunnett's tests of mixed linear mode
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb  3 12:42:35 2016 -->
+<!-- Wed Feb 17 08:50:48 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -186,7 +186,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb  3 12:42:35 2016 -->
+<!-- Wed Feb 17 08:50:48 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -452,7 +452,7 @@ print(xtable(tukey.table.heat, caption="Post-hoc Dunnett's tests of mixed linear
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb  3 12:42:37 2016 -->
+<!-- Wed Feb 17 08:50:50 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -473,7 +473,7 @@ print(xtable(tukey.table.lean.heat, caption="Post-hoc Dunnett's sests of mixed l
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb  3 12:42:37 2016 -->
+<!-- Wed Feb 17 08:50:50 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -591,10 +591,118 @@ legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palet
 abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
        b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
 abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
-       b=coefficients(dark.lm.lean)['Lean'], col=palette()[2])
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[2])
 ```
 
 ![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-3.png) 
+
+```r
+#Heat as Watts
+annotated.data.heat$Dark.watts <- annotated.data.heat$Dark.raw*60/4184*1000 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
+annotated.data.heat$Light.watts <- annotated.data.heat$Light.raw*60/4184*1000 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
+  
+with(annotated.data.heat, plot(Lean, Dark.watts, ylim=c(0,max(Dark.watts)),
+                         pch=19, las=2, ylab="Heat Production (mW)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+
+#anova
+dark.lm.lean.ctl <- lm(Dark.watts~Lean+Particulate, data=annotated.data.heat)
+dark.aov.lean.ctl <- aov(Dark.watts~Lean+Particulate, data=annotated.data.heat)
+
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[2])
+
+with(annotated.data.heat, plot(Lean, Light.watts, ylim=c(0,max(Dark.watts)),
+                         pch=19, las=2, ylab="Heat Production (mW)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+light.lm.lean.ctl <- lm(Light.watts~Lean+Particulate, data=annotated.data.heat)
+light.aov.lean.ctl <- aov(Light.watts~Lean+Particulate, data=annotated.data.heat)
+
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-4.png) 
+
+```r
+#combined plots
+par(mfrow=c(1,2))
+with(annotated.data.heat, plot(Lean, Light.watts, ylim=c(0,max(Dark.watts)),
+                         pch=19, las=2, ylab="Heat Production (mW)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+
+with(annotated.data.heat, plot(Lean, Dark.watts, ylim=c(0,max(Dark.watts)),
+                         pch=19, las=2, ylab="Heat Produciton (mW)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-5.png) 
+
+```r
+#Heat as kJ/h
+annotated.data.heat$Dark.kj<- annotated.data.heat$Dark.raw / 4.184 * 1000 * 1000 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
+annotated.data.heat$Light.kj <- annotated.data.heat$Light.raw / 4.184 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
+  
+with(annotated.data.heat, plot(Lean, Dark.kj, ylim=c(0,max(Dark.kj)),
+                         pch=19, las=2, ylab="Heat Production (mJ/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+
+#anova
+dark.lm.lean.ctl <- lm(Dark.kj~Lean+Particulate, data=annotated.data.heat)
+dark.aov.lean.ctl <- aov(Dark.kj~Lean+Particulate, data=annotated.data.heat)
+
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[2])
+
+with(annotated.data.heat, plot(Lean, Light.kj, ylim=c(0,max(Dark.kj)),
+                         pch=19, las=2, ylab="Heat Production (mJ/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+light.lm.lean.ctl <- lm(Light.kj~Lean+Particulate, data=annotated.data.heat)
+light.aov.lean.ctl <- aov(Light.kj~Lean+Particulate, data=annotated.data.heat)
+
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-6.png) 
+
+```r
+#combined plots
+par(mfrow=c(1,2))
+with(annotated.data.heat, plot(Lean, Light.kj, ylim=c(0,max(Dark.kj)),
+                         pch=19, las=2, ylab="Heat Production (mJ/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
+
+with(annotated.data.heat, plot(Lean, Dark.kj, ylim=c(0,max(Dark.kj)),
+                         pch=19, las=2, ylab="Heat Produciton (mJ/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
+abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean.ctl)['ParticulateMCP230'],
+       b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[2])
+```
+
+![](clams-analysis_files/figure-html/heat-by-LBM-controls-combined-7.png) 
 
 
 According to this analysis there was a significant effect of the treatment group on the body weight-adjusted heat produciton levels under either Dark (p=0.0208645) or Light (p=0.0315519) conditions.  There was no effect of body weight in either Dark (p=0.7215461) or Light (p=0.6922278) conditions.  Analysed this way, we detected a -18.4166427% reduction in metabolic rate between MCP and Control groups in the light and a  -16.4380874% reduction in the dark.
@@ -605,7 +713,7 @@ Alternatively we used a mixed linear model, with non-interacting covariates for 
 
 ```r
 y.axis <- c(min(time.course.data.heat$mean, na.rm=T), max(time.course.data.heat$mean, na.rm=T))
-with(subset(time.course.data.heat, Particulate.Treatment!='MCP230'), 
+with(subset(time.course.data.heat, , Particulate.Treatment!='MCP230'), 
      plot(Hours, mean, type='l', 
           ylim=y.axis, las=1, xlim=c(0,53),
           xlab="Time (h)", ylab="Heat Production (kcal/h)"))
@@ -620,6 +728,25 @@ legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
 ```
 
 ![](clams-analysis_files/figure-html/time-course-heat-1.png) 
+
+```r
+#presented in Watts
+time.course.data.heat$mean.watts <- time.course.data.heat$mean * 60 / 4184 * 1000 #convert to seconds then Watts
+y.axis <- c(min(time.course.data.heat$mean.watts, na.rm=T), max(time.course.data.heat$mean.watts, na.rm=T))
+with(subset(time.course.data.heat, Particulate.Treatment!='MCP230'), 
+     plot(Hours, mean.watts, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Heat Production (mW)"))
+#shaded in night times
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+with(subset(time.course.data.heat, Particulate.Treatment!='MCP'), lines(Hours, mean, col=palette()[1]))
+with(subset(time.course.data.heat, Particulate.Treatment=='MCP'), lines(Hours, mean, col=palette()[2]))
+legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
+```
+
+![](clams-analysis_files/figure-html/time-course-heat-2.png) 
 
 # Body Weights and Composition
 
@@ -752,7 +879,7 @@ print(xtable(with(RER.data.annotated, pairwise.wilcox.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb  3 12:42:38 2016 -->
+<!-- Wed Feb 17 08:50:51 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -807,7 +934,7 @@ print(xtable(with(Activity.data.annotated, pairwise.t.test(Light, Particulate.Tr
 ```
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb  3 12:42:38 2016 -->
+<!-- Wed Feb 17 08:50:51 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
