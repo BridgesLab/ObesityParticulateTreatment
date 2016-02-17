@@ -9,6 +9,12 @@ output:
 ---
 This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on `r date()`.
 
+```{r global_options, include=FALSE}
+library(knitr)
+opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE,dev=c('png','pdf'))
+options(scipen=8,digits =4)
+```
+
 ```{r data-entry}
 sample_key_file <- '../data/CLAMS/mouse_treatments.csv'
 sample_key <- read.csv(sample_key_file)
@@ -94,7 +100,7 @@ superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
 
 par(mfrow=c(1,2))
 with(annotated.data.o2, plot(Weight, Dark.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", main='Dark', col=Particulate.Treatment))
+                         pch=19, las=2, ylab="VO2 (mL/h)", main='Dark', col=Particulate.Treatment))
 legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
 
 dark.lm <- lm(Dark.raw~Weight+Particulate.Treatment, data=annotated.data.o2)
@@ -108,7 +114,7 @@ abline(a=coefficients(dark.lm)[1]+coefficients(dark.lm)['Particulate.TreatmentSa
        b=coefficients(dark.lm)[2], col=palette()[3])
 
 with(annotated.data.o2, plot(Weight, Light.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", main='Light',col=Particulate.Treatment))
+                         pch=19, las=2, ylab="VO2 (mL/h)", main='Light',col=Particulate.Treatment))
 legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
 light.lm <- lm(Light.raw~Weight+Particulate.Treatment, data=annotated.data.o2)
 light.aov <- aov(Light.raw~Weight+Particulate.Treatment, data=annotated.data.o2)
@@ -148,7 +154,7 @@ print(xtable(tukey.table.lean, caption="Post-hoc Dunnett's sests of mixed linear
 ```{r VO2-by-LBM, dev=c('png','pdf')}
 par(mfrow=c(1,2))
 with(annotated.data.o2, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", main='Dark',col=Particulate.Treatment))
+                         pch=19, las=2, ylab="VO2 (mL/h)", main='Dark',col=Particulate.Treatment))
 legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
 
 #anova
@@ -161,10 +167,10 @@ abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.T
        b=coefficients(dark.lm.lean)[2], col=palette()[2])
 abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.TreatmentSaline'],
        b=coefficients(dark.lm.lean)[2], col=palette()[3])
-superpose.eb(combined.data$Lean, combined.data$Dark.raw, combined.data.err$Dark.raw)
+#superpose.eb(combined.data$Lean, combined.data$Dark.raw, combined.data.err$Dark.raw)
 
 with(annotated.data.o2, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", main='Light',col=Particulate.Treatment))
+                         pch=19, las=2, ylab="VO2 (mL/h)", main='Light',col=Particulate.Treatment))
 legend("bottomright", levels(annotated.data.o2$Particulate.Treatment), pch=19, col=palette()[1:3], lty=1, bty='n')
 light.lm.lean <- lm(Light.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
 light.aov.lean <- aov(Light.raw~Lean+Particulate.Treatment, data=annotated.data.o2)
@@ -175,7 +181,7 @@ abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate
        b=coefficients(light.lm.lean)[2], col=palette()[2])
 abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate.TreatmentSaline'],
        b=coefficients(light.lm.lean)[2], col=palette()[3])
-superpose.eb(combined.data$Lean, combined.data$Light.raw, combined.data.err$Dark.raw)
+#superpose.eb(combined.data$Lean, combined.data$Light.raw, combined.data.err$Dark.raw)
 ```
 
 Using the lean mass as the covariate, we checked whether normality was maintained in the residuals from the ANCOVA.  The normality assumption was met for both Dark (p=`r shapiro.test(residuals(dark.aov.lean))$p.value`) and Light (p=`r shapiro.test(residuals(light.aov.lean))$p.value`) via Shapiro-Wilk test.  
@@ -198,7 +204,7 @@ for (row in rownames(annotated.data.o2)) {
 annotated.data.o2$Particulate <- as.factor(annotated.data.o2$Particulate)
 
 with(annotated.data.o2, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+                         pch=19, las=2, ylab="VO2 (mL/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
 legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 
 #anova
@@ -211,7 +217,7 @@ abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean
        b=coefficients(dark.lm.lean)['Lean'], col=palette()[2])
 
 with(annotated.data.o2, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+                         pch=19, las=2, ylab="VO2 (mL/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
 legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 light.lm.lean.ctl <- lm(Light.raw~Lean+Particulate, data=annotated.data.o2)
 light.aov.lean.ctl <- aov(Light.raw~Lean+Particulate, data=annotated.data.o2)
@@ -224,7 +230,7 @@ abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.le
 #combined plots
 par(mfrow=c(1,2))
 with(annotated.data.o2, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+                         pch=19, las=2, ylab="VO2 (mL/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
 legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
        b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
@@ -232,7 +238,7 @@ abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.le
        b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
 
 with(annotated.data.o2, plot(Lean, Dark.raw, ylim=c(0,max(Dark.raw)),
-                         pch=19, las=2, ylab="VO2", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+                         pch=19, las=2, ylab="VO2 (mL/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
 legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
        b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
@@ -276,6 +282,23 @@ time.course.data.heat <-
   all.data.clean.annotated %>%
   group_by(Hours, Particulate.Treatment) %>%
   summarize(mean = mean(Heat),
+            se = sd(Heat)/sqrt(length(Heat)),
+            n = length(Heat))
+
+all.data.clean.annotated$ParticulateTF <- all.data.clean.annotated$Particulate.Treatment == 'MCP'
+for (row in rownames(all.data.clean.annotated)) {
+  if (all.data.clean.annotated[row,]$ParticulateTF == TRUE) {
+    all.data.clean.annotated[row,'Particulate'] <- "MCP230"
+  }
+  else 
+    all.data.clean.annotated[row,'Particulate'] <- "Controls"
+}
+all.data.clean.annotated$Particulate <- as.factor(all.data.clean.annotated$Particulate)
+
+time.course.data.heat.ctl <-
+  all.data.clean.annotated %>%
+  group_by(Hours, Particulate) %>%
+  dplyr::summarize(mean = mean(Heat),
             se = sd(Heat)/sqrt(length(Heat)),
             n = length(Heat))
 
@@ -379,7 +402,7 @@ abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.T
        b=coefficients(dark.lm.lean)[2], col=palette()[2])
 abline(a=coefficients(dark.lm.lean)[1]+coefficients(dark.lm.lean)['Particulate.TreatmentSaline'],
        b=coefficients(dark.lm.lean)[2], col=palette()[3])
-superpose.eb(combined.data$Lean, combined.data$Dark.raw, combined.data.err$Dark.raw)
+#superpose.eb(combined.data$Lean, combined.data$Dark.raw, combined.data.err$Dark.raw)
 
 with(annotated.data.heat, plot(Lean, Light.raw, ylim=c(0,max(Dark.raw)),
                          pch=19, las=2, ylab="Heat Production (kcal/h)", main='Light',col=Particulate.Treatment))
@@ -393,7 +416,7 @@ abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate
        b=coefficients(light.lm.lean)[2], col=palette()[2])
 abline(a=coefficients(light.lm.lean)[1]+coefficients(light.lm.lean)['Particulate.TreatmentSaline'],
        b=coefficients(light.lm.lean)[2], col=palette()[3])
-superpose.eb(combined.data$Lean, combined.data$Light.raw, combined.data.err$Dark.raw)
+#superpose.eb(combined.data$Lean, combined.data$Light.raw, combined.data.err$Dark.raw)
 ```
 
 Using the lean mass as the covariate, we checked whether normality was maintained in the residuals from the ANCOVA.  The normality assumption was met for both Dark (p=`r shapiro.test(residuals(dark.aov.lean))$p.value`) and Light (p=`r shapiro.test(residuals(light.aov.lean))$p.value`) via Shapiro-Wilk test.  
@@ -561,7 +584,7 @@ Alternatively we used a mixed linear model, with non-interacting covariates for 
 
 ```{r time-course-heat, dev=c('png','pdf')}
 y.axis <- c(min(time.course.data.heat$mean, na.rm=T), max(time.course.data.heat$mean, na.rm=T))
-with(subset(time.course.data.heat, , Particulate.Treatment!='MCP230'), 
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[1]), 
      plot(Hours, mean, type='l', 
           ylim=y.axis, las=1, xlim=c(0,53),
           xlab="Time (h)", ylab="Heat Production (kcal/h)"))
@@ -570,14 +593,15 @@ first_dark_cycle = 7.55
 rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
 rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
 rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
-with(subset(time.course.data.heat, Particulate.Treatment!='MCP'), lines(Hours, mean, col=palette()[1]))
-with(subset(time.course.data.heat, Particulate.Treatment=='MCP'), lines(Hours, mean, col=palette()[2]))
-legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[1]), lines(Hours, mean, col=palette()[1]))
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[2]), lines(Hours, mean, col=palette()[2]))
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[3]), lines(Hours, mean, col=palette()[3]))
+legend("topright", levels(time.course.data.heat$Particulate.Treatment), lty=1, col=palette()[1:3], bty='n')
 
 #presented in Watts
 time.course.data.heat$mean.watts <- time.course.data.heat$mean * 60 / 4184 * 1000 #convert to seconds then Watts
 y.axis <- c(min(time.course.data.heat$mean.watts, na.rm=T), max(time.course.data.heat$mean.watts, na.rm=T))
-with(subset(time.course.data.heat, Particulate.Treatment!='MCP230'), 
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[1]), 
      plot(Hours, mean.watts, type='l', 
           ylim=y.axis, las=1, xlim=c(0,53),
           xlab="Time (h)", ylab="Heat Production (mW)"))
@@ -585,9 +609,55 @@ with(subset(time.course.data.heat, Particulate.Treatment!='MCP230'),
 rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
 rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
 rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
-with(subset(time.course.data.heat, Particulate.Treatment!='MCP'), lines(Hours, mean, col=palette()[1]))
-with(subset(time.course.data.heat, Particulate.Treatment=='MCP'), lines(Hours, mean, col=palette()[2]))
-legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[1]), lines(Hours, mean.watts, col=palette()[1]))
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[2]), lines(Hours, mean.watts, col=palette()[2]))
+with(subset(time.course.data.heat, Particulate.Treatment==levels(Particulate.Treatment)[3]), lines(Hours, mean.watts, col=palette()[3]))
+legend("topright", levels(time.course.data.heat$Particulate.Treatment), lty=1, col=palette()[1:3], bty='n')
+
+#combining the controls
+y.axis <- c(min(time.course.data.heat.ctl$mean, na.rm=T), max(time.course.data.heat.ctl$mean, na.rm=T))
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[1]), 
+     plot(Hours, mean, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Heat Production (kcal/h)"))
+#shaded in night times
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[1]), lines(Hours, mean, col=palette()[1]))
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[2]), lines(Hours, mean, col=palette()[2]))
+legend("topright", levels(time.course.data.heat.ctl$Particulate), lty=1, col=palette()[1:2], bty='n')
+
+#presented in Watts
+time.course.data.heat.ctl$mean.watts <- time.course.data.heat.ctl$mean * 60 / 4184 * 1000 #convert to seconds then Watts
+y.axis <- c(min(time.course.data.heat.ctl$mean.watts, na.rm=T), max(time.course.data.heat.ctl$mean.watts, na.rm=T))
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[1]), 
+     plot(Hours, mean.watts, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Heat Production (mW)"))
+#shaded in night times
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[1]), lines(Hours, mean.watts, col=palette()[1]))
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[2]), lines(Hours, mean.watts, col=palette()[2]))
+legend("topright", levels(time.course.data.heat.ctl$Particulate), lty=1, col=palette()[1:2], bty='n')
+
+
+#presented in J
+time.course.data.heat.ctl$mean.j <- time.course.data.heat.ctl$mean * 4.184 * 1000 #convert to seconds then Watts
+y.axis <- c(min(time.course.data.heat.ctl$mean.j, na.rm=T), max(time.course.data.heat.ctl$mean.j, na.rm=T))
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[1]), 
+     plot(Hours, mean.j, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Heat Production (J/h)"))
+#shaded in night times
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[1]), lines(Hours, mean.j, col=palette()[1]))
+with(subset(time.course.data.heat.ctl, Particulate==levels(Particulate)[2]), lines(Hours, mean.j, col=palette()[2]))
+legend("topright", levels(time.course.data.heat.ctl$Particulate), lty=1, col=palette()[1:2], bty='n')
 ```
 
 # Body Weights and Composition
