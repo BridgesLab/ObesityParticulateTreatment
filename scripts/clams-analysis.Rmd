@@ -458,6 +458,7 @@ abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean
        b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[2])
 
 #Heat as Watts
+par(mfrow=c(1,1))
 annotated.data.heat$Dark.watts <- annotated.data.heat$Dark.raw*60/4184*1000 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
 annotated.data.heat$Light.watts <- annotated.data.heat$Light.raw*60/4184*1000 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
   
@@ -505,11 +506,12 @@ abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean
 
 
 #Heat as kJ/h
-annotated.data.heat$Dark.kj<- annotated.data.heat$Dark.raw / 4.184 * 1000 * 1000 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
-annotated.data.heat$Light.kj <- annotated.data.heat$Light.raw / 4.184 #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
+annotated.data.heat$Dark.kj<- annotated.data.heat$Dark.raw / 4.184 * 1000  #x 4.184 to go from kcal to kJ, *1000 to get to J
+annotated.data.heat$Light.kj <- annotated.data.heat$Light.raw / 4.184 * 1000  #x 60 to get kcal/s and divided by 1 kcal/s is 4184 watts x 1000 to get mW
   
+par(mfrow=c(1,1))
 with(annotated.data.heat, plot(Lean, Dark.kj, ylim=c(0,max(Dark.kj)),
-                         pch=19, las=2, ylab="Heat Production (mJ/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+                         pch=19, las=2, ylab="Heat Production (J/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
 legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 
 #anova
@@ -522,7 +524,7 @@ abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)']+coefficients(dark.lm.lean
        b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[2])
 
 with(annotated.data.heat, plot(Lean, Light.kj, ylim=c(0,max(Dark.kj)),
-                         pch=19, las=2, ylab="Heat Production (mJ/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+                         pch=19, las=2, ylab="Heat Production (J/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
 legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 light.lm.lean.ctl <- lm(Light.kj~Lean+Particulate, data=annotated.data.heat)
 light.aov.lean.ctl <- aov(Light.kj~Lean+Particulate, data=annotated.data.heat)
@@ -535,7 +537,7 @@ abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.le
 #combined plots
 par(mfrow=c(1,2))
 with(annotated.data.heat, plot(Lean, Light.kj, ylim=c(0,max(Dark.kj)),
-                         pch=19, las=2, ylab="Heat Production (mJ/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
+                         pch=19, las=2, ylab="Heat Production (J/h)", xlab="Lean Body Mass (g)", main='Light',col=Particulate))
 legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
        b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
@@ -543,7 +545,7 @@ abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.le
        b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[2])
 
 with(annotated.data.heat, plot(Lean, Dark.kj, ylim=c(0,max(Dark.kj)),
-                         pch=19, las=2, ylab="Heat Produciton (mJ/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
+                         pch=19, las=2, ylab="Heat Produciton (J/h)", xlab="Lean Body Mass (g)", main='Dark',col=Particulate))
 legend("bottomright", levels(annotated.data.heat$Particulate), pch=19, col=palette()[1:2], lty=1, bty='n')
 abline(a=coefficients(dark.lm.lean.ctl)['(Intercept)'],
        b=coefficients(dark.lm.lean.ctl)['Lean'], col=palette()[1])
