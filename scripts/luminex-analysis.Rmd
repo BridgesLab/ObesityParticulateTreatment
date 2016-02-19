@@ -29,7 +29,7 @@ data$Glucagon <- as.numeric(as.character(data$'Glucagon'))
 data$Ghrelin <- as.numeric(as.character(data$'Ghrelin'))
 data$Leptin <- as.numeric(as.character(data$'Leptin'))
 data$Insulin <- as.numeric(as.character(data$'Insulin'))
-
+data$Insulin.pmol.L <- as.numeric(as.character(data$'Insulin.pmol.L'))
 #set color palette
 Treatment.colors <- rep(c('Black','Red'),2)
 ```
@@ -97,6 +97,12 @@ Insulin.summary <- ddply(data, .(FeedingState,Treatment), summarize,
                      sd = sd(Insulin, na.rm=T),
                      rel.sd = sd(Insulin, na.rm=T)/mean(Insulin, na.rm=T)*100,
                      n = length(Insulin))
+Insulin.pmol.L.summary <- ddply(data, .(FeedingState,Treatment), summarize,
+                     mean = mean(Insulin.pmol.L, na.rm=T),
+                     se = se(Insulin.pmol.L),
+                     sd = sd(Insulin.pmol.L, na.rm=T),
+                     rel.sd = sd(Insulin.pmol.L, na.rm=T)/mean(Insulin.pmol.L, na.rm=T)*100,
+                     n = length(Insulin.pmol.L))
 ```
 
 # Statistics
@@ -115,6 +121,7 @@ Ghrelin.aov <- aov(Ghrelin~FeedingState*Treatment, data=data)
 Leptin.aov <- aov(Leptin~FeedingState*Treatment, data=data)
 Insulin.aov <- aov(Insulin~FeedingState*Treatment, data=data)
 
+
 library(car)
 Resistin.levene <- leveneTest(Resistin~FeedingState*Treatment, data=data)
 GIP.levene <- leveneTest(GIP~FeedingState*Treatment, data=data)
@@ -124,6 +131,7 @@ Glucagon.levene <- leveneTest(Glucagon~FeedingState*Treatment, data=data)
 Ghrelin.levene <- leveneTest(Ghrelin~FeedingState*Treatment, data=data)
 Leptin.levene <- leveneTest(Leptin~FeedingState*Treatment, data=data)
 Insulin.levene <- leveneTest(Insulin~FeedingState*Treatment, data=data)
+
 
 anova.summary <- data.frame(row.names=colnames(data)[4:11])
 for (hormone in rownames(anova.summary)){
@@ -296,6 +304,23 @@ plot <- barplot(Insulin.summary.means,
                 beside=T)
 legend("topleft", levels(data$Treatment), fill=Treatment.colors, bty="n")
 superpose.eb(plot, Insulin.summary.means, Insulin.summary.se)
+```
+
+```{r barplot-Insulin.pmol.L, dev=c('png','pdf')}
+Insulin.pmol.L.summary.means <- as.matrix(dcast(Insulin.pmol.L.summary, Treatment~FeedingState, value.var="mean")[2:3])
+
+Insulin.pmol.L.summary.se <- as.matrix(dcast(Insulin.pmol.L.summary, Treatment~FeedingState, value.var="se")[2:3])
+
+ymax <- max(Insulin.pmol.L.summary$mean + Insulin.pmol.L.summary$se, na.rm=T)
+
+plot <- barplot(Insulin.pmol.L.summary.means,
+                ylab="Serum Insulin Levels (pmol/L)", 
+                las=1,
+                col = Treatment.colors[1:2],
+                ylim = c(0,ymax),
+                beside=T)
+legend("topleft", levels(data$Treatment), fill=Treatment.colors, bty="n")
+superpose.eb(plot, Insulin.pmol.L.summary.means, Insulin.pmol.L.summary.se)
 ```
 
 ```{r barplot-all, dev=c('png','pdf')}

@@ -8,7 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
-<meta name="author" content="Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges" />
+<meta name="author" content="Erin Stephenson, Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges" />
 
 <meta name="date" content="2014-11-13" />
 
@@ -63,19 +63,21 @@ img {
 
 <div id="header">
 <h1 class="title">Fasting Luminex Data for Particulate Treatment Study</h1>
-<h4 class="author"><em>Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges</em></h4>
+<h4 class="author"><em>Erin Stephenson, Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges</em></h4>
 <h4 class="date"><em>November 13, 2014</em></h4>
 </div>
 
 
 <div id="summary" class="section level1">
 <h1>Summary</h1>
-<p>Pregnant mice were exposed to respiratory particulates or saline. The offspring of these mice were placed on a HFD at 10 wk of age for 12 wk. Blood was collected in heparinized tubes via retro orbital bleed both before and after a 16 hr fast. Samples were allowed to clot over ice before being separated via centrifugation and serum was collected. The values presented here are the results of serum analyses using the BioRad Bio-Plex Pro Mouse Diabetes Panel (8-plex, Cat. No.171-F7001M).</p>
+<p>Pregnant mice were exposed to respiratory particulates or saline. The offspring of these mice were placed on a HFD at 10 wk of age for 12 wk. Blood was collected in heparinized tubes via retro orbital bleed both before and after a 16 hr fast. Samples were allowed to clot over ice before being separated via centrifugation and serum was collected. The values presented here are the results of serum analyses using the BioRad Bio-Plex Pro Mouse Diabetes Panel (8-plex, Cat. No.171-F7001M).This Assay was performed by Erin Stephenson, with the assistance of Alyse Ragauskas. Jordy Saravia calculated the concentrations of each hormone analyzed.</p>
 <pre class="r"><code>input_file &lt;- &quot;../data/Luminex Data.xlsx&quot;
 sheet_name &lt;- &quot;Sheet2&quot;
 library(xlsx)</code></pre>
-<pre><code>## Loading required package: rJava
-## Loading required package: xlsxjars</code></pre>
+<pre><code>## Warning: package 'xlsx' was built under R version 3.1.3</code></pre>
+<pre><code>## Loading required package: rJava</code></pre>
+<pre><code>## Warning: package 'rJava' was built under R version 3.1.3</code></pre>
+<pre><code>## Loading required package: xlsxjars</code></pre>
 <pre class="r"><code>data &lt;- read.xlsx2(input_file, sheetName=sheet_name)
 #set Saline to be the reference treatment
 data$Treatment &lt;- relevel(data$Treatment, ref='Saline')
@@ -89,7 +91,7 @@ data$Glucagon &lt;- as.numeric(as.character(data$'Glucagon'))
 data$Ghrelin &lt;- as.numeric(as.character(data$'Ghrelin'))
 data$Leptin &lt;- as.numeric(as.character(data$'Leptin'))
 data$Insulin &lt;- as.numeric(as.character(data$'Insulin'))
-
+data$Insulin.pmol.L &lt;- as.numeric(as.character(data$'Insulin.pmol.L'))
 #set color palette
 Treatment.colors &lt;- rep(c('Black','Red'),2)</code></pre>
 </div>
@@ -155,14 +157,20 @@ Insulin.summary &lt;- ddply(data, .(FeedingState,Treatment), summarize,
                      se = se(Insulin),
                      sd = sd(Insulin, na.rm=T),
                      rel.sd = sd(Insulin, na.rm=T)/mean(Insulin, na.rm=T)*100,
-                     n = length(Insulin))</code></pre>
+                     n = length(Insulin))
+Insulin.pmol.L.summary &lt;- ddply(data, .(FeedingState,Treatment), summarize,
+                     mean = mean(Insulin.pmol.L, na.rm=T),
+                     se = se(Insulin.pmol.L),
+                     sd = sd(Insulin.pmol.L, na.rm=T),
+                     rel.sd = sd(Insulin.pmol.L, na.rm=T)/mean(Insulin.pmol.L, na.rm=T)*100,
+                     n = length(Insulin.pmol.L))</code></pre>
 </div>
 <div id="statistics" class="section level1">
 <h1>Statistics</h1>
 <p>We first did two way ANOVA’s for each of the hormones, with Feeding State and Treatment Group as the main effects and allowing for interactions.</p>
-<pre class="r"><code>library(xtable)
-
-Resistin.aov &lt;- aov(Resistin~FeedingState*Treatment, data=data)
+<pre class="r"><code>library(xtable)</code></pre>
+<pre><code>## Warning: package 'xtable' was built under R version 3.1.3</code></pre>
+<pre class="r"><code>Resistin.aov &lt;- aov(Resistin~FeedingState*Treatment, data=data)
 GIP.aov &lt;- aov(GIP~FeedingState*Treatment, data=data)
 PAI1.aov &lt;- aov(PAI1~FeedingState*Treatment, data=data)
 GLP1.aov &lt;- aov(GLP1~FeedingState*Treatment, data=data)
@@ -170,6 +178,7 @@ Glucagon.aov &lt;- aov(Glucagon~FeedingState*Treatment, data=data)
 Ghrelin.aov &lt;- aov(Ghrelin~FeedingState*Treatment, data=data)
 Leptin.aov &lt;- aov(Leptin~FeedingState*Treatment, data=data)
 Insulin.aov &lt;- aov(Insulin~FeedingState*Treatment, data=data)
+
 
 library(car)</code></pre>
 <pre><code>## Warning: package 'car' was built under R version 3.1.3</code></pre>
@@ -181,6 +190,7 @@ Glucagon.levene &lt;- leveneTest(Glucagon~FeedingState*Treatment, data=data)
 Ghrelin.levene &lt;- leveneTest(Ghrelin~FeedingState*Treatment, data=data)
 Leptin.levene &lt;- leveneTest(Leptin~FeedingState*Treatment, data=data)
 Insulin.levene &lt;- leveneTest(Insulin~FeedingState*Treatment, data=data)
+
 
 anova.summary &lt;- data.frame(row.names=colnames(data)[4:11])
 for (hormone in rownames(anova.summary)){
@@ -196,8 +206,8 @@ anova.summary[hormone,'Interaction'] &lt;- summary(current.anova)[[1]]$`Pr(&gt;F
 anova.summary.verified &lt;- anova.summary[anova.summary$Shapiro&gt;0.05&amp;anova.summary$Levene&gt;0.05, ]
 
 print(xtable(anova.summary.verified, caption = &quot;Summaries for Two-Way ANOVA Analyses, for the genes under which the ANOVA assumptions were met&quot;, digits = 5, label=&quot;tab:anova-summary&quot;), type='html')</code></pre>
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Wed Sep 23 15:49:53 2015 -->
+<!-- html table generated in R 3.1.1 by xtable 1.8-0 package -->
+<!-- Tue Feb 16 13:23:49 2016 -->
 <table border="1">
 <caption align="bottom">
 Summaries for Two-Way ANOVA Analyses, for the genes under which the ANOVA assumptions were met
@@ -278,8 +288,8 @@ for (hormone in rownames(wilcoxon.summary)){
 <pre><code>## Warning in wilcox.test.default(x = c(28.48867, 28.14309, 22.59119,
 ## 27.58883, : cannot compute exact p-value with ties</code></pre>
 <pre class="r"><code>print(xtable(wilcoxon.summary, caption = &quot;Summaries of Wilcoxon Rank Sum tests, comparing treatment groups separately in fasted and refed states&quot;, digits = 5, label=&quot;tab:wilcoxon-summary&quot;), type='html')</code></pre>
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Wed Sep 23 15:49:54 2015 -->
+<!-- html table generated in R 3.1.1 by xtable 1.8-0 package -->
+<!-- Tue Feb 16 13:23:49 2016 -->
 <table border="1">
 <caption align="bottom">
 Summaries of Wilcoxon Rank Sum tests, comparing treatment groups separately in fasted and refed states
@@ -488,6 +498,21 @@ plot &lt;- barplot(Insulin.summary.means,
 legend(&quot;topleft&quot;, levels(data$Treatment), fill=Treatment.colors, bty=&quot;n&quot;)
 superpose.eb(plot, Insulin.summary.means, Insulin.summary.se)</code></pre>
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAMAAABNUi8GAAAAb1BMVEX9/v0AAAAAADkAAGUAOY8AZmUAZrU5AAA5ADk5AGU5OTk5j9plAABlADllAGVlZgBlj49ltbVltf2POQCPOTmPZgCPj2WP2/21ZgC124+1/rW1/tq1/v3ajzna/v39tWX924/9/rX9/tr9/v3/AAAuC7kmAAAAJXRSTlP//////////////////////////////////////////////wD/gelQsAAAAAlwSFlzAAAOwwAADsMBx2+oZAAAER9JREFUeJzt3Q17o8bZhuFoV7WzlZK2dlOTdtGHlf//G8sMPIAkI4NmPHODrvN4m9fZ1Kn3yRUhEMz8cgKE/ZL7BwBuIVBII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1BII1CMsrqQ6n+XQDFFsjANgWIKAoU0AoU0AoU0mUD3zcnai//y21vzaxdf4NHIBOodt09VjVWL7j8ffIGHoxVo+f3n6f11U31VPH3wBR6PVKCH5437Q3WUd6lef5HmJ4QSqUAL1+DhV3cs31ddXn3R/TfTf8CAPJQCPW7dobx+s1n98fqLD76HQJO7/Azya/8RKAXaD5FA5aUZvVKgxXp3GnmIbxFoNg8XaH2En3iSRKDZPFygdYcTLzNd/Py33hodt9UvnlV+3L5U/zf5twDv4QK1N5mTLtSPD3TvPqQ6Ff2/DXWGeLhA22N4aR9sXn9xZXyg9Svw+2vvhZhAQzxcoHcZHehZmUX9oX9ziD9u/7X1f+7+RVht4v6Ay0WgY0w5xLeFuhfTsnpJbgOtvi6b//hPszACgY4x4STp8NycIx1/e6tPydpA609Ymw8K+Eh1HAIdY0KgJ3ect/eye3dMbwOtD/f1eVhzMQGfIdAxpgV6qj/vr95q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" /></p>
+<pre class="r"><code>Insulin.pmol.L.summary.means &lt;- as.matrix(dcast(Insulin.pmol.L.summary, Treatment~FeedingState, value.var=&quot;mean&quot;)[2:3])
+
+Insulin.pmol.L.summary.se &lt;- as.matrix(dcast(Insulin.pmol.L.summary, Treatment~FeedingState, value.var=&quot;se&quot;)[2:3])
+
+ymax &lt;- max(Insulin.pmol.L.summary$mean + Insulin.pmol.L.summary$se, na.rm=T)
+
+plot &lt;- barplot(Insulin.pmol.L.summary.means,
+                ylab=&quot;Serum Insulin Levels (pmol/L)&quot;, 
+                las=1,
+                col = Treatment.colors[1:2],
+                ylim = c(0,ymax),
+                beside=T)
+legend(&quot;topleft&quot;, levels(data$Treatment), fill=Treatment.colors, bty=&quot;n&quot;)
+superpose.eb(plot, Insulin.pmol.L.summary.means, Insulin.pmol.L.summary.se)</code></pre>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAMAAABNUi8GAAAAbFBMVEX9/v0AAAAAADkAAGUAOY8AZmUAZrU5AAA5ADk5AGU5j9plAABlADllAGVlZgBlj49ltbVltf2POQCPOTmPZgCPj2WP2/21ZgC124+1/rW1/tq1/v3ajzna/v39tWX924/9/rX9/tr9/v3/AAA+5UITAAAAJHRSTlP/////////////////////////////////////////////AP/mCh/yAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAREUlEQVR4nO3dDXvixhWG4bLrmgR229pNrbQrC0z+/3+sZqQjCQRmhpFHL+K5rzb1buoEnzxB6HP+dgCE/W3uFwB8hkAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUAhjUARZHUi19+XQBEjW5iGQBGDQCGNQCGNQCGNQCFNKtDd77/qP368rlarjft1tVp9ezv6Ao9GKdD99vsv12fdYrl6rrOsv3D/7b/AwxEKtH6bdIHu1i/1L8rvvz5e3dto8XzovsDj0Qm0Wm0qF2j7q29vXandFzleH7ToBFobBFrUXf721vxe90X//8x/Bgzm9Bzk1/4jEA20fjttP3XWf+y+OPMtBDqbPKPXDLSyfSQC1fXAgVb+KNNnm/gOgc7mcQMtm6OgQTtJJ6//s49G++2qOU4w+J2X+j+RPwBaDxtouWqaCTrMFB5o5f+yxfCDAnWmeNRAd+uN/TLgQH14oE3gH6+Dzgk0xaMGWjZ5uR5LO8NZXjzVGRzoUZlF/adfuk38fvuvrf+1/3tvDgjygIHeIGYT3xXq3kzLuvguUHdytf1v/waOzxFoiIidpN263Ufa/3hrdsG6QDf+1/5/LxwtwAiBhogI9OAvlGo/KlRum94F2mzum4+5zTEDXEWgIeICPfhzqO6j5vc/1+NA228k0CAEGiI4UHtjtKtQdmcC5Yq+GAQaInovvv6I6T9lVuNNPEedohBoiPDXX62e3puzqM2bZ/3FSaB+L/74UD4uI9AQEa/fn+r09fnDqnWIp4H646DsxAci0BBcLDIbAg1BoLMh0BAEOhsCDUGgsyHQEAQ6GwINQaCzIdAQBDobAg0RcSapvdLTH7Avmv/L86V78XAdgYY4DfSvzjhQdybJXazsAvVf77dP7wR6KwINERHo391loIf9z390gfb3NCMegYaICPS58NcjP/3RB7pbcwnTzQg0REyglauy2BS8g06CQEPEBOoeP7r/8VYMPoM+s5N0MwINERPox+tLvYV/L/q9+A178bcj0BAxgR7K53oLfxhs4g8EejsCDREV6O73//37jUAnQqAhom75+Hj9Z/0xlECnQaAhgl+/vyepcOeOCHQaBBoiLlD/ADECncYN6awySfmxuFhkKW4J9K9oN3zL6e5HHAJdisUHOsmDPAh0NssOdL+1h819vKbc6Uugs1l0oPufR4/i/nlzoQQ6m0UHOhkCnQ2BhiDQ2TxKoGkPjCXQ2RBoCAKdDYGGINDZPGCg7origz9A2px/HH8x/pFTXgtSPF6g+63/crw8Uvg6Scjn4QKtmmdzjheYi1hpDvksOlD/MNlWv4Jsu9Lc6RKdEWt1Ip9FB3peE+hokeMzqx1Pc2UVUiw60Pbj5olmdYPRMvGsFy9p0YE2G/nTSAn0niw8UOc00vBNfP8jp7wWpHiAQJ3hxp6dpNlkuhfjDgMdqjjMNBcCNVcD5UD9HAjUXDwOeug+ZpZ2YnP8xXiwKa8FHQI1XA8qiUANgUoiUDMIdLdeXdx0Bw826bthCNQMbzt2O+cltx0rIFDTBdocPKoL7Z5Cc9NgU14LOgRqukD9+tcHrqjXQKCGd1BJBGr4DCqJQA178ZII1HAcVBKBGgKVRKCmD9TOx7MXL4BAzWAvPmn33Qab/pfAgUB7o+OgaQh0GgRqRsdB0xDoNAjU9J9Bm1uNEhHoNAjUDAJdNy+anSQBBGoGm/izNxlFItBpEKhhJ0kSgRp2kiQRqGEnSRKBmsEmvn3R7CQJIFDDuXhJeoGmfGvKJAhUkl6gCaYK1G/kE0/IE+g0CNQMrqj31yqXaVcsE+g0CNQMDjM1x0EL7kkSQKCm34v/0bx1clenAgI1o3dQ7upUQKBmeFenfy4td3UqIFAzPlC/SjlWT6DTIFDDcVBJBGoIVBKBmvYJyz+HG/XjX8UNNuW1oEOgpn0HrT+Bttcrf7ymXC5CoNMgUDPci2+wFy+AQE3AZ9DSqmW9+GwI1FwP1J2d98dIWYYmHwI1VwNtbqZjIa+8CNSEB8pSiBkRqAnfxLOYbEYEagJ2ktpdos+W4+5/5JTXgg6BmuHjFzduh310MVNRv1Xu1ptPA+0Hm/Ja0CFQ0wdaPL3v1s+jnZ/+oyeb+HwI1Bw9WcR91DwNr3u/ZCcpIwI1R4G6rflpeE2OdbYcZsqIQM1gE/+83z6977en4dlnUA7UZ0Sg5ugZ9d/ezj3jrqh/Ev/cJtaLz4ZADdeDSiJQQ6CSCNQQqCQCNe0V9ZPcMXcg0KkQqOEdVBKBGgKVRKDm+Ol2T+9F2oPACXQaBGqOnm5XugP1SYUS6DQI1BwtouCey3T+HHvwYFNeCzoEao7OxbtAebqdAgI1o3dQng+qgEDN6WdQnm4ngUDN6TPq054ATqATIVDDcVBJBGoIVBKBmsFePKsd6yBQM7iifpX8CZRAp0Kg5mgT7x9wl/RGSqDTIFBz+hn045UD9QII1PAOKolAzeBM0orPoDII1LAXL4lADcdBJRGo4YJlSQRquGBZEoEaLliWRKCGC5YlEajhgmVJBGq4YFkSgRouWJZEoIbjoJII1BCoJAI1o0DZi1dAoIZAJRGoIVBJBGoIVBKBGgKVRKAmINDdur3MvrLDpBWrfHwxAjXXHwFePb03VzOzTlI+BGoC1ot319+VrDSXFYGaq4E2S8cehqvKslbnlyNQczXQ6vt/t36lOVY7zohAzdVAS/eh1K2Q+Nl68f2PnPJa0CFQcz3Qb+375WeB9oNNeS3oEKi5HqjflNefO9nEZ0Sgpg/UP7lhNTrM1IRYR8lOUkYEagZPtzt/Csndq+Qz5TBTRgRqBjfNXbjf2N2o5JvkQH0+BGqO7uo8zz1SzMdb2hnOklOdX4xAzeCuTp7NpINAzeCuzrT7ORsEOg0CNYNNfPuiudxOAIEabpqTRKCGQCURqCFQSQRq7ILlDZ9BlRCo4R1UEoEaApVEoIZAJRGouX7TXNxgU14LOgRqeAeVRKCGQCURqOFUpyQCNafvoGlPviHQiRCoGW3iz18pH4pAp0GghoeHSSJQMwqUhbwUEKg5DTRx0WMCnQaBmtFefNI6XgQ6EQI1HAeVRKCGQCURqOkDdTfGl2ziNRCoGTxZ5Ol9t37mOKgEAjVHD25wdx5zHFQBgZqjQN3jmTgOqoBAzWAT/7zfPr1zHFQCgZrhTtLq21vqA3AIdBoEajjMJIlADYFKIlBz9QnLkYNNeS3oEKi5+oTlOAQ6DQI115+wHIVAp0GgJuAJyzEIdBoEanjCsiQCNTxhWRKBGm47lkSgJuw4aOEvwqtscY+KVT6+GIGaoEArf5Uo6yTlQ6AmJNB662+LebHSXB4EakKeblc+/VEHylqdGRGoCXgH3f325j6Dfrbacf8jp7wWdAjUXA/UbdFdoKwXnxGBmuuBusVkCTQzAjVXA/Ub9Gub+H6wKa8FHQI1VwMt25/lhZ2kjAjUhB+o5zBTRgRqju5J8s69MxYcqM+LQM3gaqZPninSnOos7QxnyanOL0aghutBJRGoGbyDckW9DgI1/WfQ5uhRIgKdBoGaQaDr5kVzPagAAjXc8iGJQA07SZII1LCTJIlADTtJkgjUcNOcJAI1PDxMEoEaApVEoIZNvCQCNSzHLYlADctxSyJQw3LckgjUsBy3JAI1LMctiUANy3FLIlDDcVBJBGq4WEQSgRout5NEoGbwCHCWodFBoIZTnZII1LCTJIlADYFKIlAzCNQ/6btI25cn0GkQqBnsJH17K5/eE1dEJNBpEKg5Og7qnlXLuXgFBGqOjoO6QLmaSQGBmtE7aJF0Mp5Ap0Gg5vQzaJm2YieBToNAzfFe/MXnfgYPNum7YQjUcBxUEoEaApVEoMYC3a03n61iHDzYpO+GIVDTBuqXlqnqHaRmjZnbB5vyzegQqGkD9TcbF+4Q6Oi244/X+ifxp5dYLz4bAjW22vHGHmF7eqD+47VusVw9swxNTgRqLNCXttJRoN26cizklRGBmkGgbYpnzyTVb5gshZgRgZrBZ9DSbbUvPKq+GKwhy2KyX49ATRto/Q6537r3zuJsd1W9l/TZctz9j5zyWtAhUGPHQSv/yIbd+vwG3vaRlrJe/Ok/qLlfzwiBmpAzSZU/yrTATbzuqyVQExBo2RwFzbKTNBph4l/vyt/tS//qKQjUXA/ULsDLepgpTzoEuoBA/Ul6L+eBegIl0MbVQMvmR3E93rpefKZp55Ey7HCZfpglBBpnzkBvmFzmYUfMUXVktyDQW6dNoFkQ6K3TJtAsCPTWaRNoFgQaPe3bv5VA4xFoxmkTaOaZEWjGYUfMcUEjI9Cc0ybQzDMj0IzDjpjjgkZGoDmnTaCZZ0agGYcdMccFjYxAc06bQDPPjEAzDjtijgsaGYHmnDaBZp4ZgWYcdsQcFzQyAs05bQLNPDMCzTjsiDkuaGQEmnPaBJp5ZgSacdgRc1zQyAg057QJNPPMCDTjsCPmuKCREWjOaRNo5pkRaMZhR8xxQSMj0JzTJtDMMyPQjMOOmOOCRkagOadNoJlnRqAZhx0xxwWNjEBzTptAM8+MQDMOO2KOCxoZgeacNoFmnhmBZhx2xBwXNDICzTltAs08MwLNOOyIOS5oZASac9oEmnlmBJpx2BFzXNDICDTntAk088wINOOwI+a4oJHNEGglucqH/rDDLWlk+QONXSdpSdMm0MwzuyHQ6JXmljRtAs08sxsCjV6rc0nTJtDMM7sl0NjVjpc0bQLNPLMbAj2zXnz/I5/7hkzTzuPGOUea+6ecVsokpgkU+CITb+KBaU28kwRMa+LDTMC0Jj5QD0zrplOd5cVTncC0Jr5YBJgWgUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagULa/QVatPeyvoz/VDX6PS78P3FperKDusNAn94v/Jn9lkCvuTQ92UER6GMh0C83GHHRbqt2a/eF+2P958r6a3fbqb9z6j+qc5/LYHr3Mah7DtTd+VzWg/U36lerF/8O2vxGPfji+6/6N1XnPpd+encyqDsOdP/jrXmKhD3kxAW637o3hfp3msdLFKpzn0s/vTsZ1B0GOtwNrdwX+21TqAu0+SxVD72pVvaj1Vy66d3LoO4w0H4jtVp9/9P9+//xumpCfXHFNv8ESu25z6Wb3r0M6o4D9dumZgN18Nuo/h30YA83k537XPpA72RQdxyon2xlh5zrOpvPoO2v20ecqc59LoPPoPcxqDsO1E12v11tmn/7K/cOumkn7T7yuy90d07ncrwXfweDuuNAm0dEFX68zcOiCjsO6rda0of35nJyHFR/UPcXKB4KgUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagUIagULa/wGLvGj0ptKx5gAAAABJRU5ErkJggg==" /></p>
 <pre class="r"><code>par(mfrow=c(2,4))
 Resistin.summary.means &lt;- as.matrix(dcast(Resistin.summary, Treatment~FeedingState, value.var=&quot;mean&quot;)[2:3])
 
@@ -622,17 +647,20 @@ superpose.eb(plot, Insulin.summary.means, Insulin.summary.se)</code></pre>
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] reshape2_1.4.1 car_2.0-25     xtable_1.7-4   plyr_1.8.3    
-## [5] xlsx_0.5.7     xlsxjars_0.6.1 rJava_0.9-6   
+## [1] reshape2_1.4.1 car_2.0-25     xtable_1.8-0   plyr_1.8.3    
+## [5] xlsx_0.5.7     xlsxjars_0.6.1 rJava_0.9-7   
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.8    evaluate_0.7    formatR_1.2     grid_3.1.1     
-##  [5] htmltools_0.2.6 knitr_1.10.5    lattice_0.20-29 lme4_1.1-7     
-##  [9] magrittr_1.5    MASS_7.3-33     Matrix_1.1-4    mgcv_1.8-0     
-## [13] minqa_1.2.4     nlme_3.1-117    nloptr_1.0.4    nnet_7.3-8     
-## [17] parallel_3.1.1  pbkrtest_0.4-2  quantreg_5.11   Rcpp_0.11.6    
-## [21] rmarkdown_0.7   SparseM_1.6     splines_3.1.1   stringi_0.4-1  
-## [25] stringr_1.0.0   tools_3.1.1     yaml_2.1.13</code></pre>
+##  [1] digest_0.6.8       evaluate_0.8       formatR_1.2.1     
+##  [4] grid_3.1.1         htmltools_0.2.6    knitr_1.11        
+##  [7] lattice_0.20-29    lme4_1.1-10        magrittr_1.5      
+## [10] MASS_7.3-33        Matrix_1.2-3       MatrixModels_0.4-1
+## [13] mgcv_1.8-0         minqa_1.2.4        nlme_3.1-117      
+## [16] nloptr_1.0.4       nnet_7.3-8         parallel_3.1.1    
+## [19] pbkrtest_0.4-4     quantreg_5.19      Rcpp_0.12.2       
+## [22] rmarkdown_0.8.1    SparseM_1.7        splines_3.1.1     
+## [25] stringi_1.0-1      stringr_1.0.0      tools_3.1.1       
+## [28] yaml_2.1.13</code></pre>
 </div>
 
 

@@ -2,7 +2,7 @@
 Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
 
-This only looks at animals treated *in utero*.  These data were most recently updated on Sun Nov 16 12:07:07 2014.
+This only looks at animals treated *in utero*.  These data were most recently updated on Tue Feb 16 12:29:38 2016.
 
 
 ```r
@@ -11,6 +11,13 @@ data <- read.csv(filename, row.names='X')
 data <- subset(data, animal.MouseID!='206')
 
 library(plyr)
+```
+
+```
+## Warning: package 'plyr' was built under R version 3.1.3
+```
+
+```r
 summary <- ddply(data, .(Treatment, experiment.feeding_state), summarize,
                  mean = mean(Glucose, na.rm=T),
                  sd = sd(Glucose, na.rm=T),
@@ -19,6 +26,13 @@ summary <- ddply(data, .(Treatment, experiment.feeding_state), summarize,
                  shapiro = shapiro.test(Glucose)$p.value)
 
 library(car)
+```
+
+```
+## Warning: package 'car' was built under R version 3.1.3
+```
+
+```r
 levene.result <- leveneTest(Glucose~Treatment, data=subset(data, experiment.feeding_state=='fasted'))
 ```
 
@@ -28,11 +42,18 @@ The data is located in the file../data/Blood Glucose - Maternal.csv.  These data
 
 ```r
 library(xtable)
+```
+
+```
+## Warning: package 'xtable' was built under R version 3.1.3
+```
+
+```r
 print(xtable(summary, caption = "Summary Data, based on treating mice individually.  Triglycerides are in mmoles/mg of tissue", label="tab:summary-statistics"), include.rownames=F, type='html')
 ```
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Nov 16 12:07:08 2014 -->
+<!-- html table generated in R 3.1.1 by xtable 1.8-0 package -->
+<!-- Tue Feb 16 12:29:42 2016 -->
 <table border=1>
 <caption align="bottom"> Summary Data, based on treating mice individually.  Triglycerides are in mmoles/mg of tissue </caption>
 <tr> <th> Treatment </th> <th> experiment.feeding_state </th> <th> mean </th> <th> sd </th> <th> se </th> <th> n </th> <th> shapiro </th>  </tr>
@@ -53,7 +74,7 @@ plot <- with(subset(summary, experiment.feeding_state == 'fasted'), plot <- barp
                    las=1,
                    ylab ="Blood Glucose (mg/dL)",
                    names.arg = Treatment,
-                   ylim = c(0,ymax)))
+                   ylim = c(0,200)))
 
 superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
   arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
@@ -74,19 +95,30 @@ sessionInfo()
 
 ```
 ## R version 3.1.1 (2014-07-10)
-## Platform: x86_64-apple-darwin13.1.0 (64-bit)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
 ## 
 ## locale:
-## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## [1] LC_COLLATE=English_United States.1252 
+## [2] LC_CTYPE=English_United States.1252   
+## [3] LC_MONETARY=English_United States.1252
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.1252    
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] xtable_1.7-4 car_2.0-21   plyr_1.8.1  
+## [1] xtable_1.8-0 car_2.0-25   plyr_1.8.3  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.4     evaluate_0.5.5   formatR_1.0      htmltools_0.2.6 
-##  [5] knitr_1.8        MASS_7.3-35      nnet_7.3-8       Rcpp_0.11.3     
-##  [9] rmarkdown_0.3.10 stringr_0.6.2    tools_3.1.1      yaml_2.1.13
+##  [1] digest_0.6.8       evaluate_0.8       formatR_1.2.1     
+##  [4] grid_3.1.1         htmltools_0.2.6    knitr_1.11        
+##  [7] lattice_0.20-29    lme4_1.1-10        magrittr_1.5      
+## [10] MASS_7.3-33        Matrix_1.2-3       MatrixModels_0.4-1
+## [13] mgcv_1.8-0         minqa_1.2.4        nlme_3.1-117      
+## [16] nloptr_1.0.4       nnet_7.3-8         parallel_3.1.1    
+## [19] pbkrtest_0.4-4     quantreg_5.19      Rcpp_0.12.2       
+## [22] rmarkdown_0.8.1    SparseM_1.7        splines_3.1.1     
+## [25] stringi_1.0-1      stringr_1.0.0      tools_3.1.1       
+## [28] yaml_2.1.13
 ```

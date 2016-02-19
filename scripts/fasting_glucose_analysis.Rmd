@@ -45,7 +45,7 @@ plot <- with(subset(summary, experiment.feeding_state == 'fasted'), plot <- barp
                    las=1,
                    ylab ="Blood Glucose (mg/dL)",
                    names.arg = Treatment,
-                   ylim = c(0,ymax)))
+                   ylim = c(0,200)))
 
 superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
   arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,

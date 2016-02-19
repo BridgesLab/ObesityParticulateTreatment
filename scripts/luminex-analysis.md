@@ -1,10 +1,10 @@
 # Fasting Luminex Data for Particulate Treatment Study
-Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
+Erin Stephenson, Alyse Ragauskas, Matt Peloquin, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Dave Bridges  
 November 13, 2014  
 
 # Summary
 
-Pregnant mice were exposed to respiratory particulates or saline. The offspring of these mice were placed on a HFD at 10 wk of age for 12 wk. Blood was collected in heparinized tubes via retro orbital bleed both before and after a 16 hr fast. Samples were allowed to clot over ice before being separated via centrifugation and serum was collected. The values presented here are the results of serum analyses using the BioRad Bio-Plex Pro Mouse Diabetes Panel (8-plex, Cat. No.171-F7001M).    
+Pregnant mice were exposed to respiratory particulates or saline. The offspring of these mice were placed on a HFD at 10 wk of age for 12 wk. Blood was collected in heparinized tubes via retro orbital bleed both before and after a 16 hr fast. Samples were allowed to clot over ice before being separated via centrifugation and serum was collected. The values presented here are the results of serum analyses using the BioRad Bio-Plex Pro Mouse Diabetes Panel (8-plex, Cat. No.171-F7001M).This Assay was performed by Erin Stephenson, with the assistance of Alyse Ragauskas. Jordy Saravia calculated the concentrations of each hormone analyzed.     
 
 
 ```r
@@ -14,7 +14,18 @@ library(xlsx)
 ```
 
 ```
+## Warning: package 'xlsx' was built under R version 3.1.3
+```
+
+```
 ## Loading required package: rJava
+```
+
+```
+## Warning: package 'rJava' was built under R version 3.1.3
+```
+
+```
 ## Loading required package: xlsxjars
 ```
 
@@ -32,7 +43,7 @@ data$Glucagon <- as.numeric(as.character(data$'Glucagon'))
 data$Ghrelin <- as.numeric(as.character(data$'Ghrelin'))
 data$Leptin <- as.numeric(as.character(data$'Leptin'))
 data$Insulin <- as.numeric(as.character(data$'Insulin'))
-
+data$Insulin.pmol.L <- as.numeric(as.character(data$'Insulin.pmol.L'))
 #set color palette
 Treatment.colors <- rep(c('Black','Red'),2)
 ```
@@ -108,6 +119,12 @@ Insulin.summary <- ddply(data, .(FeedingState,Treatment), summarize,
                      sd = sd(Insulin, na.rm=T),
                      rel.sd = sd(Insulin, na.rm=T)/mean(Insulin, na.rm=T)*100,
                      n = length(Insulin))
+Insulin.pmol.L.summary <- ddply(data, .(FeedingState,Treatment), summarize,
+                     mean = mean(Insulin.pmol.L, na.rm=T),
+                     se = se(Insulin.pmol.L),
+                     sd = sd(Insulin.pmol.L, na.rm=T),
+                     rel.sd = sd(Insulin.pmol.L, na.rm=T)/mean(Insulin.pmol.L, na.rm=T)*100,
+                     n = length(Insulin.pmol.L))
 ```
 
 # Statistics
@@ -117,7 +134,13 @@ We first did two way ANOVA's for each of the hormones, with Feeding State and Tr
 
 ```r
 library(xtable)
+```
 
+```
+## Warning: package 'xtable' was built under R version 3.1.3
+```
+
+```r
 Resistin.aov <- aov(Resistin~FeedingState*Treatment, data=data)
 GIP.aov <- aov(GIP~FeedingState*Treatment, data=data)
 PAI1.aov <- aov(PAI1~FeedingState*Treatment, data=data)
@@ -126,6 +149,7 @@ Glucagon.aov <- aov(Glucagon~FeedingState*Treatment, data=data)
 Ghrelin.aov <- aov(Ghrelin~FeedingState*Treatment, data=data)
 Leptin.aov <- aov(Leptin~FeedingState*Treatment, data=data)
 Insulin.aov <- aov(Insulin~FeedingState*Treatment, data=data)
+
 
 library(car)
 ```
@@ -144,6 +168,7 @@ Ghrelin.levene <- leveneTest(Ghrelin~FeedingState*Treatment, data=data)
 Leptin.levene <- leveneTest(Leptin~FeedingState*Treatment, data=data)
 Insulin.levene <- leveneTest(Insulin~FeedingState*Treatment, data=data)
 
+
 anova.summary <- data.frame(row.names=colnames(data)[4:11])
 for (hormone in rownames(anova.summary)){
   current.anova <- eval(as.symbol(paste(hormone,'aov',sep='.')))
@@ -160,8 +185,8 @@ anova.summary.verified <- anova.summary[anova.summary$Shapiro>0.05&anova.summary
 print(xtable(anova.summary.verified, caption = "Summaries for Two-Way ANOVA Analyses, for the genes under which the ANOVA assumptions were met", digits = 5, label="tab:anova-summary"), type='html')
 ```
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Wed Sep 23 15:49:53 2015 -->
+<!-- html table generated in R 3.1.1 by xtable 1.8-0 package -->
+<!-- Tue Feb 16 13:23:49 2016 -->
 <table border=1>
 <caption align="bottom"> Summaries for Two-Way ANOVA Analyses, for the genes under which the ANOVA assumptions were met </caption>
 <tr> <th>  </th> <th> Shapiro </th> <th> Levene </th> <th> FeedingState </th> <th> Treatment </th> <th> Interaction </th>  </tr>
@@ -204,8 +229,8 @@ for (hormone in rownames(wilcoxon.summary)){
 print(xtable(wilcoxon.summary, caption = "Summaries of Wilcoxon Rank Sum tests, comparing treatment groups separately in fasted and refed states", digits = 5, label="tab:wilcoxon-summary"), type='html')
 ```
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Wed Sep 23 15:49:54 2015 -->
+<!-- html table generated in R 3.1.1 by xtable 1.8-0 package -->
+<!-- Tue Feb 16 13:23:49 2016 -->
 <table border=1>
 <caption align="bottom"> Summaries of Wilcoxon Rank Sum tests, comparing treatment groups separately in fasted and refed states </caption>
 <tr> <th>  </th> <th> Fasted </th> <th> Fed </th>  </tr>
@@ -395,6 +420,26 @@ superpose.eb(plot, Insulin.summary.means, Insulin.summary.se)
 
 
 ```r
+Insulin.pmol.L.summary.means <- as.matrix(dcast(Insulin.pmol.L.summary, Treatment~FeedingState, value.var="mean")[2:3])
+
+Insulin.pmol.L.summary.se <- as.matrix(dcast(Insulin.pmol.L.summary, Treatment~FeedingState, value.var="se")[2:3])
+
+ymax <- max(Insulin.pmol.L.summary$mean + Insulin.pmol.L.summary$se, na.rm=T)
+
+plot <- barplot(Insulin.pmol.L.summary.means,
+                ylab="Serum Insulin Levels (pmol/L)", 
+                las=1,
+                col = Treatment.colors[1:2],
+                ylim = c(0,ymax),
+                beside=T)
+legend("topleft", levels(data$Treatment), fill=Treatment.colors, bty="n")
+superpose.eb(plot, Insulin.pmol.L.summary.means, Insulin.pmol.L.summary.se)
+```
+
+![](luminex-analysis_files/figure-html/barplot-Insulin.pmol.L-1.png) 
+
+
+```r
 par(mfrow=c(2,4))
 Resistin.summary.means <- as.matrix(dcast(Resistin.summary, Treatment~FeedingState, value.var="mean")[2:3])
 
@@ -536,15 +581,18 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] reshape2_1.4.1 car_2.0-25     xtable_1.7-4   plyr_1.8.3    
-## [5] xlsx_0.5.7     xlsxjars_0.6.1 rJava_0.9-6   
+## [1] reshape2_1.4.1 car_2.0-25     xtable_1.8-0   plyr_1.8.3    
+## [5] xlsx_0.5.7     xlsxjars_0.6.1 rJava_0.9-7   
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.8    evaluate_0.7    formatR_1.2     grid_3.1.1     
-##  [5] htmltools_0.2.6 knitr_1.10.5    lattice_0.20-29 lme4_1.1-7     
-##  [9] magrittr_1.5    MASS_7.3-33     Matrix_1.1-4    mgcv_1.8-0     
-## [13] minqa_1.2.4     nlme_3.1-117    nloptr_1.0.4    nnet_7.3-8     
-## [17] parallel_3.1.1  pbkrtest_0.4-2  quantreg_5.11   Rcpp_0.11.6    
-## [21] rmarkdown_0.7   SparseM_1.6     splines_3.1.1   stringi_0.4-1  
-## [25] stringr_1.0.0   tools_3.1.1     yaml_2.1.13
+##  [1] digest_0.6.8       evaluate_0.8       formatR_1.2.1     
+##  [4] grid_3.1.1         htmltools_0.2.6    knitr_1.11        
+##  [7] lattice_0.20-29    lme4_1.1-10        magrittr_1.5      
+## [10] MASS_7.3-33        Matrix_1.2-3       MatrixModels_0.4-1
+## [13] mgcv_1.8-0         minqa_1.2.4        nlme_3.1-117      
+## [16] nloptr_1.0.4       nnet_7.3-8         parallel_3.1.1    
+## [19] pbkrtest_0.4-4     quantreg_5.19      Rcpp_0.12.2       
+## [22] rmarkdown_0.8.1    SparseM_1.7        splines_3.1.1     
+## [25] stringi_1.0-1      stringr_1.0.0      tools_3.1.1       
+## [28] yaml_2.1.13
 ```
