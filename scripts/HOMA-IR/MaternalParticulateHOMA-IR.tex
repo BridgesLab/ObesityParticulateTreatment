@@ -1,0 +1,41 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\usepackage{Sweave}
+\begin{document}
+\input{MaternalParticulateHOMA-IR-concordance}
+
+\title{Analysis of HOMA-IR for the pups of the maternal particulate inhalation study}
+\author{Erin Stephenson}
+\date{\today}
+\maketitle
+
+This script uses the \verb+Sheet2+ from \verb+HOMA IR.xlsx+ and is located in the \verb+C:/Users/esteph16/Documents/GitHub/ObesityParticulateTreatment/scripts/HOMA-IR+ directory.  This analysis was most recently run on Mon Feb 29 11:33:14 2016.  
+
+\section*{Statistics}
+\begin{figure}
+\begin{center}
+\includegraphics{MaternalParticulateHOMA-IR-barplotHOMAIR}
+\end{center}
+\caption{Barplot of HOMAIR mRNA}
+\label{fig:barplotHOMAIR}
+\end{figure}
+
+\section*{Session Information}
+\begin{itemize}\raggedright
+  \item R version 3.1.1 (2014-07-10), \verb|x86_64-w64-mingw32|
+  \item Locale: \verb|LC_COLLATE=English_United States.1252|, \verb|LC_CTYPE=English_United States.1252|, \verb|LC_MONETARY=English_United States.1252|, \verb|LC_NUMERIC=C|, \verb|LC_TIME=English_United States.1252|
+  \item Base packages: base, datasets, graphics, grDevices, methods,
+    stats, utils
+  \item Other packages: car~2.0-25, plyr~1.8.3, rJava~0.9-7,
+    xlsx~0.5.7, xlsxjars~0.6.1
+  \item Loaded via a namespace (and not attached): grid~3.1.1,
+    lattice~0.20-29, lme4~1.1-10, MASS~7.3-33, Matrix~1.2-3,
+    MatrixModels~0.4-1, mgcv~1.8-0, minqa~1.2.4, nlme~3.1-117,
+    nloptr~1.0.4, nnet~7.3-8, parallel~3.1.1, pbkrtest~0.4-4,
+    quantreg~5.19, Rcpp~0.12.2, SparseM~1.7, splines~3.1.1, tools~3.1.1
+\end{itemize}\end{document}
