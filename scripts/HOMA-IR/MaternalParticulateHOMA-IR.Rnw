@@ -1,0 +1,86 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[tableposition=top]{caption}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Analysis of HOMA-IR for the pups of the maternal particulate inhalation study}
+\author{Erin Stephenson}
+\date{\today}
+\maketitle
+
+<<data-entry, echo=FALSE>>=
+input_file <- "HOMA IR.xlsx"
+sheet_name <- "Sheet2"
+library(xlsx)
+data <- read.xlsx2(input_file, sheetName=sheet_name)
+#set the reference treatment
+data$Treatment <- relevel(data$Treatment, ref='Saline')
+
+data$HOMAIR <- as.numeric(as.character(data$'HOMAIR'))
+
+
+#set color palette
+Treatment.colors <- c('black','red')
+@
+This script uses the \verb+\Sexpr{sheet_name}+ from \verb+\Sexpr{input_file}+ and is located in the \verb+\Sexpr{getwd()}+ directory.  This analysis was most recently run on \Sexpr{date()}.  
+
+<<summary, echo=FALSE>>=
+library(plyr)
+#define se
+se <- function(x) sd(x, na.rm=T)/sqrt(length(x))
+HOMAIR <- ddply(data, .(Treatment), summarize,
+                     mean = mean(HOMAIR, na.rm=T),
+                     se = se(HOMAIR),
+                     sd = sd(HOMAIR, na.rm=T),
+                     rel.sd = sd(HOMAIR, na.rm=T)/mean(HOMAIR, na.rm=T)*100,
+                     n = length(HOMAIR))
+
+@
+\section*{Statistics}
+<<statistics, echo=FALSE>>=
+HOMAIR.aov <- aov(HOMAIR~Treatment, data=data)
+
+#Assess normality of the sample groups
+HOMAIR.shapiro <- shapiro.test(residuals(HOMAIR.aov))
+
+#Assess homogeneity of variance of the sample groups
+library(car)
+HOMAIR.levene <- leveneTest(HOMAIR~Treatment, data=data)
+
+#p value for the HOMAIR Shapiro =0.038, Levene's test>0.05
+HOMAIR.ttest <- t.test(HOMAIR~Treatment, var.eq=T, data=data)$p.value
+
+@
+\begin{figure}
+\begin{center}
+<<label=barplotHOMAIR,fig=TRUE,echo=FALSE>>=
+ymax <- max(HOMAIR$mean + HOMAIR$se)
+plot <- barplot(HOMAIR$mean, names.arg=HOMAIR$Treatment,
+        las=1, 
+        ylab="HOMA-IR", 
+        col = Treatment.colors[1:2],
+        ylim=c(0,ymax), main="HOMA-IR")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, HOMAIR$mean, HOMAIR$se)
+@
+\end{center}
+\caption{Barplot of HOMAIR mRNA}
+\label{fig:barplotHOMAIR}
+\end{figure}
+
+@
+\section*{Session Information}
+<<sessionInfo, results=tex, echo=F>>=
+toLatex(sessionInfo())
+@
+\end{document}
