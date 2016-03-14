@@ -270,21 +270,6 @@ interval_time <- 41-16
 interval_hours <- interval_time/60
 all.data.clean.annotated$Hours <- round((all.data.clean.annotated$Interval-41) * interval_hours)
 
-library(dplyr)
-time.course.data <-
-  all.data.clean.annotated %>%
-  group_by(Hours, Particulate.Treatment) %>%
-  summarize(mean = mean(Volume.O2),
-            se = sd(Volume.O2)/sqrt(length(Volume.O2)),
-            n = length(Volume.O2))
-
-time.course.data.heat <-
-  all.data.clean.annotated %>%
-  group_by(Hours, Particulate.Treatment) %>%
-  summarize(mean = mean(Heat),
-            se = sd(Heat)/sqrt(length(Heat)),
-            n = length(Heat))
-
 all.data.clean.annotated$ParticulateTF <- all.data.clean.annotated$Particulate.Treatment == 'MCP'
 for (row in rownames(all.data.clean.annotated)) {
   if (all.data.clean.annotated[row,]$ParticulateTF == TRUE) {
@@ -294,6 +279,24 @@ for (row in rownames(all.data.clean.annotated)) {
     all.data.clean.annotated[row,'Particulate'] <- "Controls"
 }
 all.data.clean.annotated$Particulate <- as.factor(all.data.clean.annotated$Particulate)
+calorimetry.annotated <- merge(all.data.clean.annotated, mri_data, by.x='Subject', by.y='Label')
+calorimetry.annotated$VO2 <- calorimetry.annotated$Volume.O2 * calorimetry.annotated$Weight/1000
+
+library(dplyr)
+time.course.data <-
+  calorimetry.annotated %>%
+  group_by(Hours, Particulate) %>%
+  summarize(mean = mean(VO2),
+            se = sd(VO2)/sqrt(length(VO2)),
+            n = length(VO2),
+            mean.lbm = mean(VO2/Lean))
+
+time.course.data.heat <-
+  all.data.clean.annotated %>%
+  group_by(Hours, Particulate.Treatment) %>%
+  summarize(mean = mean(Heat),
+            se = sd(Heat)/sqrt(length(Heat)),
+            n = length(Heat))
 
 time.course.data.heat.ctl <-
   all.data.clean.annotated %>%
@@ -301,21 +304,35 @@ time.course.data.heat.ctl <-
   dplyr::summarize(mean = mean(Heat),
             se = sd(Heat)/sqrt(length(Heat)),
             n = length(Heat))
+first_dark_cycle = 7.55
 
-y.axis <- c(3500, max(time.course.data$mean))
-with(subset(time.course.data, Particulate.Treatment!='MCP'), 
+y.axis <- c(min(time.course.data$mean, na.rm=T), max(time.course.data$mean, na.rm=T))
+with(subset(time.course.data, Particulate==levels(Particulate)[1]), 
      plot(Hours, mean, type='l', 
           ylim=y.axis, las=1, xlim=c(0,53),
-          xlab="Time (h)", ylab="Volume O2 Consumed/min/kg"))
+          xlab="Time (h)", ylab="Oxygen Consumption (VO2/mL)"))
 #shaded in night times
-first_dark_cycle = 7.55
 rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
 rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
 rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+with(subset(time.course.data, Particulate==levels(Particulate)[1]), lines(Hours, mean, col=palette()[1]))
+with(subset(time.course.data, Particulate==levels(Particulate)[2]), lines(Hours, mean, col=palette()[2]))
+legend("topright", levels(time.course.data$Particulate), lty=1, col=palette()[1:2], bty='n')
 
-with(subset(time.course.data, Particulate.Treatment!='MCP'), lines(Hours, mean, col=palette()[1]))
-with(subset(time.course.data, Particulate.Treatment=='MCP'), lines(Hours, mean, col=palette()[2]))
-legend("topright", c("Controls","MCP230"), lty=1, col=palette()[1:2], bty='n')
+
+y.axis <- c(min(time.course.data$mean.lbm, na.rm=T), max(time.course.data$mean.lbm, na.rm=T))
+with(subset(time.course.data, Particulate==levels(Particulate)[1]), 
+     plot(Hours, mean.lbm, type='l', 
+          ylim=y.axis, las=1, xlim=c(0,53),
+          xlab="Time (h)", ylab="Oxygen Consumption (VO2/mL/g FFM)"))
+#shaded in night times
+rect(first_dark_cycle, y.axis[1], first_dark_cycle+12, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+24, y.axis[1], first_dark_cycle+36, y.axis[2], col=grey.colors(5)[5])
+rect(first_dark_cycle+48, y.axis[1], first_dark_cycle+60, y.axis[2], col=grey.colors(5)[5])
+with(subset(time.course.data, Particulate==levels(Particulate)[1]), lines(Hours, mean.lbm, col=palette()[1]))
+with(subset(time.course.data, Particulate==levels(Particulate)[2]), lines(Hours, mean.lbm, col=palette()[2]))
+legend("topright", levels(time.course.data$Particulate), lty=1, col=palette()[1:2], bty='n')
+
 ```
 
 ## Calorimetry by Heat Production

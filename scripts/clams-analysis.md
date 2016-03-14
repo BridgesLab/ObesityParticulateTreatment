@@ -1,7 +1,7 @@
 # Analysis of Pre-HFD CLAMS Data for High Fat Diet Particulate Treatment Study
 Dave Bridges, Alyse Ragauskas, Erin Stephenson, JeAnna Redd, Jyothi Parvathareddy, Sridhar Jaligama, Stephania Cormier and Joan Han  
 November 13, 2014  
-This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Wed Feb 17 13:58:14 2016.
+This was the data from the CLAMS study performed on the 9 week old mice.  This script was most recently run on Mon Mar 14 09:15:28 2016.
 
 
 
@@ -24,7 +24,7 @@ According to this analysis there was no significant effect of the treatment grou
 Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Weight and the Particulate treatment.  A F-test comparing a model with or without the Particulate treatment yielded a p-value of 0.0452.  Post-hoc tests for the effects of particulate treatment are shown in the Table below.  According to this MCP treatment reduces VO2 by -6.2656%, p=0.0526.
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb 17 13:58:18 2016 -->
+<!-- Mon Mar 14 09:15:32 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -36,7 +36,7 @@ Alternatively we used a mixed linear model, with non-interacting covariates for 
    <a name=tab:vo2-lme-ph></a>
 </table>
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb 17 13:58:18 2016 -->
+<!-- Mon Mar 14 09:15:32 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on V02.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -67,7 +67,7 @@ Alternatively we used a mixed linear model, with non-interacting covariates for 
 
 ![](clams-analysis_files/figure-html/Dark-Light-Correlation-1.png) 
 
-![](clams-analysis_files/figure-html/time-course-o2-1.png) 
+![](clams-analysis_files/figure-html/time-course-o2-1.png) ![](clams-analysis_files/figure-html/time-course-o2-2.png) 
 
 ## Calorimetry by Heat Production
 
@@ -86,7 +86,7 @@ According to this analysis there was no significant effect of the treatment grou
 Alternatively we used a mixed linear model, with non-interacting covariates for the Light cycle, the Weight and the Particulate treatment.  A F-test comparing a model with or without the Particulate treatment yielded a p-value of 1.  Post-hoc tests for the effects of particulate treatment are shown in the Table below.  According to this MCP treatment reduces heat production by -16.2679%, p=0.0374.
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb 17 13:58:36 2016 -->
+<!-- Mon Mar 14 09:15:52 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's tests of mixed linear model correcting for effects of light cycle and total body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -98,7 +98,7 @@ Alternatively we used a mixed linear model, with non-interacting covariates for 
    <a name=tab:heat-lme-ph></a>
 </table>
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb 17 13:58:36 2016 -->
+<!-- Mon Mar 14 09:15:52 2016 -->
 <table border=1>
 <caption align="bottom"> Post-hoc Dunnett's sests of mixed linear model correcting for effects of light cycle and lean body mass on heat production.  P-values are not corrected. </caption>
 <tr> <th>  </th> <th> Coefficient </th> <th> p.value </th>  </tr>
@@ -145,7 +145,7 @@ These assumptions or normality were not met for Fat Mass (p=0.0028) or Percent F
 The assumptions of normality was not met for either Light (p=0.0176) or Dark RER (p=0.0141) levels via a Shapiro-Wilk test.  We therefore did a Kruskal-Wallis test and found that while Dark (p=0.1024) RER levels not were significantly different, Light RER levels were (p=0.0282).  Post-hoc tests for Light RER levels are shown in the Table below:
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb 17 13:58:37 2016 -->
+<!-- Mon Mar 14 09:15:53 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Wilcoxon Rank-Sum Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
@@ -161,7 +161,7 @@ The assumptions of normality was not met for either Light (p=0.0176) or Dark RER
 The assumptions of normality was met for both Light (p=0.8414) or Dark activity (p=0.6165) levels via a Shapiro-Wilk test.  As for the assumptions of equal variance, both Dark (p=0.2917), and Light activity levels (p=0.656) met this assumption via Levene's test.  We therefore did an ANOVA and found that while Dark (p=0.1236) activity levels not were significantly different, Light activity levels were (p=0.0048).  Post-hoc tests for Light activity levels are shown in the table below:
 
 <!-- html table generated in R 3.2.2 by xtable 1.8-0 package -->
-<!-- Wed Feb 17 13:58:38 2016 -->
+<!-- Mon Mar 14 09:15:53 2016 -->
 <table border=1>
 <caption align="bottom"> Pairwise Student's T-Tests, corrected by Benjamini-Hochberg </caption>
 <tr> <th>  </th> <th> Cabosil </th> <th> MCP </th>  </tr>
