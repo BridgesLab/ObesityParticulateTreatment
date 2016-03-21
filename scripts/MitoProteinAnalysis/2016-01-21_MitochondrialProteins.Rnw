@@ -30,6 +30,7 @@ data$MtCO1 <- as.numeric(as.character(data$'MtCO1'))
 data$UQCRC2 <- as.numeric(as.character(data$'UQCRC2'))
 data$ATP5A <- as.numeric(as.character(data$'ATP5A'))
 data$SLN <- as.numeric(as.character(data$'SLN'))
+data$LC3 <- as.numeric(as.character(data$'LC3'))
 
 Treatment.Colors <- c('black','red')
 @
@@ -83,6 +84,12 @@ SLN <- ddply(data, .(Treatment), summarize,
                      sd = sd(SLN, na.rm=T),
                      rel.sd = sd(SLN, na.rm=T)/mean(SLN, na.rm=T)*100,
                      n = length(SLN))
+LC3 <- ddply(data, .(Treatment), summarize,
+                     mean = mean(SLN, na.rm=T),
+                     se = se(LC3),
+                     sd = sd(LC3, na.rm=T),
+                     rel.sd = sd(LC3, na.rm=T)/mean(LC3, na.rm=T)*100,
+                     n = length(LC3))
 
 @
 \section*{Statistics}
@@ -94,6 +101,7 @@ MtCO1.aov <- aov(MtCO1~Treatment, data=data)
 UQCRC2.aov <- aov(UQCRC2~Treatment, data=data)
 ATP5A.aov <- aov(ATP5A~Treatment, data=data)
 SLN.aov <- aov(SLN~Treatment, data=data)
+LC3.aov <- aov(LC3~Treatment, data=data)
 
 #Assess normality of the sample groups
 PGC1a.shapiro <- shapiro.test(residuals(PGC1a.aov))
@@ -104,6 +112,7 @@ MtCO1.shapiro <- shapiro.test(residuals(MtCO1.aov))
 UQCRC2.shapiro <- shapiro.test(residuals(UQCRC2.aov))
 ATP5A.shapiro <- shapiro.test(residuals(ATP5A.aov))
 SLN.shapiro <- shapiro.test(residuals(SLN.aov))
+LC3.shapiro <- shapiro.test(residuals(LC3.aov))
 
 #Assess homogeneity of variance of the sample groups
 library(car)
@@ -114,15 +123,19 @@ MtCO1.levene <- leveneTest(MtCO1~Treatment, data=data)
 UQCRC2.levene <- leveneTest(UQCRC2~Treatment, data=data)
 ATP5A.levene <- leveneTest(ATP5A~Treatment, data=data)
 SLN.levene <- leveneTest(SLN~Treatment, data=data)
+LC3.levene <- leveneTest(LC3~Treatment, data=data)
 
 #Run appropriate statistical comparison
 PGC1a.ttest <- t.test(PGC1a~Treatment, var.equal=T, data=data)$p.value
 NDUFB8.wilcox <- wilcox.test(NDUFB8~Treatment, data=data)$p.value
 SDHB.ttest <- t.test(SDHB~Treatment, var.equal=T, data=data)$p.value
-MtCO1.wilcox <- wilcox.test(SDHB~Treatment, data=data)$p.value
+MtCO1.wilcox <- wilcox.test(MtCo1~Treatment, data=data)$p.value
 UQCRC2.ttest <- t.test(UQCRC2~Treatment, var.equal=T, data=data)$p.value
 ATP5A.ttest <- t.test(ATP5A~Treatment, var.equal=T, data=data)$p.value
 SLN.ttest <- t.test(SLN~Treatment, var.equal=T, data=data)$p.value
+LC3.ttest <- t.test(LC3~Treatment, var.equal=T, data=data)$p.value
+LC3.ttest <- t.test(LC3~Treatment, var.equal=F, data=data)$p.value
+LC3.wilcox <- wilcox.test(LC3~Treatment, data=data)$p.value
 
 #since Shapiro test for PGC1a was p=0.058, also ran wilcox but this is still not significant
 PGC1a.wilcox <- wilcox.test(PGC1a~Treatment, data=data)$p.value
@@ -289,6 +302,29 @@ superpose.eb(plot, SLN$mean, SLN$se)
 \end{center}
 \caption{Barplot of Relative SLN Protein Expression in Quadriceps Muscle, Saline versus MPI}
 \label{fig:barplotSLN}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+<<label=barplotLC3,fig=TRUE,echo=FALSE>>=
+ymax <- max(LC3$mean + LC3$se)
+plot <- barplot(LC3$mean, names.arg=LC3$Treatment,
+        las=1, 
+        ylab="Ratio LC3-2/LC3-1", 
+        col = Treatment.Colors[1:2],
+        ylim=c(0,ymax), main="LC3")
+
+
+superpose.eb <- function (x, y, ebl, ebu = ebl, length = 0.08, ...)
+  arrows(x, y + ebu, x, y - ebl, angle = 90, code = 3,
+  length = length, ...)
+
+superpose.eb(plot, LC3$mean, LC3$se)
+
+@
+\end{center}
+\caption{Barplot of LC3 Protein Expression in Quadriceps Muscle, Saline versus MCP230}
+\label{fig:barplotLC3}
 \end{figure}
 
 \begin{figure}
