@@ -129,7 +129,7 @@ LC3.levene <- leveneTest(LC3~Treatment, data=data)
 PGC1a.ttest <- t.test(PGC1a~Treatment, var.equal=T, data=data)$p.value
 NDUFB8.wilcox <- wilcox.test(NDUFB8~Treatment, data=data)$p.value
 SDHB.ttest <- t.test(SDHB~Treatment, var.equal=T, data=data)$p.value
-MtCO1.wilcox <- wilcox.test(MtCo1~Treatment, data=data)$p.value
+MtCO1.wilcox <- wilcox.test(MtCO1~Treatment, data=data)$p.value
 UQCRC2.ttest <- t.test(UQCRC2~Treatment, var.equal=T, data=data)$p.value
 ATP5A.ttest <- t.test(ATP5A~Treatment, var.equal=T, data=data)$p.value
 SLN.ttest <- t.test(SLN~Treatment, var.equal=T, data=data)$p.value
@@ -310,7 +310,7 @@ superpose.eb(plot, SLN$mean, SLN$se)
 ymax <- max(LC3$mean + LC3$se)
 plot <- barplot(LC3$mean, names.arg=LC3$Treatment,
         las=1, 
-        ylab="Ratio LC3-2/LC3-1", 
+        ylab="Ratio LC3-II/LC3-I", 
         col = Treatment.Colors[1:2],
         ylim=c(0,ymax), main="LC3")
 
