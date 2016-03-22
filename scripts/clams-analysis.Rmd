@@ -222,6 +222,26 @@ legend("bottomright", levels(annotated.data.o2$Particulate), pch=19, col=palette
 light.lm.lean.ctl <- lm(Light.raw~Lean+Particulate, data=annotated.data.o2)
 light.aov.lean.ctl <- aov(Light.raw~Lean+Particulate, data=annotated.data.o2)
 
+#comparison of saline and cabosil groups
+VO2.light.aov.lean.ctl <- aov(Light.raw~Lean+Particulate.Treatment, data=subset(annotated.data.o2, Particulate.Treatment!='MCP'))
+summary(VO2.light.aov.lean.ctl)
+
+VO2.dark.aov.lean.ctl <- aov(Dark.raw~Lean+Particulate.Treatment, data=subset(annotated.data.o2, Particulate.Treatment!='MCP'))
+summary(VO2.dark.aov.lean.ctl)
+
+heat.light.aov.lean.ctl <- aov(Light.raw~Lean+Particulate.Treatment, data=subset(annotated.data.heat, Particulate.Treatment!='MCP'))
+summary(heat.light.aov.lean.ctl)
+
+heat.dark.aov.lean.ctl <- aov(Dark.raw~Lean+Particulate.Treatment, data=subset(annotated.data.heat, Particulate.Treatment!='MCP'))
+summary(heat.dark.aov.lean.ctl)
+
+activity.light.aov.ctl <- aov(Light~Particulate.Treatment, data=subset(Activity.data.annotated, Particulate.Treatment!='MCP'))
+summary(activity.light.aov.ctl)
+
+activity.dark.aov.ctl <- aov(Dark~Particulate.Treatment, data=subset(Activity.data.annotated, Particulate.Treatment!='MCP'))
+summary(activity.dark.aov.ctl)
+
+
 abline(a=coefficients(light.lm.lean.ctl)['(Intercept)'],
        b=coefficients(light.lm.lean.ctl)['Lean'], col=palette()[1])
 abline(a=coefficients(light.lm.lean.ctl)['(Intercept)']+coefficients(light.lm.lean.ctl)['ParticulateMCP230'],
