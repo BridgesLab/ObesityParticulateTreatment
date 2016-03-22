@@ -85,7 +85,7 @@ SLN <- ddply(data, .(Treatment), summarize,
                      rel.sd = sd(SLN, na.rm=T)/mean(SLN, na.rm=T)*100,
                      n = length(SLN))
 LC3 <- ddply(data, .(Treatment), summarize,
-                     mean = mean(SLN, na.rm=T),
+                     mean = mean(LC3, na.rm=T),
                      se = se(LC3),
                      sd = sd(LC3, na.rm=T),
                      rel.sd = sd(LC3, na.rm=T)/mean(LC3, na.rm=T)*100,
@@ -395,3 +395,4 @@ toLatex(sessionInfo())
 
 
 \end{document}
+
