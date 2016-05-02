@@ -10,8 +10,8 @@ This repository contains raw data for studies done by the [Bridges Lab](http://b
 
 | Publication | Dataset | Tag |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| E. J. Stephenson, A. Ragauskas, S. Jaligama, J. R. Redd, J. Parvathareddy, M. J. Peloquin, J. Saravia, J. Han, S. A. Cormier, D. Bridges, Exposure to environmentally persistent free radicals during gestation lowers energy expenditure and impairs skeletal muscle mitochondrial function in adult mice. (2016). *American Journal of Physioogy - Endocrinology and  Metabolism*. [doi:10.1152/ajpendo.00521.2015](http://dx.doi.org/10.1152/ajpendo.00521.2015). | [![DOI](https://)](http://) | [ObesityParticulateTreatment-v1.0.0](https://github.com/BridgesLab/ObesityParticulateTreatment/releases/tag/ObesityParticulateTreatment-v1.0.0) |
-| |
+| E. J. Stephenson, A. Ragauskas, S. Jaligama, J. R. Redd, J. Parvathareddy, M. J. Peloquin, J. Saravia, J. Han, S. A. Cormier, D. Bridges, Exposure to environmentally persistent free radicals during gestation lowers energy expenditure and impairs skeletal muscle mitochondrial function in adult mice. (2016). *American Journal of Physioogy - Endocrinology and  Metabolism*. [doi:10.1152/ajpendo.00521.2015](http://dx.doi.org/10.1152/ajpendo.00521.2015). | [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.50802.svg)](http://dx.doi.org/10.5281/zenodo.50802) | [ObesityParticulateTreatment-v1.0.0](https://github.com/BridgesLab/ObesityParticulateTreatment/releases/tag/ObesityParticulateTreatment-v1.0.0) |
+| 
 
 
 
