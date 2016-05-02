@@ -10,7 +10,7 @@ This repository contains raw data for studies done by the [Bridges Lab](http://b
 
 | Publication | Dataset | Tag |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| E. J. Stephenson, A. Ragauskas, S. Jaligama, J. R. Redd, J. Parvathareddy, M. J. Peloquin, J. Saravia, J. Han, S. A. Cormier, D. Bridges, Exposure to environmentally persistent free radicals during gestation lowers energy expenditure and impairs skeletal muscle mitochondrial function in adult mice., *Am. J. Physiol. Endocrinol. Metab.*. (2016). [doi:](http://). | [![DOI](https://)](http://) | [ObesityParticulateTreatment-v1.0.0](https://github.com/BridgesLab/ObesityParticulateTreatment/releases/tag/ObesityParticulateTreatment-v1.0.0) |
+| E. J. Stephenson, A. Ragauskas, S. Jaligama, J. R. Redd, J. Parvathareddy, M. J. Peloquin, J. Saravia, J. Han, S. A. Cormier, D. Bridges, Exposure to environmentally persistent free radicals during gestation lowers energy expenditure and impairs skeletal muscle mitochondrial function in adult mice. (2016). *American Journal of Physioogy - Endocrinology and  Metabolism*. [doi:10.1152/ajpendo.00521.2015](http://dx.doi.org/10.1152/ajpendo.00521.2015). | [![DOI](https://)](http://) | [ObesityParticulateTreatment-v1.0.0](https://github.com/BridgesLab/ObesityParticulateTreatment/releases/tag/ObesityParticulateTreatment-v1.0.0) |
 | |
 
 
@@ -29,10 +29,6 @@ The raw data in this analysis is located in **data/raw** and is the following fi
 
 Script files are saved in **scripts** folder and were analysed in this order
 
-## Figures
-
-The figures generated for the manuscript, via the running of these scripts are in the **figures** directory.  These figures are modified for final publication in the **manuscript** folder using Adobe Illustrator CS6.
-
 ## Manuscript
 
-The manuscript files, including the manuscript, the figures, tables and supplementary data are in the **manuscript** directory.  Within this directory are the files generated for uploading the raw and processed data to the Gene Expression omnibus (in the folder **manuscript/GEO_submission**).
+The manuscript files, including the manuscript, the figures, tables and supplementary data are in the **manuscript** directory. 
