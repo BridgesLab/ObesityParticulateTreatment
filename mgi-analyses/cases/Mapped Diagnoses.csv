@@ -1,0 +1,67 @@
+TermNameMapped,n,Type
+Abscess of lung with pneumonia,36,
+Abscess of lung without pneumonia,51,
+Acute bronchiolitis due to human metapneumovirus,7,Viral
+Acute interstitial pneumonitis,19,
+"Alveolitis/pneumonitis, allrg NOS",284,
+"Bronchitis and pneumonitis due to chemicals, gases, fumes and vapors",2,
+"Bronchopneumonia, organism NOS",19,
+"Bronchopneumonia, unspecified organism",13,
+Chronic eosinophilic pneumonia,5,
+Chronic pneumothorax,169,
+Cryptogenic organizing pneumonia,87,
+Flu d/t iden novel influ A w/pneum,1,Viral
+Histoplasma capsulatum pneumonia,134,
+Histoplasmosis pneumonia,8,Other
+Human metapneumovirus as the cause of diseases classified elsewhere,99,Other
+Human metapneumovirus pneumonia,440,Viral
+"Hx, pneumonia",286,Viral
+Hypersen pneumonit d/t oth org dust,1,
+Hypersensitivity pneumonitis due to unspecified organic dust,231,
+"Idiopathic interstitial pneum, NOS",13,
+"Idiopathic interstitial pneumonia, not otherwise specified",9,
+Idiopathic lymphoid interstitial pneumonia,11,
+"Infection, pneumococcus",69,Bacterial
+Influenza due to identified novel influenza A virus with pneumonia,142,Viral
+Influenza due to other identified influenza virus with other specified pneumonia,24,Viral
+Influenza due to other identified influenza virus with unspecified type of pneumonia,92,Viral
+Influenza due to unidentified influenza virus with specified pneumonia,5,Viral
+Influenza w/pneumonia,373,Viral
+Klebsiella pneumoniae,170,Bacterial
+Klebsiella pneumoniae (k. pneumoniae) as the cause of diseases classified elsewhere,242,Bacterial
+"Lobar pneumonia, unspecified organism",870,
+Lymphoid interstitial pneumonia,36,
+"Meningitis, pneumococcal",5,
+Mycoplasma pneumoniae (M. pneumoniae) as the cause of diseases classified elsewhere,1,Other
+"Other pneumonia, unspecified organism",121,
+Other pneumothorax,1213,
+Parainfluenza virus pneumonia,229,Viral
+Personal history of pneumonia (recurrent),330,
+Pneumonia d/t Klebsiella pneumoniae,282,Bacterial
+Pneumonia d/t Mycoplasma pneumoniae,375,
+Pneumonia d/t pneumococcal virus,317,Viral
+Pneumonia due to Klebsiella pneumoniae,303,Other
+Pneumonia due to Mycoplasma pneumoniae,403,Viral
+Pneumonia due to Streptococcus pneumoniae,426,Bacterial
+Postprocedural aspiration pneumonia,5,
+Postprocedural pneumothorax,186,
+Primary spontaneous pneumothorax,240,
+Respiratory syncytial virus pneumonia,350,Viral
+Secondary spontaneous pneumothorax,225,
+Sepsis due to Streptococcus pneumoniae,20,Bacterial
+"Septicemia, pneumococcal",3,
+Spontaneous tension pneumothorax,63,
+Streptococcus pneumoniae as the cause of diseases classified elsewhere,34,Bacterial
+"TB pneumonia, microscopy dx",8,Other
+"TB pneumothorax, microscopy dx",7,Other
+"Traumatic hemopneumothorax,IE",3,
+"Traumatic pneumothorax, initial encounter",48,
+"Traumatic pneumothorax, sequela",12,
+Unspecified pneumoconiosis,1,
+Vaccine for Streptococcus pneumonia,247,
+Varicella pneumonia,2,Viral
+Varicella pneumonitis,8,Viral
+Ventilator associated pneumonia,516,Bacterial
+"Viral pneumonia, unspecified",514,Viral
+"Whooping cough, uns with pneumonia",1,Bacterial
+"Whooping cough, unspecified species without pneumonia",2,Bacterial

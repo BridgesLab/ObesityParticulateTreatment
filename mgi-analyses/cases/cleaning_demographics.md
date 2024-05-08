@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To clean the dempgraphic datafiles, to get a per-patient demographic profile. This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria and was most recently run on Fri Apr 19 08:15:08 2024.
+To clean the dempgraphic datafiles, to get a per-patient demographic profile. This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-05-08/cases and was most recently run on Wed May  8 12:44:42 2024.
 
 
 ```r

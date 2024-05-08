@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.  This script is to generate data about comorbidities.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria and was most recently run on Fri Apr 19 08:14:45 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.  This script is to generate data about comorbidities.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-05-08/cases and was most recently run on Wed May  8 12:44:22 2024.
 
 
 ```r

@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.  This script is to idenitify the index cases and ranges for when we are interested in outcomes.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria and was most recently run on Fri Apr 19 08:15:11 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.  This script is to idenitify the index cases and ranges for when we are interested in outcomes.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-05-08/cases and was most recently run on Wed May  8 12:44:45 2024.
 
 
 ```r
@@ -100,9 +100,9 @@ Table: Diagnosis type by patient
 
 |Type      |   n|
 |:---------|---:|
-|Bacterial | 300|
-|Other     | 106|
-|Viral     | 501|
+|Bacterial | 347|
+|Other     | 120|
+|Viral     | 594|
 
 # Merging with Encounter Data
 
@@ -135,7 +135,7 @@ index.filename <- 'PneumoniaEncounterData.csv'
 write_csv(patient.enc.data,index.filename)
 ```
 
-After grouping multiple encounters into events there are 1822 encounters from 1601
+After grouping multiple encounters into events there are 2142 encounters from 1893
 
 This index encounter data is written out to PneumoniaEncounterData.csv which contains data about the indexed encounter.
 
@@ -157,19 +157,21 @@ kable(patient.encounter.counts %>% ungroup %>% count(Admissions,name="Number of 
 
 | Admissions| Number of Patients|
 |----------:|------------------:|
-|          1|                469|
-|          2|                160|
-|          3|                 39|
-|          4|                 25|
-|          5|                 11|
+|          1|                542|
+|          2|                187|
+|          3|                 48|
+|          4|                 27|
+|          5|                 16|
 |          6|                  6|
-|          7|                  4|
+|          7|                  7|
 |          8|                  5|
-|         10|                  2|
+|          9|                  1|
+|         10|                  4|
+|         12|                  2|
 |         14|                  4|
 |         15|                  1|
 |         16|                  1|
-|         18|                  4|
+|         18|                  5|
 |         20|                  2|
 |         22|                  2|
 |         23|                  2|
@@ -180,6 +182,7 @@ kable(patient.encounter.counts %>% ungroup %>% count(Admissions,name="Number of 
 |         30|                  1|
 |         33|                  1|
 |         40|                  1|
+|         41|                  1|
 |         42|                  1|
 |         46|                  1|
 

@@ -27,7 +27,7 @@ library(tidyr)
 library(knitr)
 library(lubridate)
 
-comorbiditites.datafile <- 'ComorbiditiesClean.csv'
+comorbiditites.datafile <- 'Comorbidities_clean.csv'
 pneumonia.encounters.datafile <- 'PneumoniaEncounterData.csv'
 demographic.datafile <- 'DemographicDataClean.csv'
 ```

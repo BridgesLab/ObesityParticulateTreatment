@@ -238,13 +238,22 @@ quant.demo <-
   summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
+                             shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:10,
+  pivot_longer(cols=2:13,
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
 
 kable(quant.demo, caption="Summary of quantitative values")
+# wilcoxon tests, not normally distributed
+
+quant.t.tests <-
+  combined.data %>%
+  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+                   .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
+
+kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival",digits=c(6,6,6))
 
 ances.demo.ql <- 
   combined.data %>%
@@ -427,6 +436,7 @@ summary.discrete <-
   mutate(Yes = case_when(is.na(Yes)~0,
                             !(is.na(Yes))~Yes)) %>%
   rowwise %>%
+  mutate(Pct=No/(No+Yes)*100) %>%
   mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival,rescale.p = T)$p.value) %>%
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
@@ -434,7 +444,7 @@ summary.discrete <-
 kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival")
 ```
 
-## By 60 Day Survival
+# By 60 Day Survival
 
 ```{r 60d-survival}
 combined.data <- 
@@ -450,13 +460,21 @@ quant.demo <-
   summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
+                             shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:10,
+  pivot_longer(cols=2:13,
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
 
 kable(quant.demo, caption="Summary of quantitative values")
+
+quant.t.tests <-
+  combined.data %>%
+  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+                   .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
+
+kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival", digits=c(6,6,6))
 
 ances.demo.ql <- 
   combined.data %>%
@@ -639,12 +657,460 @@ summary.discrete <-
   mutate(Yes = case_when(is.na(Yes)~0,
                             !(is.na(Yes))~Yes)) %>%
   rowwise %>%
+  mutate(Pct=No/(No+Yes)*100) %>%
   mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival,rescale.p = T)$p.value) %>%
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
 kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival")
 ```
+
+# By ER Visit
+
+```{r er-visit}
+combined.data <- 
+  combined.data %>%
+  mutate(EmergencyVisit.Group = case_when(EmergencyVisit==0 ~ "No",
+                                    EmergencyVisit==1 ~ "Yes",
+                                    is.na(EmergencyVisit) ~ "No",
+                                    .default="No"))
+
+quant.demo <- 
+  combined.data %>%
+  group_by(EmergencyVisit.Group) %>%
+  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+                   .fns=list(mean = ~mean(.,na.rm=T),
+                             sd = ~sd(.,na.rm=T),
+                             shapiro.p = ~shapiro.test(.)$p.value,
+                             n = ~length(!(is.na(.)))))) %>%
+  pivot_longer(cols=2:13,
+               names_sep="_",names_to=c("Variable","Statistic")) %>%
+  pivot_wider(names_from=Statistic,values_from=value) %>%
+  arrange(Variable)
+
+kable(quant.demo, caption="Summary of quantitative values")
+# wilcoxon tests, not normally distributed
+
+quant.t.tests <-
+  combined.data %>%
+  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+                   .fns=list(Mann.Whitney=~wilcox.test(.~EmergencyVisit.Group)$p.value)))
+
+kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(6,6,99))
+
+ances.demo.ql <- 
+  combined.data %>%
+  group_by(MajorityAncestry,EmergencyVisit.Group) %>%
+  mutate(Type="Ancestry") %>%
+  rename("Group"="MajorityAncestry") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ancestry")
+
+type.demo.ql <- 
+  combined.data %>%
+  group_by(Type,EmergencyVisit.Group) %>%
+  rename("Group"="Type") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Pneumonia Type")
+
+emerg.demo.ql <- 
+  combined.data %>%
+  group_by(EmergencyVisit,EmergencyVisit.Group) %>%
+  rename("Group"="EmergencyVisit") %>%
+  count %>%
+  mutate(Group=as.factor(Group)) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Emergency Visit") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+# coded as dates not yes/no
+# cvd.demo.ql <- 
+#   combined.data %>%
+#   group_by(CerebrovascularDiseaseFirst) %>%
+#   rename("Group"="CerebrovascularDiseaseFirst") %>%
+#   count %>%
+#   ungroup %>% 
+#   mutate(Group=as.factor(Group)) %>%
+#   mutate(Pct=n/sum(n)*100) %>%
+#   mutate(Type="Cerebrovascular Disease")
+
+gender.demo.ql <- 
+  combined.data %>%
+  group_by(GenderCode,EmergencyVisit.Group) %>%
+  rename("Group"="GenderCode") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Gender")
+
+race.demo.ql <- 
+combined.data %>%
+  group_by(RaceName,EmergencyVisit.Group) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="RaceName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Race")
+
+ethnicity.demo.ql <- 
+combined.data %>%
+  group_by(EthnicityName,EmergencyVisit.Group) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="EthnicityName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ethnicity")
+
+diabetes.demo.ql <- 
+  combined.data %>%
+  group_by(Diabetes,EmergencyVisit.Group) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="Diabetes") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Diabetes") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+smoking.demo.ql <- 
+  combined.data %>%
+  group_by(SmokingStatusMapped,EmergencyVisit.Group) %>%
+  #mutate(Type="Smoking") %>%
+  rename("Group"="SmokingStatusMapped") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Smoking") 
+
+#update to hypertension first
+hypertension.demo.ql <- 
+  combined.data %>%
+  group_by(Hypertension,EmergencyVisit.Group) %>%
+  rename("Group"="Hypertension") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Hypertension") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+arrythmia.demo.ql <- 
+  combined.data %>%
+  group_by(CardiacArrhythmias,EmergencyVisit.Group) %>%
+  rename("Group"="CardiacArrhythmias") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+arrythmia.demo.ql <- 
+  combined.data %>%
+  group_by(CardiacArrhythmias,EmergencyVisit.Group) %>%
+  rename("Group"="CardiacArrhythmias") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+death.demo.ql <- 
+  combined.data %>%
+  group_by(is.na(DeID_DeathIndexDeceasedDate),EmergencyVisit.Group) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Death")  %>%
+  mutate(Group=case_when(Group==TRUE~"Deceased",
+                         Group==FALSE~"Alive"))
+
+surv30d.demo.ql <- 
+  combined.data %>%
+  group_by(EmergencyVisit,EmergencyVisit.Group) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="30d Survival") 
+
+surv60d.demo.ql <- 
+  combined.data %>%
+  group_by(Survival.60day,EmergencyVisit.Group) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="60d Survival") 
+
+total.survival <- combined.data %>% group_by(EmergencyVisit.Group) %>% count() %>% pull(n)
+
+summary.discrete <-
+  bind_rows(gender.demo.ql,
+            race.demo.ql,
+            ethnicity.demo.ql,
+            ances.demo.ql,
+            smoking.demo.ql,
+            type.demo.ql,
+            emerg.demo.ql, 
+            death.demo.ql,
+            surv30d.demo.ql %>% mutate(Group=as.character(Group)),
+            surv60d.demo.ql,
+            diabetes.demo.ql,
+            hypertension.demo.ql,
+            arrythmia.demo.ql,
+            ) %>%
+  select(EmergencyVisit.Group,Type,Group,n,Pct) %>%
+  ungroup %>%
+  select(-Pct) %>%
+  pivot_wider(names_from = EmergencyVisit.Group,values_from = n, values_fn = sum) %>%
+  arrange(Type,Group) %>%
+  replace(.=="NULL", NA) %>%
+  mutate(No = case_when(is.na(No)~0,
+                            !(is.na(No))~No)) %>%
+  mutate(Yes = case_when(is.na(Yes)~0,
+                            !(is.na(Yes))~Yes)) %>%
+  rowwise %>%
+  mutate(Pct=No/(No+Yes)*100) %>%
+  mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival,rescale.p = T)$p.value) %>%
+  mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
+                         Chisq.p < 0.05 ~ '*'))
+
+kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival")
+```
+
+# By Longer than Median Stay
+
+The median stay was `r median(combined.data$MaxStay,na.rm=T)`.
+
+```{r length-of-stay}
+combined.data <- 
+  combined.data %>%
+  mutate(StayAboveMedian=case_when(MaxStay>median(MaxStay,na.rm=T)~"Yes",
+                                MaxStay<median(MaxStay,na.rm=T)~"No"))
+
+quant.demo <- 
+  combined.data %>%
+  group_by(StayAboveMedian) %>%
+  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+                   .fns=list(mean = ~mean(.,na.rm=T),
+                             sd = ~sd(.,na.rm=T),
+                             #shapiro.p = ~shapiro.test(.)$p.value,
+                             n = ~length(!(is.na(.)))))) %>%
+  pivot_longer(cols=2:10,
+               names_sep="_",names_to=c("Variable","Statistic")) %>%
+  pivot_wider(names_from=Statistic,values_from=value) %>%
+  arrange(Variable)
+
+kable(quant.demo, caption="Summary of quantitative values for above average length of stay")
+# wilcoxon tests, not normally distributed
+
+quant.t.tests <-
+  combined.data %>%
+  summarize(across(.cols=c('AgeInYears','BMI'),
+                   .fns=list(Mann.Whitney=~wilcox.test(.~StayAboveMedian)$p.value)))
+
+kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(6,6,99))
+
+ances.demo.ql <- 
+  combined.data %>%
+  group_by(MajorityAncestry,StayAboveMedian) %>%
+  mutate(Type="Ancestry") %>%
+  rename("Group"="MajorityAncestry") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ancestry")
+
+type.demo.ql <- 
+  combined.data %>%
+  group_by(Type,StayAboveMedian) %>%
+  rename("Group"="Type") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Pneumonia Type")
+
+emerg.demo.ql <- 
+  combined.data %>%
+  group_by(EmergencyVisit,StayAboveMedian) %>%
+  rename("Group"="EmergencyVisit") %>%
+  count %>%
+  mutate(Group=as.factor(Group)) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Emergency Visit") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+# coded as dates not yes/no
+# cvd.demo.ql <- 
+#   combined.data %>%
+#   group_by(CerebrovascularDiseaseFirst) %>%
+#   rename("Group"="CerebrovascularDiseaseFirst") %>%
+#   count %>%
+#   ungroup %>% 
+#   mutate(Group=as.factor(Group)) %>%
+#   mutate(Pct=n/sum(n)*100) %>%
+#   mutate(Type="Cerebrovascular Disease")
+
+gender.demo.ql <- 
+  combined.data %>%
+  group_by(GenderCode,StayAboveMedian) %>%
+  rename("Group"="GenderCode") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Gender")
+
+race.demo.ql <- 
+combined.data %>%
+  group_by(RaceName,StayAboveMedian) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="RaceName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Race")
+
+ethnicity.demo.ql <- 
+combined.data %>%
+  group_by(EthnicityName,StayAboveMedian) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="EthnicityName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ethnicity")
+
+diabetes.demo.ql <- 
+  combined.data %>%
+  group_by(Diabetes,StayAboveMedian) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="Diabetes") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Diabetes") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+smoking.demo.ql <- 
+  combined.data %>%
+  group_by(SmokingStatusMapped,StayAboveMedian) %>%
+  #mutate(Type="Smoking") %>%
+  rename("Group"="SmokingStatusMapped") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Smoking") 
+
+#update to hypertension first
+hypertension.demo.ql <- 
+  combined.data %>%
+  group_by(Hypertension,StayAboveMedian) %>%
+  rename("Group"="Hypertension") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Hypertension") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+arrythmia.demo.ql <- 
+  combined.data %>%
+  group_by(CardiacArrhythmias,StayAboveMedian) %>%
+  rename("Group"="CardiacArrhythmias") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+arrythmia.demo.ql <- 
+  combined.data %>%
+  group_by(CardiacArrhythmias,StayAboveMedian) %>%
+  rename("Group"="CardiacArrhythmias") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+death.demo.ql <- 
+  combined.data %>%
+  group_by(is.na(DeID_DeathIndexDeceasedDate),StayAboveMedian) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Death")  %>%
+  mutate(Group=case_when(Group==TRUE~"Deceased",
+                         Group==FALSE~"Alive"))
+
+surv30d.demo.ql <- 
+  combined.data %>%
+  group_by(EmergencyVisit,StayAboveMedian) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="30d Survival") 
+
+surv60d.demo.ql <- 
+  combined.data %>%
+  group_by(Survival.60day,StayAboveMedian) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="60d Survival") 
+
+total.survival <- combined.data %>% group_by(StayAboveMedian) %>% count() %>% pull(n) 
+
+summary.discrete <-
+  bind_rows(gender.demo.ql,
+            race.demo.ql,
+            ethnicity.demo.ql,
+            ances.demo.ql,
+            smoking.demo.ql,
+            type.demo.ql,
+            emerg.demo.ql, 
+            death.demo.ql,
+            surv30d.demo.ql %>% mutate(Group=as.character(Group)),
+            surv60d.demo.ql,
+            diabetes.demo.ql,
+            hypertension.demo.ql,
+            arrythmia.demo.ql,
+            ) %>%
+  select(StayAboveMedian,Type,Group,n,Pct) %>%
+  ungroup %>%
+  select(-Pct) %>%
+  pivot_wider(names_from = StayAboveMedian,values_from = n, values_fn = sum) %>%
+  arrange(Type,Group) %>%
+  replace(.=="NULL", NA) %>%
+  mutate(No = case_when(is.na(No)~0,
+                            !(is.na(No))~No)) %>%
+  mutate(Yes = case_when(is.na(Yes)~0,
+                            !(is.na(Yes))~Yes)) %>%
+  rowwise %>%
+  mutate(Pct=No/(No+Yes)*100) %>%
+  filter(No+Yes>0) %>%
+  mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival[1:2],rescale.p = T)$p.value) %>%
+  mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
+                         Chisq.p < 0.05 ~ '*'))
+
+kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by above average length of stay")
+```
+
+`
 
 # Session Information
 
