@@ -1,0 +1,89 @@
+---
+title: "Identifying and cleaning the comorbidity data for pneumonia"
+author: "Dave Bridges"
+date: "February 1, 2024"
+output:
+  html_document:
+    highlight: tango
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+---
+
+## Purpose
+
+To analyse the subset of patients with viral or bacterial pneumonia.  This script is to generate data about comorbidities.  This script can be found in `r getwd()` and was most recently run on `r date()`.
+
+```{r input-data}
+library(knitr)
+#figures made will go to directory called figures, will make them as both png and pdf files 
+opts_chunk$set(fig.path='figures-cm/',
+               echo=TRUE, warning=FALSE, message=FALSE,dev=c('png','pdf'))
+options(scipen = 2, digits = 3)
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(lubridate)
+
+elixhauser.datafile <- 'ComorbiditiesElixhauserComprehensive.csv'
+charlson.datafile <- 'ComorbiditiesCharlsonComprehensive.csv'
+encounter.datafile <- 'EncounterAll.csv'
+```
+
+Combining demographic files
+
+```{r combining}
+#need to know when the first diagnosis was so need encounter data
+encounter.data <- read_csv(encounter.datafile) %>%
+  mutate(EncounterDate = mdy_hm(DeID_AdmitDate))
+
+cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
+  left_join(encounter.data,by=c('DeID_PatientID','DeID_EncounterID')) %>%
+  filter(!is.na(EncounterDate)) %>% #remove enounters without dates
+  arrange(EncounterDate) %>%
+  ungroup() %>%
+  group_by(DeID_PatientID) %>%
+  summarize(CardiacArrhythmias = max(CardiacArrhythmias,na.rm=T),
+            CardiacArrhythmiasFirst = first(EncounterDate[CardiacArrhythmias==1]),
+            HypertensionComplicated = max(HypertensionComplicated,na.rm=T),
+            HypertensionComplicatedFirst = first(EncounterDate[HypertensionComplicated==1]),
+            HypertensionUncomplicated = max(HypertensionUncomplicated,na.rm=T),
+            HypertensionUncomplicatedFirst = first(EncounterDate[HypertensionUncomplicated==1]),
+            LiverDisease = max(LiverDisease,na.rm=T),
+            LiverDiseaseFirst = first(EncounterDate[LiverDisease==1]),
+            Obesity = max(Obesity,na.rm=T),
+            ObesityFirst = first(EncounterDate[Obesity==1]),
+            RenalFailure = max(RenalFailure,na.rm=T),
+            RenalFailureFirst = first(EncounterDate[RenalFailure==1]))
+
+
+cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%
+  left_join(encounter.data,by=c('DeID_PatientID','DeID_EncounterID')) %>%
+  filter(!is.na(EncounterDate)) %>% #remove enounters without dates
+  arrange(EncounterDate) %>%
+  ungroup() %>%
+  group_by(DeID_PatientID) %>%
+  summarize(CerebrovascularDisease = max(CerebrovascularDisease,na.rm=T),
+            CerebrovascularDiseaseFirst = first(EncounterDate[CerebrovascularDisease==1]),
+            DiabetesWithChronicComplication = max(DiabetesWithChronicComplication,na.rm=T),
+            DiabetesWithChronicComplicationFirst = first(EncounterDate[DiabetesWithChronicComplication==1]),
+            DiabetesWithoutChronicComplication = max(DiabetesWithoutChronicComplication,na.rm=T),
+            DiabetesWithoutChronicComplicationFirst = first(EncounterDate[DiabetesWithoutChronicComplication==1]))
+
+
+combined.data <-
+  full_join(cm.charlson.data,cm.elix.data,by="DeID_PatientID")
+
+comorbidities.filename <- 'Comorbidities_clean.csv'
+write_csv(combined.data, comorbidities.filename)
+```
+
+Wrote this out to `r comorbidities.filename`.
+
+# Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```

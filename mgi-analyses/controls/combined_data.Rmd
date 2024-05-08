@@ -1,0 +1,58 @@
+---
+title: "Identifying and cleaning the comorbidity data for pneumonia controls"
+author: "Dave Bridges"
+date: "February 1, 2024"
+output:
+  html_document:
+    highlight: tango
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+---
+
+## Purpose
+
+To analyse the subset of patients *without* viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in `r getwd()` and was most recently run on `r date()`.
+
+```{r input-data}
+library(knitr)
+#figures made will go to directory called figures, will make them as both png and pdf files 
+opts_chunk$set(fig.path='figures-cm/',
+               echo=TRUE, warning=FALSE, message=FALSE,dev=c('png','pdf'))
+options(scipen = 2, digits = 3)
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(lubridate)
+
+comorbiditites.datafile <- 'Comorbidities_clean.csv'
+demographic.datafile <- 'DemographicDataClean.csv'
+```
+
+Combining  files
+
+```{r combining}
+cm.data <- read_csv(comorbiditites.datafile)
+demographic.data <- read_csv(demographic.datafile)
+
+combined.data <-
+  left_join(cm.data,demographic.data,by="DeID_PatientID") %>%
+  mutate(DiabetesFirst = ifelse(DiabetesWithChronicComplicationFirst==1|DiabetesWithoutChronicComplicationFirst==1,1,0)) %>%
+  mutate(HypertensionFirst = ifelse(HypertensionComplicatedFirst==1|HypertensionUncomplicatedFirst==1,1,0)) %>%
+  mutate(Diabetes = ifelse(DiabetesWithChronicComplication==1|DiabetesWithoutChronicComplication==1,1,0)) %>%
+  mutate(Hypertension = ifelse(HypertensionComplicated==1|HypertensionUncomplicated==1,1,0)) 
+
+complete.filename <- 'DatasetComplete.csv'
+write_csv(combined.data, complete.filename)
+```
+
+
+Wrote this out to `r complete.filename`.
+
+# Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```

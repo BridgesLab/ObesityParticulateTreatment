@@ -1,0 +1,63 @@
+---
+title: "Cleaning and merging the demographic data"
+author: "Dave Bridges"
+date: "February 1, 2024"
+output:
+  html_document:
+    highlight: tango
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+---
+
+## Purpose
+
+To clean the dempgraphic datafiles, to get a per-patient demographic profile. This script can be found in `r getwd()` and was most recently run on `r date()`.
+
+```{r input-data}
+library(knitr)
+#figures made will go to directory called figures, will make them as both png and pdf files 
+opts_chunk$set(fig.path='figures-demographics/',
+               echo=TRUE, warning=FALSE, message=FALSE,dev=c('png','pdf'))
+options(scipen = 2, digits = 3)
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(lubridate)
+
+demographic.datafile <- 'DemographicInfo.csv'
+gis.datafile <- 'GisNeighborhoodAffluence.csv'
+ancestry.datafile <- 'MGI_Ancestry.csv'
+social.datafile <- 'ClaritySocialHistory.csv'
+```
+
+Combining demographic files
+
+```{r combining}
+demo.gis.data <- full_join(read_csv(demographic.datafile),read_csv(gis.datafile), by="DeID_PatientID")
+demo.gis.anc.data <- full_join(demo.gis.data,read_csv(ancestry.datafile), by="DeID_PatientID")
+
+social.data <- read_csv(social.datafile) %>% #encounter level data
+  group_by(DeID_PatientID) %>%
+  summarize(SmokingStatusMapped = last(na.omit(SmokingStatusMapped)), #most recent
+            AlcoholUseStatusMapped = last(na.omit(AlcoholUseStatusMapped))) #most recent
+demo.gis.anc.social.data <- full_join(demo.gis.anc.data, social.data, by="DeID_PatientID")
+
+combined.data <-
+  demo.gis.anc.social.data %>%
+  select(DeID_PatientID,GenderCode,RaceName,EthnicityName,MajorityAncestry,DeID_DeathIndexDeceasedDate,affluence13_17_qrtl,disadvantage13_17_qrtl,ethnicimmigrant13_17_qrtl,ped1_13_17_qrtl,
+         SmokingStatusMapped,AlcoholUseStatusMapped)
+
+demographics.filename <- 'DemographicDataClean.csv'
+write_csv(combined.data, demographics.filename)
+```
+
+Wrote this out to `r demographics.filename`.
+
+# Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```
