@@ -1193,6 +1193,248 @@ kable(summary.discrete,
       digits=c(0,0,0,0,1,99,0))
 ```
 
+
+
+# By Need for Ventillation
+
+
+```{r ventillation}
+procedure.file <- ''
+procedure.data <- read_csv(procedure.file)
+
+combined.data <- 
+  combined.data %>%
+  mutate(Ventillation=if_else(DeID_PatientID %in% procedure.data$DeID_PatientID,
+                              "Yes",
+                              "No"))
+
+quant.demo <- 
+  combined.data %>%
+  group_by(Ventillation) %>%
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+                   .fns=list(mean = ~mean(.,na.rm=T),
+                             sd = ~sd(.,na.rm=T),
+                             #shapiro.p = ~shapiro.test(.)$p.value,
+                             n = ~length(!(is.na(.)))))) %>%
+  pivot_longer(cols=2:10,
+               names_sep="_",names_to=c("Variable","Statistic")) %>%
+  pivot_wider(names_from=Statistic,values_from=value) %>%
+  arrange(Variable)
+
+kable(quant.demo, caption="Summary of quantitative values for the need for ventillation")
+# wilcoxon tests, not normally distributed
+
+quant.t.tests <-
+  combined.data %>%
+  summarize(across(.cols=c('AgeInYears.x','BMI'),
+                   .fns=list(Mann.Whitney=~wilcox.test(.~Ventillation)$p.value)))
+
+kable(quant.t.tests,captionn="Mann-Whitney tests for need for ventillation",digits=c(99,99,99))
+
+ances.demo.ql <- 
+  combined.data %>%
+  group_by(MajorityAncestry,Ventillation) %>%
+  mutate(Type="Ancestry") %>%
+  rename("Group"="MajorityAncestry") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ancestry")
+
+type.demo.ql <- 
+  combined.data %>%
+  group_by(Type,Ventillation) %>%
+  rename("Group"="Type") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Pneumonia Type")
+
+emerg.demo.ql <- 
+  combined.data %>%
+  group_by(EmergencyVisit.Group,Ventillation) %>%
+  rename("Group"="EmergencyVisit.Group") %>%
+  count %>%
+  mutate(Group=as.factor(Group)) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Emergency Visit") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+# coded as dates not yes/no
+# cvd.demo.ql <- 
+#   combined.data %>%
+#   group_by(CerebrovascularDiseaseFirst) %>%
+#   rename("Group"="CerebrovascularDiseaseFirst") %>%
+#   count %>%
+#   ungroup %>% 
+#   mutate(Group=as.factor(Group)) %>%
+#   mutate(Pct=n/sum(n)*100) %>%
+#   mutate(Type="Cerebrovascular Disease")
+
+gender.demo.ql <- 
+  combined.data %>%
+  group_by(GenderCode,Ventillation) %>%
+  rename("Group"="GenderCode") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Gender")
+
+race.demo.ql <- 
+combined.data %>%
+  group_by(RaceName,Ventillation) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="RaceName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Race")
+
+ethnicity.demo.ql <- 
+combined.data %>%
+  group_by(EthnicityName,Ventillation) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="EthnicityName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ethnicity")
+
+diabetes.demo.ql <- 
+  combined.data %>%
+  group_by(PriorDiabetes,Ventillation) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="PriorDiabetes") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="PriorDiabetes") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+smoking.demo.ql <- 
+  combined.data %>%
+  group_by(SmokingStatusMapped,Ventillation) %>%
+  #mutate(Type="Smoking") %>%
+  rename("Group"="SmokingStatusMapped") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Smoking") 
+
+#update to hypertension first
+hypertension.demo.ql <- 
+  combined.data %>%
+  group_by(PriorHypertension,Ventillation) %>%
+  rename("Group"="PriorHypertension") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="PriorHypertension") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+arrythmia.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCardiacArrhythmias,Ventillation) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+obesity.demo.ql <- 
+  combined.data %>%
+  group_by(PriorObesity,Ventillation) %>%
+  rename("Group"="PriorObesity") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior Obesity") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+copd.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCOPD,Ventillation) %>%
+  rename("Group"="PriorCOPD") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior COPD") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+death.demo.ql <- 
+  combined.data %>%
+  group_by(is.na(DeID_DeathIndexDeceasedDate),Ventillation) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Death")  %>%
+  mutate(Group=case_when(Group==TRUE~"Deceased",
+                         Group==FALSE~"Alive"))
+
+surv30d.demo.ql <- 
+  combined.data %>%
+  group_by(EmergencyVisit.Group,Ventillation) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="30d Survival") 
+
+surv60d.demo.ql <- 
+  combined.data %>%
+  group_by(Survival.60day,Ventillation) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="60d Survival") 
+
+total.survival <- combined.data %>% group_by(Ventillation) %>% count() %>% pull(n) 
+
+summary.discrete <-
+  bind_rows(gender.demo.ql,
+            race.demo.ql,
+            ethnicity.demo.ql,
+            ances.demo.ql,
+            smoking.demo.ql,
+            type.demo.ql,
+            emerg.demo.ql, 
+            death.demo.ql,
+            surv30d.demo.ql %>% mutate(Group=as.character(Group)),
+            surv60d.demo.ql,
+            diabetes.demo.ql,
+            hypertension.demo.ql,
+            arrythmia.demo.ql,
+            obesity.demo.ql,
+            copd.demo.ql
+            ) %>%
+  select(Ventillation,Type,Group,n,Pct) %>%
+  ungroup %>%
+  select(-Pct) %>%
+  pivot_wider(names_from = Ventillation,values_from = n, values_fn = sum) %>%
+  arrange(Type,Group) %>%
+  replace(.=="NULL", NA) %>%
+  mutate(No = case_when(is.na(No)~0,
+                            !(is.na(No))~No)) %>%
+  mutate(Yes = case_when(is.na(Yes)~0,
+                            !(is.na(Yes))~Yes)) %>%
+  rowwise %>%
+  mutate(Pct=No/(No+Yes)*100) %>%
+  filter(No+Yes>0) %>%
+  mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival[1:2],rescale.p = T)$p.value) %>%
+  mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
+                         Chisq.p < 0.05 ~ '*'))
+
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by above the need for ventillation,
+      digits=c(0,0,0,0,1,99,0))
+```
 `
 
 # Session Information
