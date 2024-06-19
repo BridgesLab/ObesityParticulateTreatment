@@ -407,7 +407,7 @@ obesity.demo.ql <-
 
 copd.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,Survival.30day.Group) %>%
+  group_by(PriorCOPD,Survival.30day.Group) %>%
   rename("Group"="PriorCOPD") %>%
   count %>%
   ungroup %>%
@@ -479,7 +479,7 @@ summary.discrete <-
                          Chisq.p < 0.05 ~ '*'))
 
 kable(summary.discrete, 
-      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival",
+      caption=paste("Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival.  Overall", round(total.survival[1]/(total.survival[2]+total.survival[1])*100,2),"% visited died at 30d"),
       digits=c(0,0,0,0,1,99,0))
 ```
 
@@ -630,7 +630,7 @@ arrythmia.demo.ql <-
 
 obesity.demo.ql <- 
   combined.data %>%
-  group_by(PriorObesity,Survival.60day.Group) %>%
+  group_by(PriorObesity,Survival.60.day.Group) %>%
   rename("Group"="PriorObesity") %>%
   count %>%
   ungroup %>%
@@ -641,7 +641,7 @@ obesity.demo.ql <-
 
 copd.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,Survival.60day.Group) %>%
+  group_by(PriorCOPD,Survival.60.day.Group) %>%
   rename("Group"="PriorCOPD") %>%
   count %>%
   ungroup %>%
@@ -709,14 +709,13 @@ summary.discrete <-
   mutate(Yes = case_when(is.na(Yes)~0,
                             !(is.na(Yes))~Yes)) %>%
   rowwise %>%
-  mutate(Pct=No/(No+Yes)*100) %>%
+  mutate(Pct=No/(No+Yes)*100) %>% #because want not survived
   mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival,rescale.p = T)$p.value) %>%
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
 kable(summary.discrete, 
-      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival",
-      ,
+      caption=paste("Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival.  Overall", round(total.survival[1]/(total.survival[2]+total.survival[1])*100,2),"% visited died at 60d"),
       digits=c(0,0,0,0,1,99,0))
 ```
 
@@ -877,7 +876,7 @@ obesity.demo.ql <-
 
 copd.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,EmergencyVisit.Group) %>%
+  group_by(PriorCOPD,EmergencyVisit.Group) %>%
   rename("Group"="PriorCOPD") %>%
   count %>%
   ungroup %>%
@@ -945,13 +944,13 @@ summary.discrete <-
   mutate(Yes = case_when(is.na(Yes)~0,
                             !(is.na(Yes))~Yes)) %>%
   rowwise %>%
-  mutate(Pct=No/(No+Yes)*100) %>%
+  mutate(Pct=Yes/(No+Yes)*100) %>%
   mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival,rescale.p = T)$p.value) %>%
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
 kable(summary.discrete, 
-      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival",
+      caption=paste("Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival.  Overall", round(total.survival[2]/(total.survival[2]+total.survival[1])*100,2),"% visited ER"),
       digits=c(0,0,0,0,1,99,0))
 ```
 
@@ -1182,7 +1181,7 @@ summary.discrete <-
   mutate(Yes = case_when(is.na(Yes)~0,
                             !(is.na(Yes))~Yes)) %>%
   rowwise %>%
-  mutate(Pct=No/(No+Yes)*100) %>%
+  mutate(Pct=Yes/(No+Yes)*100) %>%
   filter(No+Yes>0) %>%
   mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival[1:2],rescale.p = T)$p.value) %>%
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
@@ -1199,7 +1198,7 @@ kable(summary.discrete,
 
 
 ```{r ventillation}
-procedure.file <- ''
+procedure.file <- 'ProceduresComprehensive.csv'
 procedure.data <- read_csv(procedure.file)
 
 combined.data <- 
@@ -1425,14 +1424,14 @@ summary.discrete <-
   mutate(Yes = case_when(is.na(Yes)~0,
                             !(is.na(Yes))~Yes)) %>%
   rowwise %>%
-  mutate(Pct=No/(No+Yes)*100) %>%
+  mutate(Pct=Yes/(No+Yes)*100) %>%
   filter(No+Yes>0) %>%
   mutate(Chisq.p = chisq.test(x=c(No,Yes),p=total.survival[1:2],rescale.p = T)$p.value) %>%
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
 kable(summary.discrete, 
-      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by above the need for ventillation,
+      caption=paste("Summary of discrete variables for bacterial pneumonia cases, stratified by ventillation status.  Overall", round(total.survival[2]/(total.survival[2]+total.survival[1])*100,2),"% required ventillation"),
       digits=c(0,0,0,0,1,99,0))
 ```
 `
