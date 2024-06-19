@@ -12,10 +12,10 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-05-08/cases and was most recently run on Wed May  8 13:34:06 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/cases and was most recently run on Tue Jun 18 21:42:09 2024.
 
 
-```r
+``` r
 library(knitr)
 #figures made will go to directory called figures, will make them as both png and pdf files 
 opts_chunk$set(fig.path='figures-bacterial/',
@@ -43,7 +43,7 @@ library(dplyr)
 ##     intersect, setdiff, setequal, union
 ```
 
-```r
+``` r
 library(tidyr)
 library(knitr)
 library(lubridate)
@@ -60,23 +60,24 @@ library(lubridate)
 ##     date, intersect, setdiff, union
 ```
 
-```r
+``` r
 complete.filename <- 'DatasetComplete.csv'
 combined.data <- read_csv(complete.filename) %>%
-  filter(Type=="Bacterial")
+  filter(Type=="Bacterial") %>%
+  arrange(AdmitDate) %>%
+  distinct(DeID_PatientID,.keep_all = T)
 ```
 
 ```
-## Rows: 2142 Columns: 45
+## Rows: 81470 Columns: 63
 ```
 
 ```
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: ","
-## chr  (12): DeID_PatientID, AdmitMonth, Type, GenderCode, RaceName, Ethnicity...
-## dbl  (22): AgeInYears, BMI, EmergencyVisit, MaxStay, CerebrovascularDisease,...
-## dttm  (9): CerebrovascularDiseaseFirst, DiabetesWithChronicComplicationFirst...
-## date  (2): AdmitDate, DischargeDate
+## chr  (21): DeID_PatientID, AdmitMonth, Type, DeID_EncounterID, TermNameMappe...
+## dbl  (28): AgeInYears.x, BMI, EmergencyVisit.x, MaxStay, CerebrovascularDise...
+## date (14): AdmitDate, DischargeDate, CerebrovascularDiseaseFirst, DiabetesWi...
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
@@ -87,10 +88,10 @@ combined.data <- read_csv(complete.filename) %>%
 # Summary Demographics
 
 
-```r
+``` r
 quant.demo <- 
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              n = ~length(!(is.na(.)))))) %>%
@@ -105,13 +106,13 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 Table: Summary of quantitative values
 
-|Variable   | mean|    sd|   n|
-|:----------|----:|-----:|---:|
-|AgeInYears | 58.8| 15.27| 563|
-|BMI        | 29.1|  9.66| 563|
-|MaxStay    | 17.0| 30.39| 563|
+|Variable     |  mean|    sd|    n|
+|:------------|-----:|-----:|----:|
+|AgeInYears.x | 56.43| 16.39| 8352|
+|BMI          | 30.40|  8.45| 8352|
+|MaxStay      |  3.66| 11.40| 8352|
 
-```r
+``` r
 ances.demo.ql <- 
   combined.data %>%
   group_by(MajorityAncestry) %>%
@@ -133,8 +134,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.x) %>%
+  rename("Group"="EmergencyVisit.x") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -183,12 +184,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes) %>%
+  group_by(PriorDiabetes) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -205,34 +206,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -289,69 +290,75 @@ kable(summary.discrete, caption="Summary of discrete variables for all pneumonia
 
 Table: Summary of discrete variables for all pneumonia cases
 
-|Type                |Group                            |   n|     Pct|
-|:-------------------|:--------------------------------|---:|-------:|
-|Gender              |F                                | 202|  35.879|
-|Gender              |M                                | 361|  64.121|
-|Race                |African American                 |  79|  14.032|
-|Race                |American Indian or Alaska Native |   4|   0.710|
-|Race                |Asian                            |   4|   0.710|
-|Race                |Caucasian                        | 472|  83.837|
-|Race                |Other                            |   3|   0.533|
-|Race                |Unknown                          |   1|   0.178|
-|Ethnicity           |Hispanic or Latino               |  13|   2.309|
-|Ethnicity           |Non-Hispanic or Latino           | 546|  96.980|
-|Ethnicity           |Unknown                          |   4|   0.710|
-|Ancestry            |AFR                              |  23|   4.085|
-|Ancestry            |AMR                              |   1|   0.178|
-|Ancestry            |EAS                              |   2|   0.355|
-|Ancestry            |EUR                              | 354|  62.877|
-|Ancestry            |WAS                              |   7|   1.243|
-|Ancestry            |NA                               | 176|  31.261|
-|Smoking             |Current                          |  38|   6.750|
-|Smoking             |Former                           | 239|  42.451|
-|Smoking             |Never                            | 229|  40.675|
-|Smoking             |Unknown                          |  18|   3.197|
-|Smoking             |NA                               |  39|   6.927|
-|Pneumonia Type      |Bacterial                        | 563| 100.000|
-|Emergency Visit     |NA                               | 331|  58.792|
-|Emergency Visit     |Yes                              | 228|  40.497|
-|Emergency Visit     |NA                               |   4|   0.710|
-|Death               |Alive                            | 299|  53.108|
-|Death               |Deceased                         | 264|  46.892|
-|30d Survival        |Surival Past 30 Days             | 262|  46.536|
-|30d Survival        |Within 30 Days                   |  33|   5.861|
-|30d Survival        |NA                               | 268|  47.602|
-|60d Survival        |Surival Past 60 Days             | 238|  42.274|
-|60d Survival        |Within 60 Days                   |  57|  10.124|
-|60d Survival        |NA                               | 268|  47.602|
-|Diabetes            |NA                               | 269|  47.780|
-|Diabetes            |Yes                              | 294|  52.220|
-|Hypertension        |NA                               | 114|  20.249|
-|Hypertension        |Yes                              | 449|  79.751|
-|Cardiac Arrhythmias |NA                               |  88|  15.631|
-|Cardiac Arrhythmias |Yes                              | 475|  84.369|
+|Type                      |Group                                      |    n|     Pct|
+|:-------------------------|:------------------------------------------|----:|-------:|
+|Gender                    |F                                          | 4624|  55.364|
+|Gender                    |M                                          | 3728|  44.636|
+|Race                      |African American                           |  672|   8.046|
+|Race                      |American Indian or Alaska Native           |   53|   0.635|
+|Race                      |Asian                                      |  123|   1.473|
+|Race                      |Caucasian                                  | 7266|  86.997|
+|Race                      |Native Hawaiian and Other Pacific Islander |    6|   0.072|
+|Race                      |Other                                      |  153|   1.832|
+|Race                      |Patient Refused                            |   30|   0.359|
+|Race                      |Unknown                                    |   37|   0.443|
+|Race                      |NA                                         |   12|   0.144|
+|Ethnicity                 |Hispanic or Latino                         |  195|   2.335|
+|Ethnicity                 |Non-Hispanic or Latino                     | 7956|  95.259|
+|Ethnicity                 |Patient Refused                            |   38|   0.455|
+|Ethnicity                 |Unknown                                    |  149|   1.784|
+|Ethnicity                 |NA                                         |   14|   0.168|
+|Ancestry                  |AFR                                        |  351|   4.203|
+|Ancestry                  |AMR                                        |   29|   0.347|
+|Ancestry                  |CSA                                        |   37|   0.443|
+|Ancestry                  |EAS                                        |   44|   0.527|
+|Ancestry                  |EUR                                        | 4892|  58.573|
+|Ancestry                  |WAS                                        |   49|   0.587|
+|Ancestry                  |NA                                         | 2950|  35.321|
+|Smoking                   |Current                                    |  783|   9.375|
+|Smoking                   |Former                                     | 3472|  41.571|
+|Smoking                   |Never                                      | 3811|  45.630|
+|Smoking                   |Unknown                                    |   87|   1.042|
+|Smoking                   |NA                                         |  199|   2.383|
+|Pneumonia Type            |Bacterial                                  | 8352| 100.000|
+|Emergency Visit           |NA                                         | 5970|  71.480|
+|Emergency Visit           |Yes                                        | 2380|  28.496|
+|Emergency Visit           |NA                                         |    2|   0.024|
+|Death                     |Alive                                      | 2256|  27.011|
+|Death                     |Deceased                                   | 6096|  72.989|
+|30d Survival              |Surival Past 30 Days                       | 2039|  24.413|
+|30d Survival              |Within 30 Days                             |  216|   2.586|
+|30d Survival              |NA                                         | 6097|  73.000|
+|60d Survival              |Surival Past 60 Days                       | 1931|  23.120|
+|60d Survival              |Within 60 Days                             |  324|   3.879|
+|60d Survival              |NA                                         | 6097|  73.000|
+|PriorDiabetes             |NA                                         | 6549|  78.412|
+|PriorDiabetes             |Yes                                        | 1803|  21.588|
+|PriorHypertension         |NA                                         | 5090|  60.943|
+|PriorHypertension         |Yes                                        | 3262|  39.057|
+|Prior Cardiac Arrhythmias |NA                                         | 5881|  70.414|
+|Prior Cardiac Arrhythmias |Yes                                        | 2471|  29.586|
 
 # By 30 Day Survival
 
 
-```r
+``` r
 combined.data <- 
   combined.data %>%
-  mutate(Survival.30day.Group = case_when(Survival.30day=="Within 30 Days" ~ "No",
+  mutate(Survival.30day.Group = as.factor(case_when(Survival.30day=="Within 30 Days" ~ "No",
                                     Survival.30day!="Survival Past 30 Days" ~ "Yes",
                                     is.na(Survival.30day) ~ "Yes",
-                                    .default="Yes"))
+                                    .default="Yes")))
 
 quant.demo <- 
   combined.data %>%
   group_by(Survival.30day.Group) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
-                             shapiro.p = ~shapiro.test(.)$p.value,
+                             #shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:13,
+  pivot_longer(cols=contains("_"), #fix this
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
@@ -363,33 +370,35 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 Table: Summary of quantitative values
 
-|Survival.30day.Group |Variable   | mean|    sd| shapiro.p|   n|
-|:--------------------|:----------|----:|-----:|---------:|---:|
-|No                   |AgeInYears | 67.9| 13.14|     0.030|  33|
-|Yes                  |AgeInYears | 58.2| 15.22|     0.000| 530|
-|No                   |BMI        | 27.5|  7.41|     0.016|  33|
-|Yes                  |BMI        | 29.2|  9.79|     0.000| 530|
-|No                   |MaxStay    | 12.1|  9.12|     0.034|  33|
-|Yes                  |MaxStay    | 17.3| 31.22|     0.000| 530|
+|Survival.30day.Group |Variable     |  mean|    sd|    n|
+|:--------------------|:------------|-----:|-----:|----:|
+|No                   |AgeInYears.x | 65.50| 13.57|  216|
+|Yes                  |AgeInYears.x | 56.19| 16.39| 8136|
+|No                   |BMI          | 27.80|  7.20|  216|
+|Yes                  |BMI          | 30.48|  8.47| 8136|
+|No                   |MaxStay      | 10.04|  7.37|  216|
+|Yes                  |MaxStay      |  3.49| 11.44| 8136|
 
-```r
+``` r
 # wilcoxon tests, not normally distributed
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival",digits=c(6,6,6))
+kable(quant.t.tests,caption="Mann-Whitney tests for 30 day survival",digits=c(99,99,99))
 ```
 
 
 
-| AgeInYears_Mann.Whitney| BMI_Mann.Whitney| MaxStay_Mann.Whitney|
-|-----------------------:|----------------:|--------------------:|
-|                0.000104|            0.269|                 0.34|
+Table: Mann-Whitney tests for 30 day survival
 
-```r
+| AgeInYears.x_Mann.Whitney| BMI_Mann.Whitney| MaxStay_Mann.Whitney|
+|-------------------------:|----------------:|--------------------:|
+|                  2.28e-16|       0.00000154|             2.67e-76|
+
+``` r
 ances.demo.ql <- 
   combined.data %>%
   group_by(MajorityAncestry,Survival.30day.Group) %>%
@@ -411,8 +420,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,Survival.30day.Group) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.x,Survival.30day.Group) %>%
+  rename("Group"="EmergencyVisit.x") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -461,12 +470,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,Survival.30day.Group) %>%
+  group_by(PriorDiabetes,Survival.30day.Group) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -483,34 +492,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,Survival.30day.Group) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,Survival.30day.Group) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.30day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.30day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.30day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.30day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -576,59 +585,67 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival",
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 
 
 Table: Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival
 
-|Type                |Group                            | No| Yes|    Pct| Chisq.p|Sig |
-|:-------------------|:--------------------------------|--:|---:|------:|-------:|:---|
-|30d Survival        |Surival Past 30 Days             |  0| 262|   0.00|   0.000|**  |
-|30d Survival        |Within 30 Days                   | 33|   0| 100.00|   0.000|**  |
-|30d Survival        |NA                               |  0| 268|   0.00|   0.000|**  |
-|60d Survival        |Surival Past 60 Days             |  0| 238|   0.00|   0.000|**  |
-|60d Survival        |Within 60 Days                   | 33|  24|  57.90|   0.000|**  |
-|60d Survival        |NA                               |  0| 268|   0.00|   0.000|**  |
-|Ancestry            |AFR                              |  2|  21|   8.70|   0.563|NA  |
-|Ancestry            |AMR                              |  1|   0| 100.00|   0.000|**  |
-|Ancestry            |EAS                              |  0|   2|   0.00|   0.724|NA  |
-|Ancestry            |EUR                              | 20| 334|   5.65|   0.865|NA  |
-|Ancestry            |WAS                              |  0|   7|   0.00|   0.509|NA  |
-|Ancestry            |NA                               | 10| 166|   5.68|   0.919|NA  |
-|Cardiac Arrhythmias |Yes                              | 32| 443|   6.74|   0.417|NA  |
-|Cardiac Arrhythmias |NA                               |  1|  87|   1.14|   0.059|NA  |
-|Death               |Alive                            | 33| 266|  11.04|   0.000|**  |
-|Death               |Deceased                         |  0| 264|   0.00|   0.000|**  |
-|Diabetes            |Yes                              | 22| 272|   7.48|   0.237|NA  |
-|Diabetes            |NA                               | 11| 258|   4.09|   0.216|NA  |
-|Emergency Visit     |Yes                              | 18| 210|   7.89|   0.191|NA  |
-|Emergency Visit     |NA                               | 15| 320|   4.48|   0.281|NA  |
-|Ethnicity           |Hispanic or Latino               |  1|  12|   7.69|   0.779|NA  |
-|Ethnicity           |Non-Hispanic or Latino           | 31| 515|   5.68|   0.855|NA  |
-|Ethnicity           |Unknown                          |  1|   3|  25.00|   0.103|NA  |
-|Gender              |F                                | 11| 191|   5.45|   0.801|NA  |
-|Gender              |M                                | 22| 339|   6.09|   0.851|NA  |
-|Hypertension        |Yes                              | 31| 418|   6.90|   0.347|NA  |
-|Hypertension        |NA                               |  2| 112|   1.75|   0.062|NA  |
-|Pneumonia Type      |Bacterial                        | 33| 530|   5.86|   1.000|NA  |
-|Race                |African American                 |  5|  74|   6.33|   0.860|NA  |
-|Race                |American Indian or Alaska Native |  0|   4|   0.00|   0.618|NA  |
-|Race                |Asian                            |  0|   4|   0.00|   0.618|NA  |
-|Race                |Caucasian                        | 28| 444|   5.93|   0.948|NA  |
-|Race                |Other                            |  0|   3|   0.00|   0.666|NA  |
-|Race                |Unknown                          |  0|   1|   0.00|   0.803|NA  |
-|Smoking             |Current                          |  3|  35|   7.89|   0.594|NA  |
-|Smoking             |Former                           | 16| 223|   6.70|   0.583|NA  |
-|Smoking             |Never                            | 12| 217|   5.24|   0.689|NA  |
-|Smoking             |Unknown                          |  1|  17|   5.56|   0.956|NA  |
-|Smoking             |NA                               |  1|  38|   2.56|   0.381|NA  |
+|Type                      |Group                                      |  No|  Yes|   Pct|  Chisq.p|Sig |
+|:-------------------------|:------------------------------------------|---:|----:|-----:|--------:|:---|
+|30d Survival              |Surival Past 30 Days                       |   0| 2039|   0.0| 1.87e-13|**  |
+|30d Survival              |Within 30 Days                             | 216|    0| 100.0| 0.00e+00|**  |
+|30d Survival              |NA                                         |   0| 6097|   0.0| 4.42e-37|**  |
+|60d Survival              |Surival Past 60 Days                       |   0| 1931|   0.0| 8.07e-13|**  |
+|60d Survival              |Within 60 Days                             | 216|  108|  66.7| 0.00e+00|**  |
+|60d Survival              |NA                                         |   0| 6097|   0.0| 4.42e-37|**  |
+|Ancestry                  |AFR                                        |   8|  343|   2.3| 7.17e-01|NA  |
+|Ancestry                  |AMR                                        |   2|   27|   6.9| 1.44e-01|NA  |
+|Ancestry                  |CSA                                        |   1|   36|   2.7| 9.64e-01|NA  |
+|Ancestry                  |EAS                                        |   0|   44|   0.0| 2.80e-01|NA  |
+|Ancestry                  |EUR                                        | 153| 4739|   3.1| 1.71e-02|*   |
+|Ancestry                  |WAS                                        |   1|   48|   2.0| 8.10e-01|NA  |
+|Ancestry                  |NA                                         |  51| 2899|   1.7| 3.35e-03|**  |
+|Death                     |Alive                                      | 216| 2040|   9.6| 4.16e-97|**  |
+|Death                     |Deceased                                   |   0| 6096|   0.0| 4.48e-37|**  |
+|Emergency Visit           |Yes                                        | 165| 2215|   6.9| 1.04e-40|**  |
+|Emergency Visit           |NA                                         |  51| 5921|   0.9| 3.35e-17|**  |
+|Ethnicity                 |Hispanic or Latino                         |   4|  191|   2.1| 6.38e-01|NA  |
+|Ethnicity                 |Non-Hispanic or Latino                     | 206| 7750|   2.6| 9.86e-01|NA  |
+|Ethnicity                 |Patient Refused                            |   0|   38|   0.0| 3.15e-01|NA  |
+|Ethnicity                 |Unknown                                    |   6|  143|   4.0| 2.68e-01|NA  |
+|Ethnicity                 |NA                                         |   0|   14|   0.0| 5.42e-01|NA  |
+|Gender                    |F                                          |  79| 4545|   1.7| 1.70e-04|**  |
+|Gender                    |M                                          | 137| 3591|   3.7| 2.82e-05|**  |
+|Pneumonia Type            |Bacterial                                  | 216| 8136|   2.6| 1.00e+00|NA  |
+|Prior Cardiac Arrhythmias |Yes                                        |  90| 2381|   3.6| 9.42e-04|**  |
+|Prior Cardiac Arrhythmias |NA                                         | 126| 5755|   2.1| 3.20e-02|*   |
+|PriorDiabetes             |Yes                                        |  59| 1744|   3.3| 6.64e-02|NA  |
+|PriorDiabetes             |NA                                         | 157| 6392|   2.4| 3.36e-01|NA  |
+|PriorHypertension         |Yes                                        | 103| 3159|   3.2| 3.98e-02|*   |
+|PriorHypertension         |NA                                         | 113| 4977|   2.2| 9.98e-02|NA  |
+|Race                      |African American                           |  17|  655|   2.5| 9.27e-01|NA  |
+|Race                      |American Indian or Alaska Native           |   0|   53|   0.0| 2.36e-01|NA  |
+|Race                      |Asian                                      |   1|  122|   0.8| 2.15e-01|NA  |
+|Race                      |Caucasian                                  | 193| 7073|   2.7| 7.07e-01|NA  |
+|Race                      |Native Hawaiian and Other Pacific Islander |   0|    6|   0.0| 6.90e-01|NA  |
+|Race                      |Other                                      |   4|  149|   2.6| 9.82e-01|NA  |
+|Race                      |Patient Refused                            |   0|   30|   0.0| 3.72e-01|NA  |
+|Race                      |Unknown                                    |   1|   36|   2.7| 9.64e-01|NA  |
+|Race                      |NA                                         |   0|   12|   0.0| 5.72e-01|NA  |
+|Smoking                   |Current                                    |  21|  762|   2.7| 8.66e-01|NA  |
+|Smoking                   |Former                                     | 100| 3372|   2.9| 2.75e-01|NA  |
+|Smoking                   |Never                                      |  81| 3730|   2.1| 7.31e-02|NA  |
+|Smoking                   |Unknown                                    |   3|   84|   3.4| 6.12e-01|NA  |
+|Smoking                   |NA                                         |  11|  188|   5.5| 8.94e-03|**  |
 
 # By 60 Day Survival
 
 
-```r
+``` r
 combined.data <- 
   combined.data %>%
   mutate(Survival.60.day.Group = case_when(Survival.60day=="Within 60 Days" ~ "No",
@@ -639,12 +656,12 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(Survival.60.day.Group) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
-                             shapiro.p = ~shapiro.test(.)$p.value,
+                             #shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:13,
+  pivot_longer(cols=contains("_"), #all variables separated by underscore
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
@@ -656,31 +673,31 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 Table: Summary of quantitative values
 
-|Survival.60.day.Group |Variable   | mean|    sd| shapiro.p|   n|
-|:---------------------|:----------|----:|-----:|---------:|---:|
-|No                    |AgeInYears | 68.1| 11.68|     0.046|  57|
-|Yes                   |AgeInYears | 57.7| 15.28|     0.000| 506|
-|No                    |BMI        | 27.5|  6.75|     0.042|  57|
-|Yes                   |BMI        | 29.3|  9.95|     0.000| 506|
-|No                    |MaxStay    | 17.3| 14.88|     0.002|  57|
-|Yes                   |MaxStay    | 16.9| 31.68|     0.000| 506|
+|Survival.60.day.Group |Variable     |  mean|    sd|    n|
+|:---------------------|:------------|-----:|-----:|----:|
+|No                    |AgeInYears.x | 65.33| 13.12|  324|
+|Yes                   |AgeInYears.x | 56.07| 16.41| 8028|
+|No                    |BMI          | 27.88|  7.41|  324|
+|Yes                   |BMI          | 30.51|  8.47| 8028|
+|No                    |MaxStay      | 12.12| 11.57|  324|
+|Yes                   |MaxStay      |  3.32| 11.26| 8028|
 
-```r
+``` r
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival", digits=c(6,6,6))
+kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival", digits=c(99,99,99))
 ```
 
 
 
-| AgeInYears_Mann.Whitney| BMI_Mann.Whitney| MaxStay_Mann.Whitney|
-|-----------------------:|----------------:|--------------------:|
-|                0.000104|            0.269|                 0.34|
+| AgeInYears.x_Mann.Whitney| BMI_Mann.Whitney| MaxStay_Mann.Whitney|
+|-------------------------:|----------------:|--------------------:|
+|                  2.28e-16|       0.00000154|             2.67e-76|
 
-```r
+``` r
 ances.demo.ql <- 
   combined.data %>%
   group_by(MajorityAncestry,Survival.60.day.Group) %>%
@@ -702,8 +719,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,Survival.60.day.Group) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.x,Survival.60.day.Group) %>%
+  rename("Group"="EmergencyVisit.x") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -752,12 +769,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,Survival.60.day.Group) %>%
+  group_by(PriorDiabetes,Survival.60.day.Group) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -774,34 +791,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,Survival.60.day.Group) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,Survival.60.day.Group) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.60.day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.60.day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.60.day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.60.day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -867,74 +884,83 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival",
+      ,
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 
 
 Table: Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival
 
-|Type                |Group                            | No| Yes|    Pct| Chisq.p|Sig |
-|:-------------------|:--------------------------------|--:|---:|------:|-------:|:---|
-|60d Survival        |Surival Past 30 Days             | 24| 238|   9.16|   0.605|NA  |
-|60d Survival        |Surival Past 60 Days             |  0| 238|   0.00|   0.000|**  |
-|60d Survival        |Within 30 Days                   | 33|   0| 100.00|   0.000|**  |
-|60d Survival        |Within 60 Days                   | 57|   0| 100.00|   0.000|**  |
-|60d Survival        |NA                               |  0| 536|   0.00|   0.000|**  |
-|Ancestry            |AFR                              |  4|  19|  17.39|   0.248|NA  |
-|Ancestry            |AMR                              |  1|   0| 100.00|   0.003|**  |
-|Ancestry            |EAS                              |  0|   2|   0.00|   0.635|NA  |
-|Ancestry            |EUR                              | 37| 317|  10.45|   0.838|NA  |
-|Ancestry            |WAS                              |  0|   7|   0.00|   0.375|NA  |
-|Ancestry            |NA                               | 15| 161|   8.52|   0.481|NA  |
-|Cardiac Arrhythmias |Yes                              | 56| 419|  11.79|   0.229|NA  |
-|Cardiac Arrhythmias |NA                               |  1|  87|   1.14|   0.005|**  |
-|Death               |Alive                            | 57| 242|  19.06|   0.000|**  |
-|Death               |Deceased                         |  0| 264|   0.00|   0.000|**  |
-|Diabetes            |Yes                              | 37| 257|  12.59|   0.162|NA  |
-|Diabetes            |NA                               | 20| 249|   7.43|   0.144|NA  |
-|Emergency Visit     |Yes                              | 27| 201|  11.84|   0.390|NA  |
-|Emergency Visit     |NA                               | 30| 305|   8.96|   0.478|NA  |
-|Ethnicity           |Hispanic or Latino               |  1|  12|   7.69|   0.771|NA  |
-|Ethnicity           |Non-Hispanic or Latino           | 55| 491|  10.07|   0.968|NA  |
-|Ethnicity           |Unknown                          |  1|   3|  25.00|   0.324|NA  |
-|Gender              |F                                | 19| 183|   9.41|   0.735|NA  |
-|Gender              |M                                | 38| 323|  10.53|   0.800|NA  |
-|Hypertension        |Yes                              | 53| 396|  11.80|   0.238|NA  |
-|Hypertension        |NA                               |  4| 110|   3.51|   0.019|*   |
-|Pneumonia Type      |Bacterial                        | 57| 506|  10.12|   1.000|NA  |
-|Race                |African American                 |  7|  72|   8.86|   0.710|NA  |
-|Race                |American Indian or Alaska Native |  0|   4|   0.00|   0.502|NA  |
-|Race                |Asian                            |  0|   4|   0.00|   0.502|NA  |
-|Race                |Caucasian                        | 50| 422|  10.59|   0.736|NA  |
-|Race                |Other                            |  0|   3|   0.00|   0.561|NA  |
-|Race                |Unknown                          |  0|   1|   0.00|   0.737|NA  |
-|Smoking             |Current                          |  4|  34|  10.53|   0.935|NA  |
-|Smoking             |Former                           | 30| 209|  12.55|   0.213|NA  |
-|Smoking             |Never                            | 19| 210|   8.30|   0.359|NA  |
-|Smoking             |Unknown                          |  1|  17|   5.56|   0.520|NA  |
-|Smoking             |NA                               |  3|  36|   7.69|   0.615|NA  |
+|Type                      |Group                                      |  No|   Yes|   Pct|  Chisq.p|Sig |
+|:-------------------------|:------------------------------------------|---:|-----:|-----:|--------:|:---|
+|60d Survival              |Surival Past 30 Days                       | 108|  1931|   5.3| 9.18e-04|**  |
+|60d Survival              |Surival Past 60 Days                       |   0|  1931|   0.0| 1.07e-18|**  |
+|60d Survival              |Within 30 Days                             | 216|     0| 100.0| 0.00e+00|**  |
+|60d Survival              |Within 60 Days                             | 324|     0| 100.0| 0.00e+00|**  |
+|60d Survival              |NA                                         |   0| 12194|   0.0| 0.00e+00|**  |
+|Ancestry                  |AFR                                        |  14|   337|   4.0| 9.16e-01|NA  |
+|Ancestry                  |AMR                                        |   3|    26|  10.3| 7.14e-02|NA  |
+|Ancestry                  |CSA                                        |   1|    36|   2.7| 7.11e-01|NA  |
+|Ancestry                  |EAS                                        |   0|    44|   0.0| 1.83e-01|NA  |
+|Ancestry                  |EUR                                        | 229|  4663|   4.7| 3.68e-03|**  |
+|Ancestry                  |WAS                                        |   1|    48|   2.0| 5.05e-01|NA  |
+|Ancestry                  |NA                                         |  76|  2874|   2.6| 2.47e-04|**  |
+|Death                     |Alive                                      | 324|  1932|  14.4| 0.00e+00|**  |
+|Death                     |Deceased                                   |   0|  6096|   0.0| 1.91e-55|**  |
+|Emergency Visit           |Yes                                        | 235|  2145|   9.9| 8.19e-52|**  |
+|Emergency Visit           |NA                                         |  89|  5883|   1.5| 1.17e-21|**  |
+|Ethnicity                 |Hispanic or Latino                         |   4|   191|   2.1| 1.86e-01|NA  |
+|Ethnicity                 |Non-Hispanic or Latino                     | 313|  7643|   3.9| 8.00e-01|NA  |
+|Ethnicity                 |Patient Refused                            |   0|    38|   0.0| 2.16e-01|NA  |
+|Ethnicity                 |Unknown                                    |   7|   142|   4.7| 6.05e-01|NA  |
+|Ethnicity                 |NA                                         |   0|    14|   0.0| 4.52e-01|NA  |
+|Gender                    |F                                          | 124|  4500|   2.7| 2.47e-05|**  |
+|Gender                    |M                                          | 200|  3528|   5.4| 2.64e-06|**  |
+|Pneumonia Type            |Bacterial                                  | 324|  8028|   3.9| 1.00e+00|NA  |
+|Prior Cardiac Arrhythmias |Yes                                        | 139|  2332|   5.6| 6.97e-06|**  |
+|Prior Cardiac Arrhythmias |NA                                         | 185|  5696|   3.1| 3.58e-03|**  |
+|PriorDiabetes             |Yes                                        |  85|  1718|   4.7| 6.63e-02|NA  |
+|PriorDiabetes             |NA                                         | 239|  6310|   3.6| 3.35e-01|NA  |
+|PriorHypertension         |Yes                                        | 157|  3105|   4.8| 5.75e-03|**  |
+|PriorHypertension         |NA                                         | 167|  4923|   3.3| 2.71e-02|*   |
+|Race                      |African American                           |  25|   647|   3.7| 8.31e-01|NA  |
+|Race                      |American Indian or Alaska Native           |   0|    53|   0.0| 1.44e-01|NA  |
+|Race                      |Asian                                      |   2|   121|   1.6| 1.96e-01|NA  |
+|Race                      |Caucasian                                  | 291|  6975|   4.0| 5.79e-01|NA  |
+|Race                      |Native Hawaiian and Other Pacific Islander |   0|     6|   0.0| 6.23e-01|NA  |
+|Race                      |Other                                      |   5|   148|   3.3| 6.95e-01|NA  |
+|Race                      |Patient Refused                            |   0|    30|   0.0| 2.71e-01|NA  |
+|Race                      |Unknown                                    |   1|    36|   2.7| 7.11e-01|NA  |
+|Race                      |NA                                         |   0|    12|   0.0| 4.86e-01|NA  |
+|Smoking                   |Current                                    |  26|   757|   3.3| 4.18e-01|NA  |
+|Smoking                   |Former                                     | 160|  3312|   4.6| 2.61e-02|*   |
+|Smoking                   |Never                                      | 120|  3691|   3.1| 1.95e-02|*   |
+|Smoking                   |Unknown                                    |   4|    83|   4.6| 7.29e-01|NA  |
+|Smoking                   |NA                                         |  14|   185|   7.0| 2.11e-02|*   |
 
 # By ER Visit
 
 
-```r
+``` r
 combined.data <- 
   combined.data %>%
-  mutate(EmergencyVisit.Group = case_when(EmergencyVisit==0 ~ "No",
-                                    EmergencyVisit==1 ~ "Yes",
-                                    is.na(EmergencyVisit) ~ "No",
+  mutate(EmergencyVisit.Group = case_when(EmergencyVisit.x==0 ~ "No",
+                                    EmergencyVisit.x==1 ~ "Yes",
+                                    is.na(EmergencyVisit.x) ~ "No",
                                     .default="No"))
 
 quant.demo <- 
   combined.data %>%
   group_by(EmergencyVisit.Group) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
-                             shapiro.p = ~shapiro.test(.)$p.value,
+                             #shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:13,
+  pivot_longer(cols=contains("_"),#all varaibles separated by underscore
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
@@ -946,33 +972,33 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 Table: Summary of quantitative values
 
-|EmergencyVisit.Group |Variable   | mean|    sd| shapiro.p|   n|
-|:--------------------|:----------|----:|-----:|---------:|---:|
-|No                   |AgeInYears | 58.8| 15.12|         0| 335|
-|Yes                  |AgeInYears | 58.6| 15.53|         0| 228|
-|No                   |BMI        | 29.4| 11.27|         0| 335|
-|Yes                  |BMI        | 28.6|  7.12|         0| 228|
-|No                   |MaxStay    | 16.4| 34.91|         0| 335|
-|Yes                  |MaxStay    | 17.7| 22.30|         0| 228|
+|EmergencyVisit.Group |Variable     |  mean|    sd|    n|
+|:--------------------|:------------|-----:|-----:|----:|
+|No                   |AgeInYears.x | 55.77| 16.22| 5972|
+|Yes                  |AgeInYears.x | 58.07| 16.71| 2380|
+|No                   |BMI          | 30.60|  8.44| 5972|
+|Yes                  |BMI          | 29.95|  8.44| 2380|
+|No                   |MaxStay      |  2.11| 10.09| 5972|
+|Yes                  |MaxStay      |  7.55| 13.39| 2380|
 
-```r
+``` r
 # wilcoxon tests, not normally distributed
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~EmergencyVisit.Group)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(6,6,99))
+kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(99,99,99))
 ```
 
 
 
-| AgeInYears_Mann.Whitney| BMI_Mann.Whitney| MaxStay_Mann.Whitney|
-|-----------------------:|----------------:|--------------------:|
-|                   0.663|            0.709|             1.09e-13|
+| AgeInYears.x_Mann.Whitney| BMI_Mann.Whitney| MaxStay_Mann.Whitney|
+|-------------------------:|----------------:|--------------------:|
+|                  4.27e-09|        0.0000699|                    0|
 
-```r
+``` r
 ances.demo.ql <- 
   combined.data %>%
   group_by(MajorityAncestry,EmergencyVisit.Group) %>%
@@ -994,15 +1020,13 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,EmergencyVisit.Group) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.Group) %>%
+  rename("Group"="EmergencyVisit.Group") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Emergency Visit") %>%
-  mutate(Group=case_when(Group==1~"Yes",
-                         Group==2~"No"))
+  mutate(Type="Emergency Visit") 
 
 # coded as dates not yes/no
 # cvd.demo.ql <- 
@@ -1044,12 +1068,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,EmergencyVisit.Group) %>%
+  group_by(PriorDiabetes,EmergencyVisit.Group) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -1066,34 +1090,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,EmergencyVisit.Group) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,EmergencyVisit.Group) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,EmergencyVisit.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,EmergencyVisit.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,EmergencyVisit.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,EmergencyVisit.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -1110,7 +1134,7 @@ death.demo.ql <-
 
 surv30d.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,EmergencyVisit.Group) %>%
+  group_by(Survival.30day,EmergencyVisit.Group) %>%
   count() %>%
   rename("Group"=1) %>%
   ungroup %>%
@@ -1135,9 +1159,9 @@ summary.discrete <-
             ances.demo.ql,
             smoking.demo.ql,
             type.demo.ql,
-            emerg.demo.ql, 
+            #emerg.demo.ql, 
             death.demo.ql,
-            surv30d.demo.ql %>% mutate(Group=as.character(Group)),
+            surv30d.demo.ql,
             surv60d.demo.ql,
             diabetes.demo.ql,
             hypertension.demo.ql,
@@ -1159,61 +1183,67 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival",
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 
 
 Table: Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival
 
-|Type                |Group                            |  No| Yes|   Pct| Chisq.p|Sig |
-|:-------------------|:--------------------------------|---:|---:|-----:|-------:|:---|
-|30d Survival        |0                                | 331|   0| 100.0|   0.000|**  |
-|30d Survival        |1                                |   0| 228|   0.0|   0.000|**  |
-|30d Survival        |NA                               |   4|   0| 100.0|   0.099|NA  |
-|60d Survival        |Surival Past 60 Days             | 133| 105|  55.9|   0.255|NA  |
-|60d Survival        |Within 60 Days                   |  30|  27|  52.6|   0.291|NA  |
-|60d Survival        |NA                               | 172|  96|  64.2|   0.119|NA  |
-|Ancestry            |AFR                              |  13|  10|  56.5|   0.771|NA  |
-|Ancestry            |AMR                              |   1|   0| 100.0|   0.409|NA  |
-|Ancestry            |EAS                              |   1|   1|  50.0|   0.784|NA  |
-|Ancestry            |EUR                              | 214| 140|  60.5|   0.716|NA  |
-|Ancestry            |WAS                              |   3|   4|  42.9|   0.370|NA  |
-|Ancestry            |NA                               | 103|  73|  58.5|   0.791|NA  |
-|Cardiac Arrhythmias |Yes                              | 265| 210|  55.8|   0.099|NA  |
-|Cardiac Arrhythmias |NA                               |  70|  18|  79.5|   0.000|**  |
-|Death               |Alive                            | 167| 132|  55.9|   0.199|NA  |
-|Death               |Deceased                         | 168|  96|  63.6|   0.171|NA  |
-|Diabetes            |Yes                              | 166| 128|  56.5|   0.288|NA  |
-|Diabetes            |NA                               | 169| 100|  62.8|   0.267|NA  |
-|Emergency Visit     |Yes                              |   0| 228|   0.0|   0.000|**  |
-|Emergency Visit     |NA                               | 335|   0| 100.0|   0.000|**  |
-|Ethnicity           |Hispanic or Latino               |   6|   7|  46.2|   0.327|NA  |
-|Ethnicity           |Non-Hispanic or Latino           | 327| 219|  59.9|   0.854|NA  |
-|Ethnicity           |Unknown                          |   2|   2|  50.0|   0.699|NA  |
-|Gender              |F                                | 115|  87|  56.9|   0.456|NA  |
-|Gender              |M                                | 220| 141|  60.9|   0.578|NA  |
-|Hypertension        |Yes                              | 250| 199|  55.7|   0.099|NA  |
-|Hypertension        |NA                               |  85|  29|  74.6|   0.001|**  |
-|Pneumonia Type      |Bacterial                        | 335| 228|  59.5|   1.000|NA  |
-|Race                |African American                 |  49|  30|  62.0|   0.648|NA  |
-|Race                |American Indian or Alaska Native |   2|   2|  50.0|   0.699|NA  |
-|Race                |Asian                            |   2|   2|  50.0|   0.699|NA  |
-|Race                |Caucasian                        | 282| 190|  59.7|   0.914|NA  |
-|Race                |Other                            |   0|   3|   0.0|   0.036|*   |
-|Race                |Unknown                          |   0|   1|   0.0|   0.225|NA  |
-|Smoking             |Current                          |  15|  23|  39.5|   0.012|*   |
-|Smoking             |Former                           | 136| 103|  56.9|   0.413|NA  |
-|Smoking             |Never                            | 146|  83|  63.8|   0.190|NA  |
-|Smoking             |Unknown                          |  14|   4|  77.8|   0.114|NA  |
-|Smoking             |NA                               |  24|  15|  61.5|   0.796|NA  |
+|Type                      |Group                                      |   No|  Yes|   Pct|  Chisq.p|Sig |
+|:-------------------------|:------------------------------------------|----:|----:|-----:|--------:|:---|
+|30d Survival              |Surival Past 30 Days                       | 1240|  799|  60.8| 1.09e-26|**  |
+|30d Survival              |Within 30 Days                             |   51|  165|  23.6| 8.08e-55|**  |
+|30d Survival              |NA                                         | 4681| 1416|  76.8| 7.58e-20|**  |
+|60d Survival              |Surival Past 60 Days                       | 1202|  729|  62.2| 2.04e-19|**  |
+|60d Survival              |Within 60 Days                             |   89|  235|  27.5| 5.04e-69|**  |
+|60d Survival              |NA                                         | 4681| 1416|  76.8| 7.58e-20|**  |
+|Ancestry                  |AFR                                        |  205|  146|  58.4| 5.42e-08|**  |
+|Ancestry                  |AMR                                        |   18|   11|  62.1| 2.60e-01|NA  |
+|Ancestry                  |CSA                                        |   29|    8|  78.4| 3.54e-01|NA  |
+|Ancestry                  |EAS                                        |   35|    9|  79.5| 2.37e-01|NA  |
+|Ancestry                  |EUR                                        | 3491| 1401|  71.4| 8.25e-01|NA  |
+|Ancestry                  |WAS                                        |   30|   19|  61.2| 1.11e-01|NA  |
+|Ancestry                  |NA                                         | 2164|  786|  73.4| 2.58e-02|*   |
+|Death                     |Alive                                      | 1292|  964|  57.3| 1.03e-50|**  |
+|Death                     |Deceased                                   | 4680| 1416|  76.8| 8.12e-20|**  |
+|Ethnicity                 |Hispanic or Latino                         |  132|   63|  67.7| 2.38e-01|NA  |
+|Ethnicity                 |Non-Hispanic or Latino                     | 5665| 2291|  71.2| 5.54e-01|NA  |
+|Ethnicity                 |Patient Refused                            |   33|    5|  86.8| 3.62e-02|*   |
+|Ethnicity                 |Unknown                                    |  128|   21|  85.9| 9.84e-05|**  |
+|Ethnicity                 |NA                                         |   14|    0| 100.0| 1.82e-02|*   |
+|Gender                    |F                                          | 3518| 1106|  76.1| 5.36e-12|**  |
+|Gender                    |M                                          | 2454| 1274|  65.8| 1.59e-14|**  |
+|Pneumonia Type            |Bacterial                                  | 5972| 2380|  71.5| 1.00e+00|NA  |
+|Prior Cardiac Arrhythmias |Yes                                        | 1571|  900|  63.6| 2.58e-18|**  |
+|Prior Cardiac Arrhythmias |NA                                         | 4401| 1480|  74.8| 1.53e-08|**  |
+|PriorDiabetes             |Yes                                        | 1183|  620|  65.6| 3.00e-08|**  |
+|PriorDiabetes             |NA                                         | 4789| 1760|  73.1| 3.64e-03|**  |
+|PriorHypertension         |Yes                                        | 2226| 1036|  68.2| 3.64e-05|**  |
+|PriorHypertension         |NA                                         | 3746| 1344|  73.6| 9.48e-04|**  |
+|Race                      |African American                           |  401|  271|  59.7| 1.09e-11|**  |
+|Race                      |American Indian or Alaska Native           |   44|    9|  83.0| 6.33e-02|NA  |
+|Race                      |Asian                                      |   93|   30|  75.6| 3.13e-01|NA  |
+|Race                      |Caucasian                                  | 5259| 2007|  72.4| 9.87e-02|NA  |
+|Race                      |Native Hawaiian and Other Pacific Islander |    5|    1|  83.3| 5.21e-01|NA  |
+|Race                      |Other                                      |   99|   54|  64.7| 6.25e-02|NA  |
+|Race                      |Patient Refused                            |   27|    3|  90.0| 2.48e-02|*   |
+|Race                      |Unknown                                    |   33|    4|  89.2| 1.72e-02|*   |
+|Race                      |NA                                         |   11|    1|  91.7| 1.22e-01|NA  |
+|Smoking                   |Current                                    |  566|  217|  72.3| 6.28e-01|NA  |
+|Smoking                   |Former                                     | 2425| 1047|  69.8| 3.03e-02|*   |
+|Smoking                   |Never                                      | 2745| 1066|  72.0| 4.73e-01|NA  |
+|Smoking                   |Unknown                                    |   61|   26|  70.1| 7.74e-01|NA  |
+|Smoking                   |NA                                         |  175|   24|  87.9| 2.80e-07|**  |
 
 # By Longer than Median Stay
 
-The median stay was 5.249.
+The median stay was 0.042.
 
 
-```r
+``` r
 combined.data <- 
   combined.data %>%
   mutate(StayAboveMedian=case_when(MaxStay>median(MaxStay,na.rm=T)~"Yes",
@@ -1222,7 +1252,7 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(StayAboveMedian) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              #shapiro.p = ~shapiro.test(.)$p.value,
@@ -1239,36 +1269,36 @@ kable(quant.demo, caption="Summary of quantitative values for above average leng
 
 Table: Summary of quantitative values for above average length of stay
 
-|StayAboveMedian |Variable   |  mean|    sd|   n|
-|:---------------|:----------|-----:|-----:|---:|
-|No              |AgeInYears | 60.26| 14.57| 279|
-|Yes             |AgeInYears | 57.18| 15.81| 279|
-|NA              |AgeInYears | 76.00|    NA|   5|
-|No              |BMI        | 28.83|  6.90| 279|
-|Yes             |BMI        | 29.31| 11.46| 279|
-|NA              |BMI        | 26.41|    NA|   5|
-|No              |MaxStay    |  1.22|  1.75| 279|
-|Yes             |MaxStay    | 32.77| 36.75| 279|
-|NA              |MaxStay    |  5.25|    NA|   5|
+|StayAboveMedian |Variable     |   mean|     sd|    n|
+|:---------------|:------------|------:|------:|----:|
+|No              |AgeInYears.x | 54.893| 16.361| 4167|
+|Yes             |AgeInYears.x | 57.951| 16.292| 4173|
+|NA              |AgeInYears.x | 62.200| 11.223|   12|
+|No              |BMI          | 30.744|  8.281| 4167|
+|Yes             |BMI          | 30.076|  8.582| 4173|
+|NA              |BMI          | 31.622| 10.541|   12|
+|No              |MaxStay      |  0.003|  0.022| 4167|
+|Yes             |MaxStay      |  7.328| 15.266| 4173|
+|NA              |MaxStay      |  0.042|  0.000|   12|
 
-```r
+``` r
 # wilcoxon tests, not normally distributed
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI'),
+  summarize(across(.cols=c('AgeInYears.x','BMI'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~StayAboveMedian)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(6,6,99))
+kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(99,99,99))
 ```
 
 
 
-| AgeInYears_Mann.Whitney| BMI_Mann.Whitney|
-|-----------------------:|----------------:|
-|                  0.0149|            0.801|
+| AgeInYears.x_Mann.Whitney| BMI_Mann.Whitney|
+|-------------------------:|----------------:|
+|                  2.18e-18|        0.0000131|
 
-```r
+``` r
 ances.demo.ql <- 
   combined.data %>%
   group_by(MajorityAncestry,StayAboveMedian) %>%
@@ -1290,8 +1320,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,StayAboveMedian) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.Group,StayAboveMedian) %>%
+  rename("Group"="EmergencyVisit.Group") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -1340,12 +1370,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,StayAboveMedian) %>%
+  group_by(PriorDiabetes,StayAboveMedian) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -1362,34 +1392,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,StayAboveMedian) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,StayAboveMedian) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,StayAboveMedian) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,StayAboveMedian) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,StayAboveMedian) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,StayAboveMedian) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -1406,7 +1436,7 @@ death.demo.ql <-
 
 surv30d.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,StayAboveMedian) %>%
+  group_by(EmergencyVisit.Group,StayAboveMedian) %>%
   count() %>%
   rename("Group"=1) %>%
   ungroup %>%
@@ -1456,71 +1486,78 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by above average length of stay")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by above average length of stay",
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 
 
 Table: Summary of discrete variables for bacterial pneumonia cases, stratified by above average length of stay
 
-|Type                |Group                            |  No| Yes| NA|  Pct| Chisq.p|Sig |
-|:-------------------|:--------------------------------|---:|---:|--:|----:|-------:|:---|
-|30d Survival        |0                                | 196| 135| NA| 59.2|   0.001|**  |
-|30d Survival        |1                                |  83| 144|  1| 36.6|   0.000|**  |
-|60d Survival        |Surival Past 60 Days             | 129| 108|  1| 54.4|   0.173|NA  |
-|60d Survival        |Within 60 Days                   |  17|  40| NA| 29.8|   0.002|**  |
-|60d Survival        |NA                               | 133| 131|  4| 50.4|   0.902|NA  |
-|Ancestry            |AFR                              |   7|  16| NA| 30.4|   0.061|NA  |
-|Ancestry            |AMR                              |   0|   1| NA|  0.0|   0.317|NA  |
-|Ancestry            |EAS                              |   1|   1| NA| 50.0|   1.000|NA  |
-|Ancestry            |EUR                              | 194| 156|  4| 55.4|   0.042|*   |
-|Ancestry            |WAS                              |   4|   3| NA| 57.1|   0.705|NA  |
-|Ancestry            |NA                               |  73| 102|  1| 41.7|   0.028|*   |
-|Cardiac Arrhythmias |Yes                              | 220| 250|  5| 46.8|   0.166|NA  |
-|Cardiac Arrhythmias |NA                               |  59|  29| NA| 67.0|   0.001|**  |
-|Death               |Alive                            | 146| 148|  5| 49.7|   0.907|NA  |
-|Death               |Deceased                         | 133| 131| NA| 50.4|   0.902|NA  |
-|Diabetes            |Yes                              | 144| 145|  5| 49.8|   0.953|NA  |
-|Diabetes            |NA                               | 135| 134| NA| 50.2|   0.951|NA  |
-|Emergency Visit     |Yes                              |  83| 144|  1| 36.6|   0.000|**  |
-|Emergency Visit     |NA                               | 196| 135|  4| 59.2|   0.001|**  |
-|Ethnicity           |Hispanic or Latino               |   9|   4| NA| 69.2|   0.166|NA  |
-|Ethnicity           |Non-Hispanic or Latino           | 270| 271|  5| 49.9|   0.966|NA  |
-|Ethnicity           |Unknown                          |   0|   4| NA|  0.0|   0.046|*   |
-|Gender              |F                                | 101| 101| NA| 50.0|   1.000|NA  |
-|Gender              |M                                | 178| 178|  5| 50.0|   1.000|NA  |
-|Hypertension        |Yes                              | 216| 229|  4| 48.5|   0.538|NA  |
-|Hypertension        |NA                               |  63|  50|  1| 55.8|   0.221|NA  |
-|Pneumonia Type      |Bacterial                        | 279| 279|  5| 50.0|   1.000|NA  |
-|Race                |African American                 |  35|  44| NA| 44.3|   0.311|NA  |
-|Race                |American Indian or Alaska Native |   1|   3| NA| 25.0|   0.317|NA  |
-|Race                |Asian                            |   2|   2| NA| 50.0|   1.000|NA  |
-|Race                |Caucasian                        | 241| 226|  5| 51.6|   0.488|NA  |
-|Race                |Other                            |   0|   3| NA|  0.0|   0.083|NA  |
-|Race                |Unknown                          |   0|   1| NA|  0.0|   0.317|NA  |
-|Smoking             |Current                          |  14|  24| NA| 36.8|   0.105|NA  |
-|Smoking             |Former                           | 121| 116|  2| 51.1|   0.745|NA  |
-|Smoking             |Never                            | 128|  98|  3| 56.6|   0.046|*   |
-|Smoking             |Unknown                          |   2|  16| NA| 11.1|   0.001|**  |
-|Smoking             |NA                               |  14|  25| NA| 35.9|   0.078|NA  |
+|Type                      |Group                                      |   No|  Yes| NA|    Pct| Chisq.p|Sig |
+|:-------------------------|:------------------------------------------|----:|----:|--:|------:|-------:|:---|
+|30d Survival              |No                                         | 4165| 1795| 12| 69.883|       0|**  |
+|30d Survival              |Yes                                        |    2| 2378| NA|  0.084|       0|**  |
+|60d Survival              |Surival Past 60 Days                       |  762| 1167|  2| 39.502|       0|**  |
+|60d Survival              |Within 60 Days                             |   12|  312| NA|  3.704|       0|**  |
+|60d Survival              |NA                                         | 3393| 2694| 10| 55.742|       0|**  |
+|Ancestry                  |AFR                                        |  137|  214| NA| 39.031|       0|**  |
+|Ancestry                  |AMR                                        |    8|   21| NA| 27.586|       0|*   |
+|Ancestry                  |CSA                                        |   19|   18| NA| 51.351|       1|NA  |
+|Ancestry                  |EAS                                        |   21|   23| NA| 47.727|       1|NA  |
+|Ancestry                  |EUR                                        | 2415| 2469|  8| 49.447|       0|NA  |
+|Ancestry                  |WAS                                        |   19|   30| NA| 38.776|       0|NA  |
+|Ancestry                  |NA                                         | 1548| 1398|  4| 52.546|       0|**  |
+|Death                     |Alive                                      |  774| 1479|  3| 34.354|       0|**  |
+|Death                     |Deceased                                   | 3393| 2694|  9| 55.742|       0|**  |
+|Emergency Visit           |NA                                         | 4167| 4173| 12| 49.964|       1|NA  |
+|Ethnicity                 |Hispanic or Latino                         |   91|  104| NA| 46.667|       0|NA  |
+|Ethnicity                 |Non-Hispanic or Latino                     | 3946| 3999| 11| 49.666|       1|NA  |
+|Ethnicity                 |Patient Refused                            |   27|   10|  1| 72.973|       0|**  |
+|Ethnicity                 |Unknown                                    |   90|   59| NA| 60.403|       0|*   |
+|Ethnicity                 |NA                                         |   13|    1| NA| 92.857|       0|**  |
+|Gender                    |F                                          | 2574| 2042|  8| 55.763|       0|**  |
+|Gender                    |M                                          | 1593| 2131|  4| 42.777|       0|**  |
+|Pneumonia Type            |Bacterial                                  | 4167| 4173| 12| 49.964|       1|NA  |
+|Prior Cardiac Arrhythmias |Yes                                        | 1063| 1406|  2| 43.054|       0|**  |
+|Prior Cardiac Arrhythmias |NA                                         | 3104| 2767| 10| 52.870|       0|**  |
+|PriorDiabetes             |Yes                                        |  826|  975|  2| 45.863|       0|**  |
+|PriorDiabetes             |NA                                         | 3341| 3198| 10| 51.093|       0|NA  |
+|PriorHypertension         |Yes                                        | 1551| 1709|  2| 47.577|       0|**  |
+|PriorHypertension         |NA                                         | 2616| 2464| 10| 51.496|       0|*   |
+|Race                      |African American                           |  276|  396| NA| 41.071|       0|**  |
+|Race                      |American Indian or Alaska Native           |   33|   20| NA| 62.264|       0|NA  |
+|Race                      |Asian                                      |   60|   63| NA| 48.780|       1|NA  |
+|Race                      |Caucasian                                  | 3673| 3582| 11| 50.627|       0|NA  |
+|Race                      |Native Hawaiian and Other Pacific Islander |    4|    2| NA| 66.667|       0|NA  |
+|Race                      |Other                                      |   66|   86|  1| 43.421|       0|NA  |
+|Race                      |Patient Refused                            |   24|    6| NA| 80.000|       0|**  |
+|Race                      |Unknown                                    |   22|   15| NA| 59.459|       0|NA  |
+|Race                      |NA                                         |    9|    3| NA| 75.000|       0|NA  |
+|Smoking                   |Current                                    |  428|  355| NA| 54.662|       0|**  |
+|Smoking                   |Former                                     | 1629| 1834|  9| 47.040|       0|**  |
+|Smoking                   |Never                                      | 2006| 1802|  3| 52.679|       0|**  |
+|Smoking                   |Unknown                                    |   33|   54| NA| 37.931|       0|*   |
+|Smoking                   |NA                                         |   71|  128| NA| 35.678|       0|**  |
 
 `
 
 # Session Information
 
 
-```r
+``` r
 sessionInfo()
 ```
 
 ```
-## R version 4.3.1 (2023-06-16)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Red Hat Enterprise Linux 8.6 (Ootpa)
+## R version 4.4.0 (2024-04-24)
+## Platform: x86_64-pc-linux-gnu
+## Running under: Red Hat Enterprise Linux 8.8 (Ootpa)
 ## 
 ## Matrix products: default
-## BLAS:   /sw/pkgs/arc/stacks/gcc/10.3.0/R/4.3.1/lib64/R/lib/libRblas.so 
-## LAPACK: /sw/pkgs/arc/stacks/gcc/10.3.0/R/4.3.1/lib64/R/lib/libRlapack.so;  LAPACK version 3.11.0
+## BLAS:   /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRblas.so 
+## LAPACK: /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRlapack.so;  LAPACK version 3.12.0
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -1537,18 +1574,18 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] lubridate_1.9.2 tidyr_1.3.0     dplyr_1.1.3     readr_2.1.4    
-## [5] knitr_1.44     
+## [1] lubridate_1.9.3 tidyr_1.3.1     dplyr_1.1.4     readr_2.1.5    
+## [5] knitr_1.47     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] bit_4.0.5        jsonlite_1.8.7   compiler_4.3.1   crayon_1.5.2    
-##  [5] tidyselect_1.2.0 parallel_4.3.1   jquerylib_0.1.4  yaml_2.3.7      
-##  [9] fastmap_1.1.1    R6_2.5.1         generics_0.1.3   tibble_3.2.1    
-## [13] bslib_0.5.1      pillar_1.9.0     tzdb_0.4.0       rlang_1.1.1     
-## [17] utf8_1.2.3       cachem_1.0.8     xfun_0.40        sass_0.4.7      
-## [21] bit64_4.0.5      timechange_0.2.0 cli_3.6.1        withr_2.5.0     
-## [25] magrittr_2.0.3   digest_0.6.33    vroom_1.6.3      rstudioapi_0.13 
-## [29] hms_1.1.3        lifecycle_1.0.3  vctrs_0.6.3      evaluate_0.21   
-## [33] glue_1.6.2       fansi_1.0.4      rmarkdown_2.25   purrr_1.0.2     
-## [37] tools_4.3.1      pkgconfig_2.0.3  htmltools_0.5.6
+##  [1] bit_4.0.5         jsonlite_1.8.8    compiler_4.4.0    crayon_1.5.2     
+##  [5] tidyselect_1.2.1  parallel_4.4.0    jquerylib_0.1.4   yaml_2.3.8       
+##  [9] fastmap_1.2.0     R6_2.5.1          generics_0.1.3    tibble_3.2.1     
+## [13] bslib_0.7.0       pillar_1.9.0      tzdb_0.4.0        rlang_1.1.4      
+## [17] utf8_1.2.4        cachem_1.1.0      xfun_0.44         sass_0.4.9       
+## [21] bit64_4.0.5       timechange_0.3.0  cli_3.6.2         withr_3.0.0      
+## [25] magrittr_2.0.3    digest_0.6.35     vroom_1.6.5       rstudioapi_0.16.0
+## [29] hms_1.1.3         lifecycle_1.0.4   vctrs_0.6.5       evaluate_0.24.0  
+## [33] glue_1.7.0        fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2      
+## [37] tools_4.4.0       pkgconfig_2.0.3   htmltools_0.5.8.1
 ```

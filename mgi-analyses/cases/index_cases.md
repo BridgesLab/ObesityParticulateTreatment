@@ -12,10 +12,10 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.  This script is to idenitify the index cases and ranges for when we are interested in outcomes.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-05-08/cases and was most recently run on Wed May  8 12:44:45 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.  This script is to idenitify the index cases and ranges for when we are interested in outcomes.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/cases and was most recently run on Fri Jun 14 11:23:36 2024.
 
 
-```r
+``` r
 library(knitr)
 #figures made will go to directory called figures, will make them as both png and pdf files 
 opts_chunk$set(fig.path='figures-index/',
@@ -43,7 +43,7 @@ library(dplyr)
 ##     intersect, setdiff, setequal, union
 ```
 
-```r
+``` r
 library(tidyr)
 library(knitr)
 library(lubridate)
@@ -60,30 +60,32 @@ library(lubridate)
 ##     date, intersect, setdiff, union
 ```
 
-```r
+``` r
 diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
 encounter.datafile <- 'EncounterAll.csv'
 encounter.anth.datafile <- "EncounterAnthropometricsBMI.csv"
 ```
 
 
-```r
+``` r
+library(readxl)
 diagnosis.data <- read_csv(diagnosis.datafile) 
-mapped.diagnoses <- read_csv("Mapped Diagnoses.csv")
+diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
+mapped.diagnoses <- bind_rows(
+  read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
+  read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
+  select(ICD,Type)
 
-bacterial.diagnoses <- filter(mapped.diagnoses, Type=="Bacterial") %>% pull(TermNameMapped)
-viral.diagnoses <- filter(mapped.diagnoses, Type=="Viral") %>% pull(TermNameMapped)
-other.diagnoses <- filter(mapped.diagnoses, Type=="Other") %>% pull(TermNameMapped)
+bacterial.diagnoses <- filter(mapped.diagnoses, Type=="Bacterial") %>% pull(ICD)
+viral.diagnoses <- filter(mapped.diagnoses, Type=="Viral") %>% pull(ICD)
+other.diagnoses <- filter(mapped.diagnoses, Type=="Other") %>% pull(ICD)
 
 pneumonia.diagnosis <- 
   diagnosis.data %>%
-  filter(grepl('pneum',TermNameMapped)) %>%
-  mutate(Type=case_when(grepl('viral',TermNameMapped)~"Viral",
-                        grepl('bacter',TermNameMapped)~"Bacterial",
-                        .default=NA)) %>%
-  mutate(Type=case_when(TermNameMapped %in% bacterial.diagnoses ~ 'Bacterial',
-                        TermNameMapped %in% viral.diagnoses ~ 'Viral',
-                        TermNameMapped %in% other.diagnoses ~ 'Other',
+  filter(TermCodeSource %in% c(bacterial.diagnoses,viral.diagnoses,other.diagnoses)) %>% #there are also COPD diagnoses
+  mutate(Type=case_when(TermCodeSource %in% bacterial.diagnoses ~ 'Bacterial',
+                        TermCodeSource %in% viral.diagnoses ~ 'Viral',
+                        TermCodeSource %in% other.diagnoses ~ 'Other',
                         .default=NA)) %>%
   filter(!is.na(Type)) #remove dignoses not in one of these categories
 
@@ -98,16 +100,16 @@ pneumonia.diagnosis %>%
 
 Table: Diagnosis type by patient
 
-|Type      |   n|
-|:---------|---:|
-|Bacterial | 347|
-|Other     | 120|
-|Viral     | 594|
+|Type      |    n|
+|:---------|----:|
+|Bacterial | 8352|
+|Other     |  124|
+|Viral     |  293|
 
 # Merging with Encounter Data
 
 
-```r
+``` r
 encounter.data <- read_csv(encounter.datafile)
 encounter.anthro.data <-read_csv(encounter.anth.datafile)
 
@@ -135,14 +137,14 @@ index.filename <- 'PneumoniaEncounterData.csv'
 write_csv(patient.enc.data,index.filename)
 ```
 
-After grouping multiple encounters into events there are 2142 encounters from 1893
+After grouping multiple encounters into events there are 81470 encounters from 81050
 
 This index encounter data is written out to PneumoniaEncounterData.csv which contains data about the indexed encounter.
 
 ## Summary of Patient Encounters
 
 
-```r
+``` r
 patient.enc.data %>% 
   ungroup %>%
   group_by(DeID_PatientID) %>%
@@ -157,36 +159,102 @@ kable(patient.encounter.counts %>% ungroup %>% count(Admissions,name="Number of 
 
 | Admissions| Number of Patients|
 |----------:|------------------:|
-|          1|                542|
-|          2|                187|
-|          3|                 48|
-|          4|                 27|
-|          5|                 16|
-|          6|                  6|
-|          7|                  7|
-|          8|                  5|
-|          9|                  1|
-|         10|                  4|
-|         12|                  2|
-|         14|                  4|
-|         15|                  1|
-|         16|                  1|
-|         18|                  5|
-|         20|                  2|
-|         22|                  2|
-|         23|                  2|
-|         24|                  2|
-|         26|                  1|
-|         27|                  2|
-|         29|                  1|
-|         30|                  1|
-|         33|                  1|
-|         40|                  1|
-|         41|                  1|
-|         42|                  1|
-|         46|                  1|
+|          1|               3148|
+|          2|               1144|
+|          3|                568|
+|          4|                362|
+|          5|                280|
+|          6|                227|
+|          7|                167|
+|          8|                149|
+|          9|                133|
+|         10|                110|
+|         11|                 99|
+|         12|                134|
+|         13|                107|
+|         14|                 88|
+|         15|                 85|
+|         16|                 72|
+|         17|                 73|
+|         18|                 75|
+|         19|                 70|
+|         20|                 63|
+|         21|                 76|
+|         22|                 50|
+|         23|                 53|
+|         24|                 52|
+|         25|                 67|
+|         26|                 47|
+|         27|                 54|
+|         28|                 39|
+|         29|                 40|
+|         30|                 41|
+|         31|                 39|
+|         32|                 21|
+|         33|                 36|
+|         34|                 35|
+|         35|                 32|
+|         36|                 30|
+|         37|                 27|
+|         38|                 25|
+|         39|                 28|
+|         40|                 29|
+|         41|                 27|
+|         42|                 25|
+|         43|                 28|
+|         44|                 26|
+|         45|                 21|
+|         46|                 30|
+|         47|                 20|
+|         48|                 15|
+|         49|                 21|
+|         50|                 18|
+|         51|                 24|
+|         52|                 14|
+|         53|                 13|
+|         54|                  9|
+|         55|                 12|
+|         56|                 15|
+|         57|                  8|
+|         58|                  9|
+|         59|                  8|
+|         60|                  9|
+|         61|                  9|
+|         62|                 13|
+|         63|                  3|
+|         64|                 14|
+|         65|                 11|
+|         66|                 11|
+|         67|                  7|
+|         68|                 12|
+|         69|                  3|
+|         70|                  2|
+|         71|                  7|
+|         72|                  9|
+|         73|                  7|
+|         74|                  4|
+|         75|                  5|
+|         76|                  3|
+|         77|                  2|
+|         78|                  2|
+|         79|                  3|
+|         80|                  4|
+|         81|                  3|
+|         82|                  4|
+|         84|                  1|
+|         85|                  4|
+|         87|                  3|
+|         88|                  3|
+|         89|                  1|
+|         90|                  2|
+|         91|                  3|
+|         92|                  3|
+|         93|                  3|
+|         94|                  1|
+|         95|                  1|
+|         97|                  1|
 
-```r
+``` r
 library(ggplot2)
 ggplot(patient.encounter.counts,(aes(x=Admissions))) +
   geom_histogram(stat='count',binwidth = 1) +
@@ -196,7 +264,7 @@ ggplot(patient.encounter.counts,(aes(x=Admissions))) +
 
 ![](figures-index/patient-encounters-1.png)<!-- -->
 
-```r
+``` r
 patient.enc.data %>% 
   ungroup %>%
   group_by(DeID_PatientID,Type) %>%
@@ -219,18 +287,18 @@ ggplot(patient.encounter.type.counts,(aes(x=Admissions))) +
 # Session Information
 
 
-```r
+``` r
 sessionInfo()
 ```
 
 ```
-## R version 4.3.1 (2023-06-16)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Red Hat Enterprise Linux 8.6 (Ootpa)
+## R version 4.4.0 (2024-04-24)
+## Platform: x86_64-pc-linux-gnu
+## Running under: Red Hat Enterprise Linux 8.8 (Ootpa)
 ## 
 ## Matrix products: default
-## BLAS:   /sw/pkgs/arc/stacks/gcc/10.3.0/R/4.3.1/lib64/R/lib/libRblas.so 
-## LAPACK: /sw/pkgs/arc/stacks/gcc/10.3.0/R/4.3.1/lib64/R/lib/libRlapack.so;  LAPACK version 3.11.0
+## BLAS:   /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRblas.so 
+## LAPACK: /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRlapack.so;  LAPACK version 3.12.0
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -247,20 +315,20 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] ggplot2_3.4.3   lubridate_1.9.2 tidyr_1.3.0     dplyr_1.1.3    
-## [5] readr_2.1.4     knitr_1.44     
+## [1] ggplot2_3.5.1   readxl_1.4.3    lubridate_1.9.3 tidyr_1.3.1    
+## [5] dplyr_1.1.4     readr_2.1.5     knitr_1.47     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] bit_4.0.5        gtable_0.3.4     jsonlite_1.8.7   compiler_4.3.1  
-##  [5] crayon_1.5.2     tidyselect_1.2.0 parallel_4.3.1   jquerylib_0.1.4 
-##  [9] scales_1.2.1     yaml_2.3.7       fastmap_1.1.1    R6_2.5.1        
-## [13] labeling_0.4.3   generics_0.1.3   tibble_3.2.1     munsell_0.5.0   
-## [17] bslib_0.5.1      pillar_1.9.0     tzdb_0.4.0       rlang_1.1.1     
-## [21] utf8_1.2.3       cachem_1.0.8     xfun_0.40        sass_0.4.7      
-## [25] bit64_4.0.5      timechange_0.2.0 cli_3.6.1        withr_2.5.0     
-## [29] magrittr_2.0.3   grid_4.3.1       digest_0.6.33    vroom_1.6.3     
-## [33] hms_1.1.3        lifecycle_1.0.3  vctrs_0.6.3      evaluate_0.21   
-## [37] glue_1.6.2       farver_2.1.1     colorspace_2.1-0 fansi_1.0.4     
-## [41] rmarkdown_2.25   purrr_1.0.2      tools_4.3.1      pkgconfig_2.0.3 
-## [45] htmltools_0.5.6
+##  [1] bit_4.0.5         gtable_0.3.5      jsonlite_1.8.8    highr_0.11       
+##  [5] compiler_4.4.0    crayon_1.5.2      tidyselect_1.2.1  parallel_4.4.0   
+##  [9] jquerylib_0.1.4   scales_1.3.0      yaml_2.3.8        fastmap_1.2.0    
+## [13] R6_2.5.1          labeling_0.4.3    generics_0.1.3    tibble_3.2.1     
+## [17] munsell_0.5.1     bslib_0.7.0       pillar_1.9.0      tzdb_0.4.0       
+## [21] rlang_1.1.4       utf8_1.2.4        cachem_1.1.0      xfun_0.44        
+## [25] sass_0.4.9        bit64_4.0.5       timechange_0.3.0  cli_3.6.2        
+## [29] withr_3.0.0       magrittr_2.0.3    grid_4.4.0        digest_0.6.35    
+## [33] vroom_1.6.5       hms_1.1.3         lifecycle_1.0.4   vctrs_0.6.5      
+## [37] evaluate_0.24.0   glue_1.7.0        farver_2.1.2      cellranger_1.1.0 
+## [41] colorspace_2.1-0  fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2      
+## [45] tools_4.4.0       pkgconfig_2.0.3   htmltools_0.5.8.1
 ```

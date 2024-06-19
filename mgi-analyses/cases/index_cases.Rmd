@@ -37,21 +37,21 @@ encounter.anth.datafile <- "EncounterAnthropometricsBMI.csv"
 library(readxl)
 diagnosis.data <- read_csv(diagnosis.datafile) 
 diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
-mapped.diagnoses <- read_excel(diagnosis.datasheet)
+mapped.diagnoses <- bind_rows(
+  read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
+  read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
+  select(ICD,Type)
 
-bacterial.diagnoses <- filter(mapped.diagnoses, Type=="Bacterial") %>% pull(TermNameMapped)
-viral.diagnoses <- filter(mapped.diagnoses, Type=="Viral") %>% pull(TermNameMapped)
-other.diagnoses <- filter(mapped.diagnoses, Type=="Other") %>% pull(TermNameMapped)
+bacterial.diagnoses <- filter(mapped.diagnoses, Type=="Bacterial") %>% pull(ICD)
+viral.diagnoses <- filter(mapped.diagnoses, Type=="Viral") %>% pull(ICD)
+other.diagnoses <- filter(mapped.diagnoses, Type=="Other") %>% pull(ICD)
 
 pneumonia.diagnosis <- 
   diagnosis.data %>%
-  filter(grepl('pneum',TermNameMapped)) %>%
-  mutate(Type=case_when(grepl('viral',TermNameMapped)~"Viral",
-                        grepl('bacter',TermNameMapped)~"Bacterial",
-                        .default=NA)) %>%
-  mutate(Type=case_when(TermNameMapped %in% bacterial.diagnoses ~ 'Bacterial',
-                        TermNameMapped %in% viral.diagnoses ~ 'Viral',
-                        TermNameMapped %in% other.diagnoses ~ 'Other',
+  filter(TermCodeSource %in% c(bacterial.diagnoses,viral.diagnoses,other.diagnoses)) %>% #there are also COPD diagnoses
+  mutate(Type=case_when(TermCodeSource %in% bacterial.diagnoses ~ 'Bacterial',
+                        TermCodeSource %in% viral.diagnoses ~ 'Viral',
+                        TermCodeSource %in% other.diagnoses ~ 'Other',
                         .default=NA)) %>%
   filter(!is.na(Type)) #remove dignoses not in one of these categories
 

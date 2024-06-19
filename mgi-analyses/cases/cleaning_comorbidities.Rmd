@@ -37,7 +37,7 @@ Combining demographic files
 ```{r combining}
 #need to know when the first diagnosis was so need encounter data
 encounter.data <- read_csv(encounter.datafile) %>%
-  mutate(EncounterDate = mdy_hm(DeID_AdmitDate))
+  mutate(EncounterDate = as.Date(mdy_hm(DeID_AdmitDate),format="%y-%m-%d"))
 
 cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
   left_join(encounter.data,by=c('DeID_PatientID','DeID_EncounterID')) %>%
@@ -71,10 +71,34 @@ cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%
             DiabetesWithChronicComplicationFirst = first(EncounterDate[DiabetesWithChronicComplication==1]),
             DiabetesWithoutChronicComplication = max(DiabetesWithoutChronicComplication,na.rm=T),
             DiabetesWithoutChronicComplicationFirst = first(EncounterDate[DiabetesWithoutChronicComplication==1]))
+```
 
+# Separate Diagnoses
 
+For COPD need to pull this information from the dignosis summary file.
+
+```{r diagnosis-copd}
+diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
+diagnosis.data <- read_csv(diagnosis.datafile) 
+
+copd.diagnoses <- 
+  diagnosis.data %>%
+  filter(grepl("OBSTRUCTIVE", TermNameSource)) %>%
+  left_join(encounter.data, by=c("DeID_PatientID","DeID_EncounterID")) %>%
+  arrange(EncounterDate) %>%
+  distinct(DeID_PatientID,.keep_all = T) %>%
+  mutate(COPD=1) %>%
+  rename(COPDFirst=EncounterDate)
+```
+
+There were a total of `r nrow(copd.diagnoses)` patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.
+
+# Combining and Exporting
+
+```{r combine-export}
 combined.data <-
-  full_join(cm.charlson.data,cm.elix.data,by="DeID_PatientID")
+  full_join(cm.charlson.data,cm.elix.data,by="DeID_PatientID") %>%
+  left_join(copd.diagnoses,by="DeID_PatientID")
 
 comorbidities.filename <- 'Comorbidities_clean.csv'
 write_csv(combined.data, comorbidities.filename)

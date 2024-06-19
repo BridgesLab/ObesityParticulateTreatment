@@ -2,7 +2,7 @@
 #SBATCH --job-name Pneumonia
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=2G
+#SBATCH --mem-per-cpu=8G
 #SBATCH --time=00:30:00
 #SBATCH --account=davebrid0
 #SBATCH --partition=standard
@@ -18,7 +18,7 @@ module load RStudio
 echo "Running from $(pwd)"
 
 
-# requires 30 mins and 64G
+# requires 30 mins and 2G
 Rscript -e "rmarkdown::render('cleaning_comorbidities.Rmd')"
 Rscript -e "rmarkdown::render('cleaning_demographics.Rmd')"
 Rscript -e "rmarkdown::render('index_cases.Rmd')"

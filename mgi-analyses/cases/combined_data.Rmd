@@ -32,7 +32,7 @@ pneumonia.encounters.datafile <- 'PneumoniaEncounterData.csv'
 demographic.datafile <- 'DemographicDataClean.csv'
 ```
 
-Combining  files
+# Combining  files
 
 ```{r combining}
 cm.data <- read_csv(comorbiditites.datafile)
@@ -42,13 +42,48 @@ demographic.data <- read_csv(demographic.datafile)
 combined.data <-
   left_join(pneu.data,cm.data,by="DeID_PatientID") %>%
   left_join(demographic.data,by="DeID_PatientID") %>%
-  mutate(DiabetesFirst = ifelse(DiabetesWithChronicComplicationFirst==1|DiabetesWithoutChronicComplicationFirst==1,1,0)) %>%
-  mutate(HypertensionFirst = ifelse(HypertensionComplicatedFirst==1|HypertensionUncomplicatedFirst==1,1,0)) %>%
   mutate(Diabetes = ifelse(DiabetesWithChronicComplication==1|DiabetesWithoutChronicComplication==1,1,0)) %>%
+  mutate(DiabetesFirst = pmin(DiabetesWithoutChronicComplicationFirst,DiabetesWithChronicComplicationFirst,na.rm=T)) %>% #first date between both diabetes
   mutate(Hypertension = ifelse(HypertensionComplicated==1|HypertensionUncomplicated==1,1,0)) %>% 
+  mutate(HypertensionFirst = pmin(HypertensionComplicatedFirst,HypertensionUncomplicatedFirst,na.rm=T)) %>%
   mutate(Survival = as.Date(mdy_hm(DeID_DeathIndexDeceasedDate))-ymd(AdmitDate)) %>%
   mutate(Survival.30day = if_else(Survival <= 30 , "Within 30 Days","Surival Past 30 Days")) %>%
-  mutate(Survival.60day = if_else(Survival <= 60 , "Within 60 Days","Surival Past 60 Days"))
+  mutate(Survival.60day = if_else(Survival <= 60 , "Within 60 Days","Surival Past 60 Days")) %>%
+  mutate(PriorObesity = case_when(Obesity == 1 & ObesityFirst<AdmitDate ~ 1,
+                                Obesity == 1 & ObesityFirst>=AdmitDate ~ 0,
+                                Obesity==0~0,
+                                is.na(Obesity)~0,
+                                is.na(ObesityFirst)~0,
+                                .default=0
+                                )) %>% 
+    mutate(PriorCOPD = case_when(COPD == 1 & COPDFirst<AdmitDate ~ 1,
+                                COPD == 1 & COPDFirst>=AdmitDate ~ 0,
+                                COPD==0~0,
+                                is.na(COPD)~0,
+                                is.na(COPDFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorDiabetes = case_when(Diabetes == 1 & DiabetesFirst<AdmitDate ~ 1,
+                                Diabetes == 1 & DiabetesFirst>=AdmitDate ~ 0,
+                                Diabetes==0~0,
+                                is.na(Diabetes)~0,
+                                is.na(DiabetesFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorHypertension = case_when(Hypertension == 1 & HypertensionFirst<AdmitDate ~ 1,
+                                Hypertension == 1 & HypertensionFirst>=AdmitDate ~ 0,
+                                Hypertension==0~0,
+                                is.na(Hypertension)~0,
+                                is.na(HypertensionFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorCardiacArrhythmias = case_when(CardiacArrhythmias == 1 & HypertensionFirst<AdmitDate ~ 1,
+                                CardiacArrhythmias == 1 & CardiacArrhythmiasFirst>=AdmitDate ~ 0,
+                                CardiacArrhythmias==0~0,
+                                is.na(CardiacArrhythmias)~0,
+                                is.na(HypertensionFirst)~0,
+                                .default=0
+                                )) 
 
 complete.filename <- 'DatasetComplete.csv'
 write_csv(combined.data, complete.filename)

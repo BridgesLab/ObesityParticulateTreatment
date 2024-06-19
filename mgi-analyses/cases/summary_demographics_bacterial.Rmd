@@ -29,7 +29,9 @@ library(lubridate)
 
 complete.filename <- 'DatasetComplete.csv'
 combined.data <- read_csv(complete.filename) %>%
-  filter(Type=="Bacterial")
+  filter(Type=="Bacterial") %>%
+  arrange(AdmitDate) %>%
+  distinct(DeID_PatientID,.keep_all = T)
 ```
 
 
@@ -39,7 +41,7 @@ combined.data <- read_csv(complete.filename) %>%
 ```{r summary-dempographics}
 quant.demo <- 
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              n = ~length(!(is.na(.)))))) %>%
@@ -70,8 +72,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.x) %>%
+  rename("Group"="EmergencyVisit.x") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -120,12 +122,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes) %>%
+  group_by(PriorDiabetes) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -142,34 +144,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -227,20 +229,20 @@ kable(summary.discrete, caption="Summary of discrete variables for all pneumonia
 ```{r 30d-survival}
 combined.data <- 
   combined.data %>%
-  mutate(Survival.30day.Group = case_when(Survival.30day=="Within 30 Days" ~ "No",
+  mutate(Survival.30day.Group = as.factor(case_when(Survival.30day=="Within 30 Days" ~ "No",
                                     Survival.30day!="Survival Past 30 Days" ~ "Yes",
                                     is.na(Survival.30day) ~ "Yes",
-                                    .default="Yes"))
+                                    .default="Yes")))
 
 quant.demo <- 
   combined.data %>%
   group_by(Survival.30day.Group) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
-                             shapiro.p = ~shapiro.test(.)$p.value,
+                             #shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:13,
+  pivot_longer(cols=contains("_"), #fix this
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
@@ -250,10 +252,10 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival",digits=c(6,6,6))
+kable(quant.t.tests,caption="Mann-Whitney tests for 30 day survival",digits=c(99,99,99))
 
 ances.demo.ql <- 
   combined.data %>%
@@ -276,8 +278,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,Survival.30day.Group) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.x,Survival.30day.Group) %>%
+  rename("Group"="EmergencyVisit.x") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -326,12 +328,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,Survival.30day.Group) %>%
+  group_by(PriorDiabetes,Survival.30day.Group) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -348,34 +350,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,Survival.30day.Group) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,Survival.30day.Group) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.30day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.30day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.30day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.30day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -441,7 +443,9 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 30 day survival",
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 # By 60 Day Survival
@@ -457,12 +461,12 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(Survival.60.day.Group) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
-                             shapiro.p = ~shapiro.test(.)$p.value,
+                             #shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:13,
+  pivot_longer(cols=contains("_"), #all variables separated by underscore
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
@@ -471,10 +475,10 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival", digits=c(6,6,6))
+kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival", digits=c(99,99,99))
 
 ances.demo.ql <- 
   combined.data %>%
@@ -497,8 +501,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,Survival.60.day.Group) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.x,Survival.60.day.Group) %>%
+  rename("Group"="EmergencyVisit.x") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -547,12 +551,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,Survival.60.day.Group) %>%
+  group_by(PriorDiabetes,Survival.60.day.Group) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -569,34 +573,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,Survival.60.day.Group) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,Survival.60.day.Group) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.60.day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.60.day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,Survival.60.day.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,Survival.60.day.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -662,7 +666,10 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by 60 day survival",
+      ,
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 # By ER Visit
@@ -670,20 +677,20 @@ kable(summary.discrete, caption="Summary of discrete variables for bacterial pne
 ```{r er-visit}
 combined.data <- 
   combined.data %>%
-  mutate(EmergencyVisit.Group = case_when(EmergencyVisit==0 ~ "No",
-                                    EmergencyVisit==1 ~ "Yes",
-                                    is.na(EmergencyVisit) ~ "No",
+  mutate(EmergencyVisit.Group = case_when(EmergencyVisit.x==0 ~ "No",
+                                    EmergencyVisit.x==1 ~ "Yes",
+                                    is.na(EmergencyVisit.x) ~ "No",
                                     .default="No"))
 
 quant.demo <- 
   combined.data %>%
   group_by(EmergencyVisit.Group) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
-                             shapiro.p = ~shapiro.test(.)$p.value,
+                             #shapiro.p = ~shapiro.test(.)$p.value,
                              n = ~length(!(is.na(.)))))) %>%
-  pivot_longer(cols=2:13,
+  pivot_longer(cols=contains("_"),#all varaibles separated by underscore
                names_sep="_",names_to=c("Variable","Statistic")) %>%
   pivot_wider(names_from=Statistic,values_from=value) %>%
   arrange(Variable)
@@ -693,10 +700,10 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~EmergencyVisit.Group)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(6,6,99))
+kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(99,99,99))
 
 ances.demo.ql <- 
   combined.data %>%
@@ -719,15 +726,13 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,EmergencyVisit.Group) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.Group) %>%
+  rename("Group"="EmergencyVisit.Group") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Emergency Visit") %>%
-  mutate(Group=case_when(Group==1~"Yes",
-                         Group==2~"No"))
+  mutate(Type="Emergency Visit") 
 
 # coded as dates not yes/no
 # cvd.demo.ql <- 
@@ -769,12 +774,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,EmergencyVisit.Group) %>%
+  group_by(PriorDiabetes,EmergencyVisit.Group) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -791,34 +796,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,EmergencyVisit.Group) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,EmergencyVisit.Group) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,EmergencyVisit.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,EmergencyVisit.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,EmergencyVisit.Group) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,EmergencyVisit.Group) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -835,7 +840,7 @@ death.demo.ql <-
 
 surv30d.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,EmergencyVisit.Group) %>%
+  group_by(Survival.30day,EmergencyVisit.Group) %>%
   count() %>%
   rename("Group"=1) %>%
   ungroup %>%
@@ -860,9 +865,9 @@ summary.discrete <-
             ances.demo.ql,
             smoking.demo.ql,
             type.demo.ql,
-            emerg.demo.ql, 
+            #emerg.demo.ql, 
             death.demo.ql,
-            surv30d.demo.ql %>% mutate(Group=as.character(Group)),
+            surv30d.demo.ql,
             surv60d.demo.ql,
             diabetes.demo.ql,
             hypertension.demo.ql,
@@ -884,7 +889,9 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by ER visit survival",
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 # By Longer than Median Stay
@@ -900,7 +907,7 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(StayAboveMedian) %>%
-  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              #shapiro.p = ~shapiro.test(.)$p.value,
@@ -915,10 +922,10 @@ kable(quant.demo, caption="Summary of quantitative values for above average leng
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI'),
+  summarize(across(.cols=c('AgeInYears.x','BMI'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~StayAboveMedian)$p.value)))
 
-kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(6,6,99))
+kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(99,99,99))
 
 ances.demo.ql <- 
   combined.data %>%
@@ -941,8 +948,8 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,StayAboveMedian) %>%
-  rename("Group"="EmergencyVisit") %>%
+  group_by(EmergencyVisit.Group,StayAboveMedian) %>%
+  rename("Group"="EmergencyVisit.Group") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
   ungroup %>%
@@ -991,12 +998,12 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(Diabetes,StayAboveMedian) %>%
+  group_by(PriorDiabetes,StayAboveMedian) %>%
   count %>%
   ungroup %>%
-  rename("Group"="Diabetes") %>%
+  rename("Group"="PriorDiabetes") %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Diabetes") %>%
+  mutate(Type="PriorDiabetes") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -1013,34 +1020,34 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(Hypertension,StayAboveMedian) %>%
-  rename("Group"="Hypertension") %>%
+  group_by(PriorHypertension,StayAboveMedian) %>%
+  rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Hypertension") %>%
+  mutate(Type="PriorHypertension") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,StayAboveMedian) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,StayAboveMedian) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(CardiacArrhythmias,StayAboveMedian) %>%
-  rename("Group"="CardiacArrhythmias") %>%
+  group_by(PriorCardiacArrhythmias,StayAboveMedian) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -1057,7 +1064,7 @@ death.demo.ql <-
 
 surv30d.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit,StayAboveMedian) %>%
+  group_by(EmergencyVisit.Group,StayAboveMedian) %>%
   count() %>%
   rename("Group"=1) %>%
   ungroup %>%
@@ -1107,7 +1114,9 @@ summary.discrete <-
   mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
                          Chisq.p < 0.05 ~ '*'))
 
-kable(summary.discrete, caption="Summary of discrete variables for bacterial pneumonia cases, stratified by above average length of stay")
+kable(summary.discrete, 
+      caption="Summary of discrete variables for bacterial pneumonia cases, stratified by above average length of stay",
+      digits=c(0,0,0,0,1,99,0))
 ```
 
 `
