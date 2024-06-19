@@ -153,6 +153,28 @@ hypertension.demo.ql <-
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
+obesity.demo.ql <- 
+  combined.data %>%
+  group_by(PriorObesity) %>%
+  rename("Group"="PriorObesity") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior Obesity") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+copd.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCOPD) %>%
+  rename("Group"="PriorCOPD") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior COPD") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
 arrythmia.demo.ql <- 
   combined.data %>%
   group_by(PriorCardiacArrhythmias) %>%
@@ -218,6 +240,8 @@ summary.discrete <-
             diabetes.demo.ql,
             hypertension.demo.ql,
             arrythmia.demo.ql,
+            obesity.demo.ql,
+            copd.demo.ql
             ) %>%
   select(Type,Group,n,Pct)
 
@@ -370,14 +394,25 @@ arrythmia.demo.ql <-
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
-arrythmia.demo.ql <- 
+obesity.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,Survival.30day.Group) %>%
-  rename("Group"="PriorCardiacArrhythmias") %>%
+  group_by(PriorObesity,Survival.30day.Group) %>%
+  rename("Group"="PriorObesity") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Prior Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Obesity") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+copd.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCardiacArrhythmias,Survival.30day.Group) %>%
+  rename("Group"="PriorCOPD") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior COPD") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -593,14 +628,25 @@ arrythmia.demo.ql <-
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
-arrythmia.demo.ql <- 
+obesity.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,Survival.60.day.Group) %>%
-  rename("Group"="PriorCardiacArrhythmias") %>%
+  group_by(PriorObesity,Survival.60day.Group) %>%
+  rename("Group"="PriorObesity") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Prior Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Obesity") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+copd.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCardiacArrhythmias,Survival.60day.Group) %>%
+  rename("Group"="PriorCOPD") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior COPD") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -649,6 +695,8 @@ summary.discrete <-
             diabetes.demo.ql,
             hypertension.demo.ql,
             arrythmia.demo.ql,
+            obesity.demo.ql,
+            copd.demo.ql
             ) %>%
   select(Survival.60.day.Group,Type,Group,n,Pct) %>%
   ungroup %>%
@@ -816,14 +864,25 @@ arrythmia.demo.ql <-
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
-arrythmia.demo.ql <- 
+obesity.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,EmergencyVisit.Group) %>%
-  rename("Group"="PriorCardiacArrhythmias") %>%
+  group_by(PriorObesity,EmergencyVisit.Group) %>%
+  rename("Group"="PriorObesity") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Prior Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Obesity") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+copd.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCardiacArrhythmias,EmergencyVisit.Group) %>%
+  rename("Group"="PriorCOPD") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior COPD") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -872,6 +931,8 @@ summary.discrete <-
             diabetes.demo.ql,
             hypertension.demo.ql,
             arrythmia.demo.ql,
+            obesity.demo.ql,
+            copd.demo.ql
             ) %>%
   select(EmergencyVisit.Group,Type,Group,n,Pct) %>%
   ungroup %>%
@@ -1040,14 +1101,25 @@ arrythmia.demo.ql <-
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
-arrythmia.demo.ql <- 
+obesity.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,StayAboveMedian) %>%
-  rename("Group"="PriorCardiacArrhythmias") %>%
+  group_by(PriorObesity,StayAboveMedian) %>%
+  rename("Group"="PriorObesity") %>%
   count %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
-  mutate(Type="Prior Cardiac Arrhythmias") %>%
+  mutate(Type="Prior Obesity") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+copd.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCOPD,StayAboveMedian) %>%
+  rename("Group"="PriorCOPD") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior COPD") %>%
   mutate(Group=case_when(Group==1~"Yes",
                          Group==2~"No"))
 
@@ -1096,6 +1168,8 @@ summary.discrete <-
             diabetes.demo.ql,
             hypertension.demo.ql,
             arrythmia.demo.ql,
+            obesity.demo.ql,
+            copd.demo.ql
             ) %>%
   select(StayAboveMedian,Type,Group,n,Pct) %>%
   ungroup %>%
