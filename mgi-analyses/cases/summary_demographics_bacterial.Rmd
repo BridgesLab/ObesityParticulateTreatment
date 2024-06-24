@@ -461,6 +461,8 @@ summary.discrete <-
             diabetes.demo.ql,
             hypertension.demo.ql,
             arrythmia.demo.ql,
+            obesity.demo.ql,
+            copd.demo.ql
             ) %>%
   select(Survival.30day.Group,Type,Group,n,Pct) %>%
   ungroup %>%

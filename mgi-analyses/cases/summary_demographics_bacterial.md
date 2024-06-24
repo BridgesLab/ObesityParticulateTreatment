@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/cases and was most recently run on Wed Jun 19 12:29:01 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/cases and was most recently run on Wed Jun 19 19:38:52 2024.
 
 
 ``` r
@@ -607,6 +607,8 @@ summary.discrete <-
             diabetes.demo.ql,
             hypertension.demo.ql,
             arrythmia.demo.ql,
+            obesity.demo.ql,
+            copd.demo.ql
             ) %>%
   select(Survival.30day.Group,Type,Group,n,Pct) %>%
   ungroup %>%
@@ -660,8 +662,12 @@ Table: Summary of discrete variables for bacterial pneumonia cases, stratified b
 |Gender                    |F                                          |  79| 4545|   1.7| 1.70e-04|**  |
 |Gender                    |M                                          | 137| 3591|   3.7| 2.82e-05|**  |
 |Pneumonia Type            |Bacterial                                  | 216| 8136|   2.6| 1.00e+00|NA  |
+|Prior COPD                |Yes                                        |   7|  234|   2.9| 7.56e-01|NA  |
+|Prior COPD                |NA                                         | 209| 7902|   2.6| 9.57e-01|NA  |
 |Prior Cardiac Arrhythmias |Yes                                        |  90| 2381|   3.6| 9.42e-04|**  |
 |Prior Cardiac Arrhythmias |NA                                         | 126| 5755|   2.1| 3.20e-02|*   |
+|Prior Obesity             |Yes                                        |  49| 2118|   2.3| 3.40e-01|NA  |
+|Prior Obesity             |NA                                         | 167| 6018|   2.7| 5.73e-01|NA  |
 |PriorDiabetes             |Yes                                        |  59| 1744|   3.3| 6.64e-02|NA  |
 |PriorDiabetes             |NA                                         | 157| 6392|   2.4| 3.36e-01|NA  |
 |PriorHypertension         |Yes                                        | 103| 3159|   3.2| 3.98e-02|*   |

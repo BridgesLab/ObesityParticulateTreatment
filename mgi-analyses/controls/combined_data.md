@@ -12,10 +12,10 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients *without* viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-05-08/all and was most recently run on Wed May  8 13:14:58 2024.
+To analyse the subset of patients *without* viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/controls and was most recently run on Wed Jun 19 20:24:48 2024.
 
 
-```r
+``` r
 library(knitr)
 #figures made will go to directory called figures, will make them as both png and pdf files 
 opts_chunk$set(fig.path='figures-cm/',
@@ -43,7 +43,7 @@ library(dplyr)
 ##     intersect, setdiff, setequal, union
 ```
 
-```r
+``` r
 library(tidyr)
 library(knitr)
 library(lubridate)
@@ -60,7 +60,7 @@ library(lubridate)
 ##     date, intersect, setdiff, union
 ```
 
-```r
+``` r
 comorbiditites.datafile <- 'Comorbidities_clean.csv'
 demographic.datafile <- 'DemographicDataClean.csv'
 ```
@@ -68,7 +68,7 @@ demographic.datafile <- 'DemographicDataClean.csv'
 Combining  files
 
 
-```r
+``` r
 cm.data <- read_csv(comorbiditites.datafile)
 demographic.data <- read_csv(demographic.datafile)
 
@@ -89,18 +89,18 @@ Wrote this out to DatasetComplete.csv.
 # Session Information
 
 
-```r
+``` r
 sessionInfo()
 ```
 
 ```
-## R version 4.3.1 (2023-06-16)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Red Hat Enterprise Linux 8.6 (Ootpa)
+## R version 4.4.0 (2024-04-24)
+## Platform: x86_64-pc-linux-gnu
+## Running under: Red Hat Enterprise Linux 8.8 (Ootpa)
 ## 
 ## Matrix products: default
-## BLAS:   /sw/pkgs/arc/stacks/gcc/10.3.0/R/4.3.1/lib64/R/lib/libRblas.so 
-## LAPACK: /sw/pkgs/arc/stacks/gcc/10.3.0/R/4.3.1/lib64/R/lib/libRlapack.so;  LAPACK version 3.11.0
+## BLAS:   /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRblas.so 
+## LAPACK: /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRlapack.so;  LAPACK version 3.12.0
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -117,18 +117,18 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] lubridate_1.9.2 tidyr_1.3.0     dplyr_1.1.3     readr_2.1.4    
-## [5] knitr_1.44     
+## [1] lubridate_1.9.3 tidyr_1.3.1     dplyr_1.1.4     readr_2.1.5    
+## [5] knitr_1.47     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] crayon_1.5.2     vctrs_0.6.3      cli_3.6.1        rlang_1.1.1     
-##  [5] xfun_0.40        purrr_1.0.2      generics_0.1.3   jsonlite_1.8.7  
-##  [9] bit_4.0.5        glue_1.6.2       htmltools_0.5.6  sass_0.4.7      
-## [13] hms_1.1.3        fansi_1.0.4      rmarkdown_2.25   evaluate_0.21   
-## [17] jquerylib_0.1.4  tibble_3.2.1     tzdb_0.4.0       fastmap_1.1.1   
-## [21] yaml_2.3.7       lifecycle_1.0.3  compiler_4.3.1   timechange_0.2.0
-## [25] pkgconfig_2.0.3  rstudioapi_0.13  digest_0.6.33    R6_2.5.1        
-## [29] tidyselect_1.2.0 utf8_1.2.3       parallel_4.3.1   vroom_1.6.3     
-## [33] pillar_1.9.0     magrittr_2.0.3   bslib_0.5.1      bit64_4.0.5     
-## [37] tools_4.3.1      cachem_1.0.8
+##  [1] crayon_1.5.2      vctrs_0.6.5       cli_3.6.2         rlang_1.1.4      
+##  [5] xfun_0.44         purrr_1.0.2       generics_0.1.3    jsonlite_1.8.8   
+##  [9] bit_4.0.5         glue_1.7.0        htmltools_0.5.8.1 sass_0.4.9       
+## [13] hms_1.1.3         fansi_1.0.6       rmarkdown_2.27    evaluate_0.24.0  
+## [17] jquerylib_0.1.4   tibble_3.2.1      tzdb_0.4.0        fastmap_1.2.0    
+## [21] yaml_2.3.8        lifecycle_1.0.4   compiler_4.4.0    timechange_0.3.0 
+## [25] pkgconfig_2.0.3   digest_0.6.35     R6_2.5.1          tidyselect_1.2.1 
+## [29] utf8_1.2.4        parallel_4.4.0    vroom_1.6.5       pillar_1.9.0     
+## [33] magrittr_2.0.3    bslib_0.7.0       bit64_4.0.5       tools_4.4.0      
+## [37] cachem_1.1.0
 ```

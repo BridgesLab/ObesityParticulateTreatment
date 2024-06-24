@@ -1,0 +1,287 @@
+---
+title: "Demographic Summary for Bacterial Pneumonia Comparing Cases to Controls"
+author: "Dave Bridges"
+date: "June 18, 2024"
+output:
+  html_document:
+    highlight: tango
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+---
+
+## Purpose
+
+This script combines the cleaned datasets of cases of bactrial pneumonia and controls with no types of pneumonia and compares demographic characteristics.  This script can be found in `r getwd()` and was most recently run on `r date()`.
+
+```{r input-data}
+library(knitr)
+#figures made will go to directory called figures, will make them as both png and pdf files 
+opts_chunk$set(fig.path='figures-case-control/',
+               echo=TRUE, warning=FALSE, message=FALSE,dev=c('png','pdf'))
+options(scipen = 2, digits = 3)
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(lubridate)
+
+control.filename <- 'DatasetComplete.csv'
+control.data <- read_csv(control.filename) %>%
+  mutate(Class="Controls") %>%
+  rename("PriorCardiacArrhythmias"="CardiacArrhythmias",
+         "PriorCOPD"="COPD",
+         "PriorDiabetes"="Diabetes",
+         "PriorHypertension"="Hypertension",
+         "PriorObesity"="Obesity")
+
+case.filename <- '../cases/DatasetComplete.csv'
+case.data <- read_csv(case.filename) %>%
+  filter(Type=="Bacterial") %>%
+  arrange(AdmitDate) %>%
+  distinct(DeID_PatientID,.keep_all = T) %>%
+  mutate(Class="Cases") %>%
+  select(-ends_with('First')) %>%
+  rename("AgeInYears"="AgeInYears.x") 
+
+combined.data <-
+  bind_rows(case.data,control.data)
+```
+
+# Case vs Control
+
+```{r case-control}
+quant.demo <- 
+  combined.data %>%
+  group_by(Class) %>%
+  summarize(across(.cols=c('AgeInYears','BMI','MaxStay'),
+                   .fns=list(mean = ~mean(.,na.rm=T),
+                             sd = ~sd(.,na.rm=T),
+                             #shapiro.p = ~shapiro.test(.)$p.value,
+                             n = ~length(!(is.na(.)))))) %>%
+  pivot_longer(cols=contains("_"), #fix this
+               names_sep="_",names_to=c("Variable","Statistic")) %>%
+  pivot_wider(names_from=Statistic,values_from=value) %>%
+  arrange(Variable)
+
+kable(quant.demo, caption="Summary of quantitative values")
+# wilcoxon tests, not normally distributed
+
+quant.t.tests <-
+  combined.data %>%
+  summarize(across(.cols=c('AgeInYears','BMI'), 
+                   .fns=list(Mann.Whitney=~wilcox.test(.~Class)$p.value)))
+
+kable(quant.t.tests,caption="Mann-Whitney tests for 30 day survival",digits=c(99,99,99))
+
+ances.demo.ql <- 
+  combined.data %>%
+  group_by(MajorityAncestry,Class) %>%
+  mutate(Type="Ancestry") %>%
+  rename("Group"="MajorityAncestry") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ancestry")
+
+type.demo.ql <- 
+  combined.data %>%
+  group_by(Type,Class) %>%
+  rename("Group"="Type") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Pneumonia Type")
+
+emerg.demo.ql <- 
+  combined.data %>%
+  group_by(EmergencyVisit.x,Class) %>%
+  rename("Group"="EmergencyVisit.x") %>%
+  count %>%
+  mutate(Group=as.factor(Group)) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Emergency Visit") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+# coded as dates not yes/no
+# cvd.demo.ql <- 
+#   combined.data %>%
+#   group_by(CerebrovascularDiseaseFirst) %>%
+#   rename("Group"="CerebrovascularDiseaseFirst") %>%
+#   count %>%
+#   ungroup %>% 
+#   mutate(Group=as.factor(Group)) %>%
+#   mutate(Pct=n/sum(n)*100) %>%
+#   mutate(Type="Cerebrovascular Disease")
+
+gender.demo.ql <- 
+  combined.data %>%
+  group_by(GenderCode,Class) %>%
+  rename("Group"="GenderCode") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Gender")
+
+race.demo.ql <- 
+combined.data %>%
+  group_by(RaceName,Class) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="RaceName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Race")
+
+ethnicity.demo.ql <- 
+combined.data %>%
+  group_by(EthnicityName,Class) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="EthnicityName") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Ethnicity")
+
+diabetes.demo.ql <- 
+  combined.data %>%
+  group_by(PriorDiabetes,Class) %>%
+  count %>%
+  ungroup %>%
+  rename("Group"="PriorDiabetes") %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="PriorDiabetes") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+smoking.demo.ql <- 
+  combined.data %>%
+  group_by(SmokingStatusMapped,Class) %>%
+  #mutate(Type="Smoking") %>%
+  rename("Group"="SmokingStatusMapped") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Smoking") 
+
+#update to hypertension first
+hypertension.demo.ql <- 
+  combined.data %>%
+  group_by(PriorHypertension,Class) %>%
+  rename("Group"="PriorHypertension") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="PriorHypertension") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+arrythmia.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCardiacArrhythmias,Class) %>%
+  rename("Group"="PriorCardiacArrhythmias") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior Cardiac Arrhythmias") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+obesity.demo.ql <- 
+  combined.data %>%
+  group_by(PriorObesity,Class) %>%
+  rename("Group"="PriorObesity") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior Obesity") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+copd.demo.ql <- 
+  combined.data %>%
+  group_by(PriorCOPD,Class) %>%
+  rename("Group"="PriorCOPD") %>%
+  count %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Prior COPD") %>%
+  mutate(Group=case_when(Group==1~"Yes",
+                         Group==2~"No"))
+
+death.demo.ql <- 
+  combined.data %>%
+  group_by(is.na(DeID_DeathIndexDeceasedDate),Class) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="Death")  %>%
+  mutate(Group=case_when(Group==TRUE~"Deceased",
+                         Group==FALSE~"Alive"))
+
+surv30d.demo.ql <- 
+  combined.data %>%
+  group_by(Survival.30day,Class) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="30d Survival") 
+
+surv60d.demo.ql <- 
+  combined.data %>%
+  group_by(Survival.60day,Class) %>%
+  count() %>%
+  rename("Group"=1) %>%
+  ungroup %>%
+  mutate(Pct=n/sum(n)*100) %>%
+  mutate(Type="60d Survival") 
+
+total.survival <- combined.data %>% group_by(Class) %>% count() %>% pull(n)
+
+summary.discrete <-
+  bind_rows(gender.demo.ql,
+            race.demo.ql,
+            ethnicity.demo.ql,
+            ances.demo.ql,
+            smoking.demo.ql,
+            type.demo.ql,
+            #emerg.demo.ql, 
+            death.demo.ql,
+            surv30d.demo.ql,
+            surv60d.demo.ql,
+            diabetes.demo.ql,
+            hypertension.demo.ql,
+            arrythmia.demo.ql,
+            copd.demo.ql,
+            obesity.demo.ql
+            ) %>%
+  select(Class,Type,Group,n,Pct) %>%
+  ungroup %>%
+  select(-Pct) %>%
+  pivot_wider(names_from = Class,values_from = n, values_fn = sum) %>%
+  arrange(Type,Group) %>%
+  replace(.=="NULL", NA) %>%
+  mutate(Cases = case_when(is.na(Cases)~0,
+                            !(is.na(Cases))~Cases)) %>%
+  mutate(Controls = case_when(is.na(Controls)~0,
+                            !(is.na(Controls))~Controls)) %>%
+  rowwise %>%
+  mutate(Pct=Cases/(Cases+Controls)*100) %>%
+  mutate(Chisq.p = chisq.test(x=c(Cases,Controls),p=total.survival,rescale.p = T)$p.value) %>%
+  mutate(Sig = case_when(Chisq.p < 0.01 ~ '**',
+                         Chisq.p < 0.05 ~ '*'))
+
+kable(summary.discrete, 
+      caption=paste("Summary of discrete variables for bacterial pneumonia cases, compared to controls.  Overall", round(total.survival[1]/(total.survival[2]+total.survival[1])*100,2),"% cases"),
+      digits=c(0,0,0,0,1,99,0))
+```
+`
+
+# Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```

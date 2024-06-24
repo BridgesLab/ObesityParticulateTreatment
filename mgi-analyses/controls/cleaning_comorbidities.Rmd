@@ -30,6 +30,7 @@ library(lubridate)
 elixhauser.datafile <- 'ComorbiditiesElixhauserComprehensive.csv'
 charlson.datafile <- 'ComorbiditiesCharlsonComprehensive.csv'
 encounter.datafile <- 'EncounterAll.csv'
+encounter.anthro.datafile <- 'EncounterAnthropometricsBMI.csv'
 ```
 
 Combining demographic files
@@ -39,8 +40,14 @@ Combining demographic files
 encounter.data <- read_csv(encounter.datafile) %>%
   mutate(EncounterDate = mdy_hm(DeID_AdmitDate))
 
+
+encounter.anthro.data <- read_csv(encounter.anthro.datafile,n_max=100)
+
+encounter.combined.data <- left_join(encounter.data,encounter.anthro.data,
+                                     by=c('DeID_PatientID','DeID_EncounterID'))
+
 cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
-  left_join(encounter.data,by=c('DeID_PatientID','DeID_EncounterID')) %>%
+  left_join(encounter.combined.data,by=c('DeID_PatientID','DeID_EncounterID')) %>%
   filter(!is.na(EncounterDate)) %>% #remove enounters without dates
   arrange(EncounterDate) %>%
   ungroup() %>%
@@ -56,7 +63,8 @@ cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
             Obesity = max(Obesity,na.rm=T),
             ObesityFirst = first(EncounterDate[Obesity==1]),
             RenalFailure = max(RenalFailure,na.rm=T),
-            RenalFailureFirst = first(EncounterDate[RenalFailure==1]))
+            RenalFailureFirst = first(EncounterDate[RenalFailure==1]),
+            BMI = median(BMI,na.rm=T))
 
 
 cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%
@@ -71,14 +79,40 @@ cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%
             DiabetesWithChronicComplicationFirst = first(EncounterDate[DiabetesWithChronicComplication==1]),
             DiabetesWithoutChronicComplication = max(DiabetesWithoutChronicComplication,na.rm=T),
             DiabetesWithoutChronicComplicationFirst = first(EncounterDate[DiabetesWithoutChronicComplication==1]))
+```
 
+# Separate Diagnoses
 
+For COPD need to pull this information from the dignosis summary file.
+
+```{r diagnosis-copd}
+diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
+diagnosis.data <- read_csv(diagnosis.datafile) 
+
+copd.diagnoses <- 
+  diagnosis.data %>%
+  filter(grepl("OBSTRUCTIVE", TermNameSource)) %>%
+  left_join(encounter.data, by=c("DeID_PatientID","DeID_EncounterID")) %>%
+  arrange(EncounterDate) %>%
+  distinct(DeID_PatientID,.keep_all = T) %>%
+  mutate(COPD=1) %>%
+  rename(COPDFirst=EncounterDate)
+```
+
+There were a total of `r nrow(copd.diagnoses)` patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.`
+
+# Combining
+
+```{r combined-diagnoses}
 combined.data <-
-  full_join(cm.charlson.data,cm.elix.data,by="DeID_PatientID")
+  full_join(cm.charlson.data,cm.elix.data,by="DeID_PatientID") %>%
+  left_join(copd.diagnoses,by="DeID_PatientID")
 
 comorbidities.filename <- 'Comorbidities_clean.csv'
 write_csv(combined.data, comorbidities.filename)
 ```
+
+
 
 Wrote this out to `r comorbidities.filename`.
 
