@@ -1,0 +1,96 @@
+---
+title: "Comparing PheCodes to ICD Codes"
+author: "Dave Bridges"
+date: "November 7, 2024"
+format: html
+editor: source
+---
+
+There was a differnce in case counts with our classification of pneumonia cases and the data on PheWeb.
+
+After asking the data office learned this information
+
+>We used the PheWAS package in R [PheWAS/PheWAS: The PheWAS R package](https://github.com/PheWAS/PheWAS) to create the phenotype cases and controls. This package mappings ICD9 and ICD10 codes to broader phenotypes called "phecodes." We used a minimum code count of 1 (i.e. an individual only had to have one of the ICD codes to be considered a case for the phenotype.) You can see which ICD codes map to each phenotype using the [Phecode Map v1.2](https://phewascatalog.org/phewas/#phe12). The two phenotypes you are interested in correspond to phecodes 480.1 and 480.11. The PheWAS package also applies exclusion ICD codes when determining controls – both phenotypes (480.1 and 480.11) exclude individuals with phecodes 480-488.99 from the control group. Additional details on phenotyping can be found in section 4 of our pheweb white paper: [PH_MGI_Freeze6_PheWeb](https://pheweb.org/MGI/static/PH_MGI_Freeze6_PheWeb_v1.1.pdf) 
+
+## Purpose
+
+To compare phecode-ICD9/10 mapping between our codes and the Phecodes and figure out if we have all the pertinent cases
+
+## Data Entry
+
+### ICD Code Data
+
+These were obtained by inspecting the ICD codes and mapping them as bacterial or viral pneumonia.
+
+```{r icd-codes, message=F}
+library(readr)
+library(readxl)
+library(dplyr)
+diagnosis.datasheet<- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
+icd.data <- mapped.diagnoses <- bind_rows(
+  read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
+  read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
+  select(ICD,Type)
+
+bacterial.diagnoses <- filter(mapped.diagnoses, Type=="Bacterial") %>% pull(ICD)
+viral.diagnoses <- filter(mapped.diagnoses, Type=="Viral") %>% pull(ICD)
+other.diagnoses <- filter(mapped.diagnoses, Type=="Other") %>% pull(ICD)
+```
+
+We had used `r length(bacterial.diagnoses)` ICD9 and ICD10 codes in our analyses.
+
+### Phecode Data
+
+```{r phecode-mapping}
+phecode.datafile <- 'https://phewascatalog.org/phewas/_w_de39f595/data/Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip'
+phecode.destfile <- 'Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip'
+download.file(phecode.datafile,destfile=phecode.destfile)
+
+phecode.data <- read_csv(phecode.destfile)
+```
+
+The phecode file was downlaoded from `r phecode.datafile`.
+
+```{r phecode-pneumonia}
+library(knitr)
+filter(phecode.data, Phecode %in% c('480.1','480.11')) -> bacterial.pneumonia.phecodes 
+
+bacterial.pneumonia.phecodes %>% kable(caption="ICD9/10 codes linked to Phecodes 480.1 and 480.11")
+
+write(bacterial.pneumonia.phecodes$ICD, file = "Bacterial Pneumonia Phecodes.txt")
+
+phecode.data %>% filter(PhecodeString=="Bacterial pneumonia") %>% kable(caption="ICD9/10 codes linked to bacterial pneumonia")
+```
+
+## Comparison of Codes
+
+```{r comparason-codes}
+# ICD not Phecode
+
+filter(bacterial.pneumonia.phecodes, ICD %in% bacterial.diagnoses) %>% kable(caption="Phecodes we are using")
+
+filter(bacterial.pneumonia.phecodes, !(ICD %in% bacterial.diagnoses)) %>% kable(caption="Phecodes derived ICD codes we are not using")
+
+filter(mapped.diagnoses, Type=="Bacterial") %>%
+  filter(!(ICD %in% c(bacterial.pneumonia.phecodes$ICD))) %>%
+  left_join(phecode.data,by="ICD") -> icd.not.phecode
+
+icd.not.phecode %>% kable(caption="ICD Codes we are using that are not in Phecodes")
+```
+
+### Summary
+
+* There are `r nrow(filter(bacterial.pneumonia.phecodes, ICD %in% bacterial.diagnoses))` phecode-derived ICD codes that we are using
+* There are `r nrow(filter(bacterial.pneumonia.phecodes, !(ICD %in% bacterial.diagnoses)))` phecode-derived ICD codes that we are not using
+* There are `r nrow(icd.not.phecode)` ICD codes we are using that are not mapped as a phecode
+
+```{r phecode-icd-venn}
+library(ggVennDiagram)
+
+# List of items
+x <- list(Phecode = bacterial.pneumonia.phecodes$ICD, ICD=bacterial.diagnoses)
+
+# 2D Venn diagram
+library(ggplot2)
+ggVennDiagram(x) 
+```
