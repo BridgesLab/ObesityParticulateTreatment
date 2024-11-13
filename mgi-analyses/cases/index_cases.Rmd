@@ -30,30 +30,27 @@ library(lubridate)
 diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
 encounter.datafile <- 'EncounterAll.csv'
 encounter.anth.datafile <- "EncounterAnthropometricsBMI.csv"
-
+icd.datafile <- ''
 ```
 
-```{r read-data}
-library(readxl)
-diagnosis.data <- read_csv(diagnosis.datafile) 
-diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
-mapped.diagnoses <- bind_rows(
-  read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
-  read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
-  select(ICD,Type)
+Read in diagnoses from `r icd.datafile`.  This script matches these to diagnoses in `r diagnosis.datafile`, which in term are matched to dates given in the `r encounter.datafile`.
 
-bacterial.diagnoses <- filter(mapped.diagnoses, Type=="Bacterial") %>% pull(ICD)
-viral.diagnoses <- filter(mapped.diagnoses, Type=="Viral") %>% pull(ICD)
-other.diagnoses <- filter(mapped.diagnoses, Type=="Other") %>% pull(ICD)
+```{r read-data}
+# library(readxl)
+# diagnosis.data <- read_csv(diagnosis.datafile) 
+# diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
+# mapped.diagnoses <- bind_rows(
+#   read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
+#   read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
+#   select(ICD,Type)
+
+library(readr)
+bacterial.diagnoses <- read_lines(icd.datafile)
 
 pneumonia.diagnosis <- 
   diagnosis.data %>%
-  filter(TermCodeSource %in% c(bacterial.diagnoses,viral.diagnoses,other.diagnoses)) %>% #there are also COPD diagnoses
-  mutate(Type=case_when(TermCodeSource %in% bacterial.diagnoses ~ 'Bacterial',
-                        TermCodeSource %in% viral.diagnoses ~ 'Viral',
-                        TermCodeSource %in% other.diagnoses ~ 'Other',
-                        .default=NA)) %>%
-  filter(!is.na(Type)) #remove dignoses not in one of these categories
+  filter(TermCodeSource %in% bacterial.diagnoses) %>% 
+  mutate(Type='Bacterial') 
 
 pneumonia.diagnosis %>%
   group_by(Type) %>%
@@ -127,8 +124,6 @@ ggplot(patient.encounter.type.counts,(aes(x=Admissions))) +
   labs(x="Admissions for Pneumonia",
        y="Number of Participants")
 ```
-
-
 
 
 # Session Information
