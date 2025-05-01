@@ -42,7 +42,7 @@ We had used `r length(bacterial.diagnoses)` ICD9 and ICD10 codes in our analyses
 ### Phecode Data
 
 ```{r phecode-mapping}
-phecode.datafile <- 'https://phewascatalog.org/phewas/_w_de39f595/data/Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip'
+phecode.datafile <- 'https://phewascatalog.org/phewas/_w_bb5935e4/data/Phecode_map_v1_2_icd9_icd10cm.csv.zip'
 phecode.destfile <- 'Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip'
 download.file(phecode.datafile,destfile=phecode.destfile)
 
@@ -53,9 +53,9 @@ The phecode file was downlaoded from `r phecode.datafile`.
 
 ```{r phecode-pneumonia}
 library(knitr)
-filter(phecode.data, Phecode %in% c('480.1','480.11')) -> bacterial.pneumonia.phecodes 
+filter(phecode.data, Phecode %in% c('480.1','480.11','480.12','480.13')) -> bacterial.pneumonia.phecodes 
 
-bacterial.pneumonia.phecodes %>% kable(caption="ICD9/10 codes linked to Phecodes 480.1 and 480.11")
+bacterial.pneumonia.phecodes %>% kable(caption="ICD9/10 codes linked to Phecodes 480.1 and 480.11/2/3")
 
 write(bacterial.pneumonia.phecodes$ICD, file = "Bacterial Pneumonia Phecodes.txt")
 

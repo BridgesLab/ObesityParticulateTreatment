@@ -30,14 +30,14 @@ library(lubridate)
 diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
 encounter.datafile <- 'EncounterAll.csv'
 encounter.anth.datafile <- "EncounterAnthropometricsBMI.csv"
-icd.datafile <- ''
+icd.datafile <- 'Bacterial Pneumonia Phecodes.txt'
 ```
 
 Read in diagnoses from `r icd.datafile`.  This script matches these to diagnoses in `r diagnosis.datafile`, which in term are matched to dates given in the `r encounter.datafile`.
 
 ```{r read-data}
 # library(readxl)
-# diagnosis.data <- read_csv(diagnosis.datafile) 
+diagnosis.data <- read_csv(diagnosis.datafile) 
 # diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
 # mapped.diagnoses <- bind_rows(
 #   read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),

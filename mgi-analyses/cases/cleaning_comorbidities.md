@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.  This script is to generate data about comorbidities.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/cases and was most recently run on Tue Jun 18 21:00:59 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.  This script is to generate data about comorbidities.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-11-12/cases and was most recently run on Wed Nov 13 10:32:59 2024.
 
 
 ``` r
@@ -127,7 +127,7 @@ copd.diagnoses <-
   rename(COPDFirst=EncounterDate)
 ```
 
-There were a total of 1576 patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.
+There were a total of 426 patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.
 
 # Combining and Exporting
 
@@ -175,17 +175,17 @@ sessionInfo()
 ## 
 ## other attached packages:
 ## [1] lubridate_1.9.3 tidyr_1.3.1     dplyr_1.1.4     readr_2.1.5    
-## [5] knitr_1.47     
+## [5] knitr_1.48     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] bit_4.0.5         jsonlite_1.8.8    compiler_4.4.0    crayon_1.5.2     
-##  [5] tidyselect_1.2.1  parallel_4.4.0    jquerylib_0.1.4   yaml_2.3.8       
+##  [1] bit_4.0.5         jsonlite_1.8.8    compiler_4.4.0    crayon_1.5.3     
+##  [5] tidyselect_1.2.1  parallel_4.4.0    jquerylib_0.1.4   yaml_2.3.9       
 ##  [9] fastmap_1.2.0     R6_2.5.1          generics_0.1.3    tibble_3.2.1     
 ## [13] bslib_0.7.0       pillar_1.9.0      tzdb_0.4.0        rlang_1.1.4      
-## [17] utf8_1.2.4        cachem_1.1.0      xfun_0.44         sass_0.4.9       
-## [21] bit64_4.0.5       timechange_0.3.0  cli_3.6.2         withr_3.0.0      
-## [25] magrittr_2.0.3    digest_0.6.35     vroom_1.6.5       rstudioapi_0.16.0
-## [29] hms_1.1.3         lifecycle_1.0.4   vctrs_0.6.5       evaluate_0.24.0  
-## [33] glue_1.7.0        fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2      
-## [37] tools_4.4.0       pkgconfig_2.0.3   htmltools_0.5.8.1
+## [17] utf8_1.2.4        cachem_1.1.0      xfun_0.45         sass_0.4.9       
+## [21] bit64_4.0.5       timechange_0.3.0  cli_3.6.3         withr_3.0.0      
+## [25] magrittr_2.0.3    digest_0.6.36     vroom_1.6.5       hms_1.1.3        
+## [29] lifecycle_1.0.4   vctrs_0.6.5       evaluate_0.24.0   glue_1.8.0       
+## [33] fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2       tools_4.4.0      
+## [37] pkgconfig_2.0.3   htmltools_0.5.8.1
 ```

@@ -143,13 +143,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="phecode-data" class="level3">
 <h3 class="anchored" data-anchor-id="phecode-data">Phecode Data</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>phecode.datafile <span class="ot">&lt;-</span> <span class="st">'https://phewascatalog.org/phewas/_w_de39f595/data/Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip'</span></span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>phecode.datafile <span class="ot">&lt;-</span> <span class="st">'https://phewascatalog.org/phewas/_w_bb5935e4/data/Phecode_map_v1_2_icd9_icd10cm.csv.zip'</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>phecode.destfile <span class="ot">&lt;-</span> <span class="st">'Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip'</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(phecode.datafile,<span class="at">destfile=</span>phecode.destfile)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>phecode.data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(phecode.destfile)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Rows: 105284 Columns: 6
+<pre><code>Multiple files in zip: reading 'Phecode_map_v1_2_icd9_icd10cm.csv'
+Rows: 105284 Columns: 6
 ── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 chr (5): ICD, ICDString, Phecode, PhecodeString, PhecodeCategory
@@ -159,15 +160,15 @@ dbl (1): Flag
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
 </div>
-<p>The phecode file was downlaoded from https://phewascatalog.org/phewas/_w_de39f595/data/Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip.</p>
+<p>The phecode file was downlaoded from https://phewascatalog.org/phewas/_w_bb5935e4/data/Phecode_map_v1_2_icd9_icd10cm.csv.zip.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(phecode.data, Phecode <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">'480.1'</span>,<span class="st">'480.11'</span>)) <span class="ot">-&gt;</span> bacterial.pneumonia.phecodes </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(phecode.data, Phecode <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">'480.1'</span>,<span class="st">'480.11'</span>,<span class="st">'480.12'</span>,<span class="st">'480.13'</span>)) <span class="ot">-&gt;</span> bacterial.pneumonia.phecodes </span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>bacterial.pneumonia.phecodes <span class="sc">%&gt;%</span> <span class="fu">kable</span>(<span class="at">caption=</span><span class="st">"ICD9/10 codes linked to Phecodes 480.1 and 480.11"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>bacterial.pneumonia.phecodes <span class="sc">%&gt;%</span> <span class="fu">kable</span>(<span class="at">caption=</span><span class="st">"ICD9/10 codes linked to Phecodes 480.1 and 480.11/2/3"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
-<caption>ICD9/10 codes linked to Phecodes 480.1 and 480.11</caption>
+<caption>ICD9/10 codes linked to Phecodes 480.1 and 480.11/2/3</caption>
 <colgroup>
 <col style="width: 6%">
 <col style="width: 3%">
@@ -300,6 +301,14 @@ dbl (1): Flag
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">482.1</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">Pneumonia due to Pseudomonas</td>
+<td style="text-align: left;">480.12</td>
+<td style="text-align: left;">Pseudomonal pneumonia</td>
+<td style="text-align: left;">Pneumonia and influenza</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">482.2</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Hemophilus influenzae [H. influenzae]</td>
@@ -307,7 +316,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.3</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus</td>
@@ -315,7 +324,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">482.30</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus, unspecified</td>
@@ -323,7 +332,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.31</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus Group A</td>
@@ -331,7 +340,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">482.32</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus Group B</td>
@@ -339,7 +348,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.39</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to other Streptococcus</td>
@@ -347,7 +356,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">482.4</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Staphylococcus</td>
@@ -355,12 +364,20 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.40</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Staphylococcus, unspecified</td>
 <td style="text-align: left;">480.1</td>
 <td style="text-align: left;">Bacterial pneumonia</td>
+<td style="text-align: left;">Pneumonia and influenza</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">482.41</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">Methicillin susceptible pneumonia due to Staphylococcus aureus</td>
+<td style="text-align: left;">480.13</td>
+<td style="text-align: left;">MRSA pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
 <tr class="odd">
@@ -468,6 +485,22 @@ dbl (1): Flag
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">J15.21</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Pneumonia due to staphylococcus aureus</td>
+<td style="text-align: left;">480.13</td>
+<td style="text-align: left;">MRSA pneumonia</td>
+<td style="text-align: left;">respiratory</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">J15.211</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Pneumonia due to Methicillin susceptible Staphylococcus aureus</td>
+<td style="text-align: left;">480.13</td>
+<td style="text-align: left;">MRSA pneumonia</td>
+<td style="text-align: left;">respiratory</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">J13</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus pneumoniae</td>
@@ -484,6 +517,14 @@ dbl (1): Flag
 <td style="text-align: left;">respiratory</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">J15.1</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Pneumonia due to Pseudomonas</td>
+<td style="text-align: left;">480.12</td>
+<td style="text-align: left;">Pseudomonal pneumonia</td>
+<td style="text-align: left;">respiratory</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">A02.22</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Salmonella pneumonia</td>
@@ -491,7 +532,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J15.4</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to other streptococci</td>
@@ -499,7 +540,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A37.91</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Whooping cough, unspecified species with pneumonia</td>
@@ -507,7 +548,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">A37.81</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Whooping cough due to other Bordetella species with pneumonia</td>
@@ -515,7 +556,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A43.0</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pulmonary nocardiosis</td>
@@ -523,7 +564,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">A21.2</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pulmonary tularemia</td>
@@ -531,7 +572,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A20.2</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonic plague</td>
@@ -539,7 +580,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">A37.01</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Whooping cough due to Bordetella pertussis with pneumonia</td>
@@ -547,7 +588,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A78</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Q fever</td>
@@ -555,7 +596,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J15.8</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to other specified bacteria</td>
@@ -563,7 +604,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">J15.3</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to streptococcus, group B</td>
@@ -571,7 +612,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">A37.11</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Whooping cough due to Bordetella parapertussis with pneumonia</td>
@@ -579,7 +620,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A31.0</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pulmonary mycobacterial infection</td>
@@ -587,7 +628,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J14</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to Hemophilus influenzae</td>
@@ -595,7 +636,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A42.0</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pulmonary actinomycosis</td>
@@ -603,7 +644,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J15.20</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to staphylococcus, unspecified</td>
@@ -611,7 +652,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">J15.9</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Unspecified bacterial pneumonia</td>
@@ -619,7 +660,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J15.212</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to Methicillin resistant Staphylococcus aureus</td>
@@ -627,7 +668,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A22.1</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Woolsorters disease</td>
@@ -635,7 +676,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J15.2</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to staphylococcus</td>
@@ -643,7 +684,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">J15.0</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to Klebsiella pneumoniae</td>
@@ -651,7 +692,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J16.0</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Chlamydial pneumonia</td>
@@ -659,7 +700,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">J15.29</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to other staphylococcus</td>
@@ -667,7 +708,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J15.6</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to other aerobic Gram-negative bacteria</td>
@@ -675,7 +716,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">A75</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Typhus fever</td>
@@ -683,7 +724,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">J15.7</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to Mycoplasma pneumoniae</td>
@@ -691,7 +732,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">J15.5</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to Escherichia coli</td>
@@ -699,7 +740,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">A48.1</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Legionnaires disease</td>
@@ -1241,7 +1282,7 @@ dbl (1): Flag
 <colgroup>
 <col style="width: 6%">
 <col style="width: 4%">
-<col style="width: 50%">
+<col style="width: 51%">
 <col style="width: 6%">
 <col style="width: 18%">
 <col style="width: 13%">
@@ -1258,6 +1299,14 @@ dbl (1): Flag
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;">J15.211</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Pneumonia due to Methicillin susceptible Staphylococcus aureus</td>
+<td style="text-align: left;">480.13</td>
+<td style="text-align: left;">MRSA pneumonia</td>
+<td style="text-align: left;">respiratory</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">J13</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus pneumoniae</td>
@@ -1265,12 +1314,20 @@ dbl (1): Flag
 <td style="text-align: left;">Pneumococcal pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">J18.1</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Lobar pneumonia, unspecified organism</td>
 <td style="text-align: left;">480.11</td>
 <td style="text-align: left;">Pneumococcal pneumonia</td>
+<td style="text-align: left;">respiratory</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">J15.1</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Pneumonia due to Pseudomonas</td>
+<td style="text-align: left;">480.12</td>
+<td style="text-align: left;">Pseudomonal pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
 <tr class="odd">
@@ -1604,6 +1661,14 @@ dbl (1): Flag
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">482.1</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">Pneumonia due to Pseudomonas</td>
+<td style="text-align: left;">480.12</td>
+<td style="text-align: left;">Pseudomonal pneumonia</td>
+<td style="text-align: left;">Pneumonia and influenza</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">482.2</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Hemophilus influenzae [H. influenzae]</td>
@@ -1611,7 +1676,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.3</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus</td>
@@ -1619,7 +1684,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">482.30</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus, unspecified</td>
@@ -1627,7 +1692,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.31</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus Group A</td>
@@ -1635,7 +1700,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">482.32</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Streptococcus Group B</td>
@@ -1643,7 +1708,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.39</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to other Streptococcus</td>
@@ -1651,7 +1716,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">482.4</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Staphylococcus</td>
@@ -1659,12 +1724,20 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">482.40</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: left;">Pneumonia due to Staphylococcus, unspecified</td>
 <td style="text-align: left;">480.1</td>
 <td style="text-align: left;">Bacterial pneumonia</td>
+<td style="text-align: left;">Pneumonia and influenza</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">482.41</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">Methicillin susceptible pneumonia due to Staphylococcus aureus</td>
+<td style="text-align: left;">480.13</td>
+<td style="text-align: left;">MRSA pneumonia</td>
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
 <tr class="odd">
@@ -1772,6 +1845,14 @@ dbl (1): Flag
 <td style="text-align: left;">Pneumonia and influenza</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">J15.21</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">Pneumonia due to staphylococcus aureus</td>
+<td style="text-align: left;">480.13</td>
+<td style="text-align: left;">MRSA pneumonia</td>
+<td style="text-align: left;">respiratory</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">A78</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Q fever</td>
@@ -1779,7 +1860,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">A42.0</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pulmonary actinomycosis</td>
@@ -1787,7 +1868,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">J15.2</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Pneumonia due to staphylococcus</td>
@@ -1795,7 +1876,7 @@ dbl (1): Flag
 <td style="text-align: left;">Bacterial pneumonia</td>
 <td style="text-align: left;">respiratory</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">A75</td>
 <td style="text-align: right;">10</td>
 <td style="text-align: left;">Typhus fever</td>
@@ -1815,13 +1896,13 @@ dbl (1): Flag
 <table class="caption-top table table-sm table-striped small">
 <caption>ICD Codes we are using that are not in Phecodes</caption>
 <colgroup>
-<col style="width: 4%">
 <col style="width: 5%">
-<col style="width: 2%">
-<col style="width: 37%">
-<col style="width: 4%">
-<col style="width: 32%">
-<col style="width: 11%">
+<col style="width: 6%">
+<col style="width: 3%">
+<col style="width: 33%">
+<col style="width: 5%">
+<col style="width: 34%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1899,24 +1980,6 @@ dbl (1): Flag
 <td style="text-align: left;">infectious diseases</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">J15.1</td>
-<td style="text-align: left;">Bacterial</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: left;">Pneumonia due to Pseudomonas</td>
-<td style="text-align: left;">480.12</td>
-<td style="text-align: left;">Pseudomonal pneumonia</td>
-<td style="text-align: left;">respiratory</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">J15.211</td>
-<td style="text-align: left;">Bacterial</td>
-<td style="text-align: right;">10</td>
-<td style="text-align: left;">Pneumonia due to Methicillin susceptible Staphylococcus aureus</td>
-<td style="text-align: left;">480.13</td>
-<td style="text-align: left;">MRSA pneumonia</td>
-<td style="text-align: left;">respiratory</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">J16.8</td>
 <td style="text-align: left;">Bacterial</td>
 <td style="text-align: right;">10</td>
@@ -1986,9 +2049,9 @@ dbl (1): Flag
 <section id="summary" class="level3">
 <h3 class="anchored" data-anchor-id="summary">Summary</h3>
 <ul>
-<li>There are 26 phecode-derived ICD codes that we are using</li>
-<li>There are 39 phecode-derived ICD codes that we are not using</li>
-<li>There are 16 ICD codes we are using that are not mapped as a phecode</li>
+<li>There are 28 phecode-derived ICD codes that we are using</li>
+<li>There are 42 phecode-derived ICD codes that we are not using</li>
+<li>There are 14 ICD codes we are using that are not mapped as a phecode</li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggVennDiagram)</span>

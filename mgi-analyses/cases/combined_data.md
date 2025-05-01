@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/cases and was most recently run on Tue Jun 18 21:36:30 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-11-12/cases and was most recently run on Wed Nov 13 10:34:18 2024.
 
 
 ``` r
@@ -159,17 +159,17 @@ sessionInfo()
 ## 
 ## other attached packages:
 ## [1] lubridate_1.9.3 tidyr_1.3.1     dplyr_1.1.4     readr_2.1.5    
-## [5] knitr_1.47     
+## [5] knitr_1.48     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] crayon_1.5.2      vctrs_0.6.5       cli_3.6.2         rlang_1.1.4      
-##  [5] xfun_0.44         purrr_1.0.2       generics_0.1.3    jsonlite_1.8.8   
-##  [9] bit_4.0.5         glue_1.7.0        htmltools_0.5.8.1 sass_0.4.9       
+##  [1] crayon_1.5.3      vctrs_0.6.5       cli_3.6.3         rlang_1.1.4      
+##  [5] xfun_0.45         purrr_1.0.2       generics_0.1.3    jsonlite_1.8.8   
+##  [9] bit_4.0.5         glue_1.8.0        htmltools_0.5.8.1 sass_0.4.9       
 ## [13] hms_1.1.3         fansi_1.0.6       rmarkdown_2.27    evaluate_0.24.0  
 ## [17] jquerylib_0.1.4   tibble_3.2.1      tzdb_0.4.0        fastmap_1.2.0    
-## [21] yaml_2.3.8        lifecycle_1.0.4   compiler_4.4.0    timechange_0.3.0 
-## [25] pkgconfig_2.0.3   rstudioapi_0.16.0 digest_0.6.35     R6_2.5.1         
-## [29] tidyselect_1.2.1  utf8_1.2.4        parallel_4.4.0    vroom_1.6.5      
-## [33] pillar_1.9.0      magrittr_2.0.3    bslib_0.7.0       bit64_4.0.5      
-## [37] tools_4.4.0       cachem_1.1.0
+## [21] yaml_2.3.9        lifecycle_1.0.4   compiler_4.4.0    timechange_0.3.0 
+## [25] pkgconfig_2.0.3   digest_0.6.36     R6_2.5.1          tidyselect_1.2.1 
+## [29] utf8_1.2.4        parallel_4.4.0    vroom_1.6.5       pillar_1.9.0     
+## [33] magrittr_2.0.3    bslib_0.7.0       bit64_4.0.5       tools_4.4.0      
+## [37] cachem_1.1.0
 ```

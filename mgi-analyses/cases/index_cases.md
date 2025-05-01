@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.  This script is to idenitify the index cases and ranges for when we are interested in outcomes.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-06-12/cases and was most recently run on Fri Jun 14 11:23:36 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.  This script is to idenitify the index cases and ranges for when we are interested in outcomes.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-11-12/cases and was most recently run on Wed Nov 13 10:33:16 2024.
 
 
 ``` r
@@ -64,30 +64,28 @@ library(lubridate)
 diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
 encounter.datafile <- 'EncounterAll.csv'
 encounter.anth.datafile <- "EncounterAnthropometricsBMI.csv"
+icd.datafile <- 'Bacterial Pneumonia Phecodes.txt'
 ```
+
+Read in diagnoses from Bacterial Pneumonia Phecodes.txt.  This script matches these to diagnoses in DiagnosesComprehensiveAll.csv, which in term are matched to dates given in the EncounterAll.csv.
 
 
 ``` r
-library(readxl)
+# library(readxl)
 diagnosis.data <- read_csv(diagnosis.datafile) 
-diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
-mapped.diagnoses <- bind_rows(
-  read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
-  read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
-  select(ICD,Type)
+# diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
+# mapped.diagnoses <- bind_rows(
+#   read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
+#   read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
+#   select(ICD,Type)
 
-bacterial.diagnoses <- filter(mapped.diagnoses, Type=="Bacterial") %>% pull(ICD)
-viral.diagnoses <- filter(mapped.diagnoses, Type=="Viral") %>% pull(ICD)
-other.diagnoses <- filter(mapped.diagnoses, Type=="Other") %>% pull(ICD)
+library(readr)
+bacterial.diagnoses <- read_lines(icd.datafile)
 
 pneumonia.diagnosis <- 
   diagnosis.data %>%
-  filter(TermCodeSource %in% c(bacterial.diagnoses,viral.diagnoses,other.diagnoses)) %>% #there are also COPD diagnoses
-  mutate(Type=case_when(TermCodeSource %in% bacterial.diagnoses ~ 'Bacterial',
-                        TermCodeSource %in% viral.diagnoses ~ 'Viral',
-                        TermCodeSource %in% other.diagnoses ~ 'Other',
-                        .default=NA)) %>%
-  filter(!is.na(Type)) #remove dignoses not in one of these categories
+  filter(TermCodeSource %in% bacterial.diagnoses) %>% 
+  mutate(Type='Bacterial') 
 
 pneumonia.diagnosis %>%
   group_by(Type) %>%
@@ -102,9 +100,7 @@ Table: Diagnosis type by patient
 
 |Type      |    n|
 |:---------|----:|
-|Bacterial | 8352|
-|Other     |  124|
-|Viral     |  293|
+|Bacterial | 2367|
 
 # Merging with Encounter Data
 
@@ -137,7 +133,7 @@ index.filename <- 'PneumoniaEncounterData.csv'
 write_csv(patient.enc.data,index.filename)
 ```
 
-After grouping multiple encounters into events there are 81470 encounters from 81050
+After grouping multiple encounters into events there are 6986 encounters from 6986
 
 This index encounter data is written out to PneumoniaEncounterData.csv which contains data about the indexed encounter.
 
@@ -159,100 +155,60 @@ kable(patient.encounter.counts %>% ungroup %>% count(Admissions,name="Number of 
 
 | Admissions| Number of Patients|
 |----------:|------------------:|
-|          1|               3148|
-|          2|               1144|
-|          3|                568|
-|          4|                362|
-|          5|                280|
-|          6|                227|
-|          7|                167|
-|          8|                149|
-|          9|                133|
-|         10|                110|
-|         11|                 99|
-|         12|                134|
-|         13|                107|
-|         14|                 88|
-|         15|                 85|
-|         16|                 72|
-|         17|                 73|
-|         18|                 75|
-|         19|                 70|
-|         20|                 63|
-|         21|                 76|
-|         22|                 50|
-|         23|                 53|
-|         24|                 52|
-|         25|                 67|
-|         26|                 47|
-|         27|                 54|
-|         28|                 39|
-|         29|                 40|
-|         30|                 41|
-|         31|                 39|
-|         32|                 21|
-|         33|                 36|
-|         34|                 35|
-|         35|                 32|
-|         36|                 30|
-|         37|                 27|
-|         38|                 25|
-|         39|                 28|
-|         40|                 29|
-|         41|                 27|
-|         42|                 25|
-|         43|                 28|
-|         44|                 26|
-|         45|                 21|
-|         46|                 30|
-|         47|                 20|
-|         48|                 15|
-|         49|                 21|
-|         50|                 18|
-|         51|                 24|
-|         52|                 14|
-|         53|                 13|
-|         54|                  9|
-|         55|                 12|
-|         56|                 15|
-|         57|                  8|
-|         58|                  9|
-|         59|                  8|
-|         60|                  9|
-|         61|                  9|
-|         62|                 13|
-|         63|                  3|
-|         64|                 14|
-|         65|                 11|
-|         66|                 11|
-|         67|                  7|
-|         68|                 12|
-|         69|                  3|
-|         70|                  2|
-|         71|                  7|
-|         72|                  9|
-|         73|                  7|
-|         74|                  4|
-|         75|                  5|
-|         76|                  3|
-|         77|                  2|
+|          1|               1599|
+|          2|                380|
+|          3|                136|
+|          4|                 56|
+|          5|                 27|
+|          6|                 21|
+|          7|                 16|
+|          8|                  9|
+|          9|                  8|
+|         10|                  5|
+|         11|                  8|
+|         12|                  8|
+|         13|                  3|
+|         14|                  4|
+|         15|                  6|
+|         16|                  5|
+|         17|                  3|
+|         18|                  2|
+|         19|                  2|
+|         20|                  1|
+|         21|                  1|
+|         22|                  5|
+|         23|                  1|
+|         24|                  4|
+|         25|                  2|
+|         27|                  4|
+|         28|                  1|
+|         29|                  1|
+|         30|                  3|
+|         31|                  3|
+|         32|                  1|
+|         33|                  1|
+|         36|                  1|
+|         37|                  2|
+|         38|                  3|
+|         40|                  3|
+|         41|                  3|
+|         42|                  2|
+|         43|                  2|
+|         45|                  3|
+|         46|                  1|
+|         48|                  5|
+|         50|                  1|
+|         52|                  1|
+|         53|                  1|
+|         55|                  2|
+|         60|                  1|
+|         66|                  1|
+|         70|                  1|
+|         71|                  1|
+|         73|                  2|
+|         75|                  2|
 |         78|                  2|
-|         79|                  3|
-|         80|                  4|
-|         81|                  3|
-|         82|                  4|
-|         84|                  1|
-|         85|                  4|
-|         87|                  3|
-|         88|                  3|
-|         89|                  1|
-|         90|                  2|
-|         91|                  3|
-|         92|                  3|
-|         93|                  3|
-|         94|                  1|
-|         95|                  1|
-|         97|                  1|
+|         79|                  1|
 
 ``` r
 library(ggplot2)
@@ -280,8 +236,6 @@ ggplot(patient.encounter.type.counts,(aes(x=Admissions))) +
 ```
 
 ![](figures-index/patient-encounters-2.png)<!-- -->
-
-
 
 
 # Session Information
@@ -315,20 +269,20 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] ggplot2_3.5.1   readxl_1.4.3    lubridate_1.9.3 tidyr_1.3.1    
-## [5] dplyr_1.1.4     readr_2.1.5     knitr_1.47     
+## [1] ggplot2_3.5.1   lubridate_1.9.3 tidyr_1.3.1     dplyr_1.1.4    
+## [5] readr_2.1.5     knitr_1.48     
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] bit_4.0.5         gtable_0.3.5      jsonlite_1.8.8    highr_0.11       
-##  [5] compiler_4.4.0    crayon_1.5.2      tidyselect_1.2.1  parallel_4.4.0   
-##  [9] jquerylib_0.1.4   scales_1.3.0      yaml_2.3.8        fastmap_1.2.0    
+##  [5] compiler_4.4.0    crayon_1.5.3      tidyselect_1.2.1  parallel_4.4.0   
+##  [9] jquerylib_0.1.4   scales_1.3.0      yaml_2.3.9        fastmap_1.2.0    
 ## [13] R6_2.5.1          labeling_0.4.3    generics_0.1.3    tibble_3.2.1     
 ## [17] munsell_0.5.1     bslib_0.7.0       pillar_1.9.0      tzdb_0.4.0       
-## [21] rlang_1.1.4       utf8_1.2.4        cachem_1.1.0      xfun_0.44        
-## [25] sass_0.4.9        bit64_4.0.5       timechange_0.3.0  cli_3.6.2        
-## [29] withr_3.0.0       magrittr_2.0.3    grid_4.4.0        digest_0.6.35    
+## [21] rlang_1.1.4       utf8_1.2.4        cachem_1.1.0      xfun_0.45        
+## [25] sass_0.4.9        bit64_4.0.5       timechange_0.3.0  cli_3.6.3        
+## [29] withr_3.0.0       magrittr_2.0.3    grid_4.4.0        digest_0.6.36    
 ## [33] vroom_1.6.5       hms_1.1.3         lifecycle_1.0.4   vctrs_0.6.5      
-## [37] evaluate_0.24.0   glue_1.7.0        farver_2.1.2      cellranger_1.1.0 
-## [41] colorspace_2.1-0  fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2      
-## [45] tools_4.4.0       pkgconfig_2.0.3   htmltools_0.5.8.1
+## [37] evaluate_0.24.0   glue_1.8.0        farver_2.1.2      colorspace_2.1-0 
+## [41] fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2       tools_4.4.0      
+## [45] pkgconfig_2.0.3   htmltools_0.5.8.1
 ```
