@@ -45,9 +45,17 @@ case.data <- read_csv(case.filename) %>%
   select(-ends_with('First')) %>%
   rename("AgeInYears"="AgeInYears.x") 
 
-combined.data <-
+combined.data.initial <-
   bind_rows(case.data,control.data)
+
+genotype.datafile <- '../Q223R.txt'
+genotype.data <- read_tsv(genotype.datafile)
+
+combined.data %>%
+  filter(DeID_PatientID %in% genotype.data$DeID_PatientID)
 ```
+
+Initially there were `r nrow(combined.data.initial)` patients, but after filtering for those with *LEPR* Q223R genotype data there was `r nrow(combined.data)` patients, including `r nrow(combined.data %>% filter(Class=="Cases"))` cases and `r nrow(combined.data %>% filter(Class=="Controls"))` controls.`
 
 # Case vs Control
 
