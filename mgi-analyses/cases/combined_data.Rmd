@@ -56,7 +56,7 @@ combined.data <-
                                 is.na(ObesityFirst)~0,
                                 .default=0
                                 )) %>% 
-    mutate(PriorCOPD = case_when(COPD == 1 & COPDFirst<AdmitDate ~ 1,
+  mutate(PriorCOPD = case_when(COPD == 1 & COPDFirst<AdmitDate ~ 1,
                                 COPD == 1 & COPDFirst>=AdmitDate ~ 0,
                                 COPD==0~0,
                                 is.na(COPD)~0,
@@ -77,14 +77,48 @@ combined.data <-
                                 is.na(HypertensionFirst)~0,
                                 .default=0
                                 )) %>%
-  mutate(PriorCardiacArrhythmias = case_when(CardiacArrhythmias == 1 & HypertensionFirst<AdmitDate ~ 1,
+  mutate(PriorCardiacArrhythmias = case_when(CardiacArrhythmias == 1 & CardiacArrhythmiasFirst<AdmitDate ~ 1,
                                 CardiacArrhythmias == 1 & CardiacArrhythmiasFirst>=AdmitDate ~ 0,
                                 CardiacArrhythmias==0~0,
                                 is.na(CardiacArrhythmias)~0,
-                                is.na(HypertensionFirst)~0,
+                                is.na(CardiacArrhythmiasFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorLiverDisease = case_when(LiverDisease == 1 & LiverDiseaseFirst<AdmitDate ~ 1,
+                                LiverDisease == 1 & LiverDiseaseFirst>=AdmitDate ~ 0,
+                                LiverDisease==0~0,
+                                is.na(LiverDisease)~0,
+                                is.na(LiverDiseaseFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorMetastaticCancer = case_when(MetastaticCancer == 1 & MetastaticCancerFirst<AdmitDate ~ 1,
+                                MetastaticCancer == 1 & MetastaticCancerFirst>=AdmitDate ~ 0,
+                                MetastaticCancer==0~0,
+                                is.na(MetastaticCancer)~0,
+                                is.na(MetastaticCancerFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorDysphagia = case_when(Dysphagia == 1 & DysphagiaFirst<AdmitDate ~ 1,
+                                Dysphagia == 1 & DysphagiaFirst>=AdmitDate ~ 0,
+                                Dysphagia==0~0,
+                                is.na(Dysphagia)~0,
+                                is.na(DysphagiaFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorCKD = case_when(CKD == 1 & CKDFirst<AdmitDate ~ 1,
+                                CKD == 1 & CKDFirst>=AdmitDate ~ 0,
+                                CKD==0~0,
+                                is.na(CKD)~0,
+                                is.na(CKDFirst)~0,
+                                .default=0
+                                )) %>%
+  mutate(PriorHeartFailure = case_when(HeartFailure == 1 & HeartFailureFirst<AdmitDate ~ 1,
+                                HeartFailure == 1 & HeartFailureFirst>=AdmitDate ~ 0,
+                                HeartFailure==0~0,
+                                is.na(HeartFailure)~0,
+                                is.na(HeartFailureFirst)~0,
                                 .default=0
                                 )) 
-
 complete.filename <- 'DatasetComplete.csv'
 write_csv(combined.data, complete.filename)
 ```

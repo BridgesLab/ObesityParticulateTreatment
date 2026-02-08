@@ -40,14 +40,8 @@ Read in diagnoses from `r icd.datafile`.  This script matches these to diagnoses
 ```{r read-data}
 # library(readxl)
 diagnosis.data <- read_csv(diagnosis.datafile) 
-# diagnosis.datasheet <- 'Pneumonia ICD9 and ICD10 Codes.xlsx'
-# mapped.diagnoses <- bind_rows(
-#   read_excel(diagnosis.datasheet, sheet="ICD9") %>% rename(ICD=1),
-#   read_excel(diagnosis.datasheet, sheet="ICD10", skip=1) %>% rename(ICD=1))%>% 
-#   select(ICD,Type)
 
 library(readr)
-#bacterial.diagnoses <- read_lines(icd.datafile)
 
 phecode.data <- read_csv(phecode.datafile)
 filter(phecode.data, Phecode %in% c('480.1','480.11', '480.12', '480.13')) %>% 
@@ -104,19 +98,6 @@ encounter.data.ano <- left_join(encounter.data,encounter.anthro.data,by=c("DeID_
 pneumonia.enc.data <-
    left_join(pneumonia.diagnosis,encounter.data.ano,by=c("DeID_PatientID","DeID_EncounterID")) %>%
    mutate(Duration=difftime(mdy_hm(DeID_DischargeDate),mdy_hm(DeID_AdmitDate),units="days")) #calculate duration between admit and discharge in days
-# 
-# patient.enc.data <- 
-#   pneumonia.enc.data %>%
-#   #select(DeID_PatientID,DeID_EncounterID,DeID_AdmitDate,DeID_DischargeDate,AgeInYears,EmergencyVisit,Duration,Type,BMI) %>%
-#   mutate(AdmitMonth=format_ISO8601(mdy_hm(DeID_AdmitDate),precision="ym")) %>% #calculated month and year of admit
-#   group_by(DeID_PatientID,AdmitMonth,Type,SubType) %>% #summarize encounters by patient,type and admit month, this is defined as one event, if its a different type of pneumonia its considered a new event
-#   summarize(AgeInYears=median(AgeInYears,na.rm=T), #year at the event
-#             BMI = median(BMI,na.rm=T), #bmi at the event
-#             EmergencyVisit=max(EmergencyVisit), # whether there was an emergency visit
-#             MaxStay=max(Duration), #the max of each duration within this event
-#             AdmitDate=min(format_ISO8601(mdy_hm(DeID_AdmitDate),precision="ymd")), #when they were admitted
-#             DischargeDate=max(format_ISO8601(mdy_hm(DeID_DischargeDate),precision="ymd"))) %>% #when they were discharged
-#   distinct(DeID_PatientID,AdmitMonth,Type,.keep_all = T) 
 
 # Sort and group into "visits"
 patient.enc.data <- 
@@ -135,13 +116,6 @@ patient.enc.data <-
     MaxStay = Duration,
     DischargeDate = format_ISO8601(DeID_DischargeDate, precision="ymd")
   ) %>%
-  #summarize(AgeInYears=median(AgeInYears,na.rm=T), #year at the event
-  #    VisitID = first(VisitID), #carry over visit ID
-  #    BMI = median(BMI,na.rm=T), #bmi at the event
-  #    EmergencyVisit=max(EmergencyVisit), # whether there was an emergency visit
-  #    MaxStay=max(Duration), #the max of each duration within this event
-  #    AdmitDate=first(format_ISO8601(DeID_AdmitDate),precision="ymd"), #when they were admitted
-  #    DischargeDate=first(format_ISO8601(mdy_hm(DeID_DischargeDate),precision="ymd"))) %>%
   ungroup() %>%
   distinct(DeID_PatientID,VisitID,.keep_all=T)
 
