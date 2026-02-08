@@ -61,7 +61,7 @@ cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
             LiverDisease = max(LiverDisease,na.rm=T),
             LiverDiseaseFirst = first(EncounterDate[LiverDisease==1]),
             MetastaticCancer = max(MetastaticCancer, na.rm=T),
-            MetastaticCancerFirst = first(MetastaticCancer[MetaMetastaticCancer==1]),
+            MetastaticCancerFirst = first(MetastaticCancer[MetastaticCancer==1]),
             Obesity = max(Obesity,na.rm=T),
             ObesityFirst = first(EncounterDate[Obesity==1]),
             RenalFailure = max(RenalFailure,na.rm=T),
