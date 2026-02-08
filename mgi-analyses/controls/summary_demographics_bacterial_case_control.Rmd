@@ -68,12 +68,13 @@ quant.demo <-
 kable(quant.demo, caption="Summary of quantitative values")
 # wilcoxon tests, not normally distributed
 
-quant.t.tests <-
-  combined.data %>%
-  summarize(across(.cols=c('AgeInYears','BMI'), 
-                   .fns=list(Mann.Whitney=~wilcox.test(.~Class)$p.value)))
-
-kable(quant.t.tests,caption="Mann-Whitney tests for 30 day survival",digits=c(99,99,99))
+# quant.t.tests <-
+#    combined.data %>%
+#   mutate(Class=as.factor(Class)) %>%
+#   summarize(across(.cols=c('AgeInYears','BMI'), 
+#                    .fns=list(Mann.Whitney=~wilcox.test(.~Class)$p.value)))
+# 
+# kable(quant.t.tests,caption="Mann-Whitney tests for 30 day survival",digits=c(99,99,99))
 
 ances.demo.ql <- 
   combined.data %>%
@@ -278,7 +279,78 @@ kable(summary.discrete,
       caption=paste("Summary of discrete variables for bacterial pneumonia cases, compared to controls.  Overall", round(total.survival[1]/(total.survival[2]+total.survival[1])*100,2),"% cases"),
       digits=c(0,0,0,0,1,99,0))
 ```
-`
+
+# Diabetes and Obesity Interaction
+
+```{r diab-obesty}
+library(forcats)
+combined.data %>%
+  group_by(PriorDiabetes,PriorObesity,Class) %>%
+  count() %>%
+  ungroup %>%
+  pivot_wider(names_from=Class,values_from=n) %>%
+  filter(PriorObesity!=-Inf) %>%
+  mutate(Pct=Cases/(Cases+Controls)*100) %>%
+  mutate(PriorObesity = fct_recode(as.factor(PriorObesity),
+                                   "Yes"="1",
+                                   "No"="0")) %>%
+    mutate(PriorDiabetes = fct_recode(as.factor(PriorDiabetes),
+                                   "Yes"="1",
+                                   "No"="0"))-> diab.obesity.summary
+
+kable(diab.obesity.summary, caption="Bacterial pneumonia stratified by diabetes or obesity")
+
+library(ggplot2)
+
+ggplot(diab.obesity.summary,aes(y=Pct,x=as.factor(PriorObesity),fill=as.factor(PriorDiabetes))) +
+  geom_bar(stat='identity', position='dodge') +
+  labs(y="Proportion of Bacterial Pneumonia",
+       x="Pre-Existing Obesity",
+       fill="Pre-Existing Diabetes") +
+  theme_classic(base_size=16) +
+  theme(legend.position=c(0.7,0.92))
+```
+
+# Output File for Genetic Analysis
+
+```{r output}
+genetics_outfile <- '../Case_Control_Pneumonia_Incidence.csv'
+
+combined.data %>%
+  mutate(CaCo_Incidence = if_else(Class=="Cases",1,0)) %>%
+  mutate(Age = case_when(is.na(Age)~AgeInYears,.default=Age)) |>
+  mutate(AgeOver65 = case_when(Age>=65~1,
+                               Age<65~0)) %>%
+  mutate(COPD.History = case_when(COPD==1~1,
+                                  .default=0)) %>%
+  select(DeID_PatientID,starts_with("CaCo"),Age,AgeOver65,GenderCode,BMI,SmokingStatusMapped,COPD.History,Diabetes,RaceName,EthnicityName) %>% 
+  write_csv(genetics_outfile)
+
+
+genetics_outfile <- '../Case_Control_Klebsiella_Pneumonia_Incidence.csv'
+
+combined.data %>%
+  mutate(CaCo_Incidence = if_else(Class=="Cases"&SubType =='Pneumococcal',1,0)) %>%
+  mutate(Age = case_when(is.na(Age)~AgeInYears,.default=Age)) |>
+  mutate(AgeOver65 = case_when(Age>=65~1,
+                               Age<65~0)) %>%
+  mutate(COPD.History = case_when(COPD==1~1,
+                                  .default=0)) %>%
+  select(DeID_PatientID,starts_with("CaCo"),Age,AgeOver65,GenderCode,BMI,SmokingStatusMapped,COPD.History,Diabetes,RaceName,EthnicityName) %>% 
+  write_csv(genetics_outfile)
+
+genetics_outfile <- '../Case_Control_Pneumococcal_Pneumonia_Incidence.csv'
+
+combined.data %>%
+  mutate(CaCo_Incidence = if_else(Class=="Cases"&SubType=="Klebsilla",1,0)) %>%
+  mutate(Age = case_when(is.na(Age)~AgeInYears,.default=Age)) |>
+  mutate(AgeOver65 = case_when(Age>=65~1,
+                               Age<65~0)) %>%
+  mutate(COPD.History = case_when(COPD==1~1,
+                                  .default=0)) %>%
+  select(DeID_PatientID,starts_with("CaCo"),Age,AgeOver65,GenderCode,BMI,SmokingStatusMapped,COPD.History,Diabetes,RaceName,EthnicityName) %>% 
+  write_csv(genetics_outfile)
+```
 
 # Session Information
 

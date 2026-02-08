@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients with viral or bacterial pneumonia.  This script is to generate data about comorbidities.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-11-12/controls and was most recently run on Wed Nov 13 10:43:54 2024.
+To analyse the subset of patients with viral or bacterial pneumonia.  This script is to generate data about comorbidities.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2025-05-12/controls and was most recently run on Mon Dec  1 09:46:19 2025.
 
 
 ``` r
@@ -76,7 +76,7 @@ encounter.data <- read_csv(encounter.datafile) %>%
   mutate(EncounterDate = mdy_hm(DeID_AdmitDate))
 
 
-encounter.anthro.data <- read_csv(encounter.anthro.datafile,n_max=100)
+encounter.anthro.data <- read_csv(encounter.anthro.datafile)
 
 encounter.combined.data <- left_join(encounter.data,encounter.anthro.data,
                                      by=c('DeID_PatientID','DeID_EncounterID'))
@@ -99,7 +99,8 @@ cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
             ObesityFirst = first(EncounterDate[Obesity==1]),
             RenalFailure = max(RenalFailure,na.rm=T),
             RenalFailureFirst = first(EncounterDate[RenalFailure==1]),
-            BMI = median(BMI,na.rm=T))
+            BMI = median(BMI,na.rm=T),
+            Age = max(AgeInYears,na.rm=T))
 
 
 cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%
@@ -135,7 +136,7 @@ copd.diagnoses <-
   rename(COPDFirst=EncounterDate)
 ```
 
-There were a total of 4282 patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.`
+There were a total of 4596 patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.`
 
 # Combining
 
@@ -161,13 +162,13 @@ sessionInfo()
 ```
 
 ```
-## R version 4.4.0 (2024-04-24)
+## R version 4.4.3 (2025-02-28)
 ## Platform: x86_64-pc-linux-gnu
-## Running under: Red Hat Enterprise Linux 8.8 (Ootpa)
+## Running under: Red Hat Enterprise Linux 8.10 (Ootpa)
 ## 
 ## Matrix products: default
-## BLAS:   /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRblas.so 
-## LAPACK: /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRlapack.so;  LAPACK version 3.12.0
+## BLAS:   /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.3/lib64/R/lib/libRblas.so 
+## LAPACK: /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.3/lib64/R/lib/libRlapack.so;  LAPACK version 3.12.0
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -188,14 +189,14 @@ sessionInfo()
 ## [5] knitr_1.48     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] bit_4.0.5         jsonlite_1.8.8    compiler_4.4.0    crayon_1.5.3     
-##  [5] tidyselect_1.2.1  parallel_4.4.0    jquerylib_0.1.4   yaml_2.3.9       
+##  [1] bit_4.0.5         jsonlite_1.8.8    compiler_4.4.3    crayon_1.5.3     
+##  [5] tidyselect_1.2.1  parallel_4.4.3    jquerylib_0.1.4   yaml_2.3.9       
 ##  [9] fastmap_1.2.0     R6_2.5.1          generics_0.1.3    tibble_3.2.1     
 ## [13] bslib_0.7.0       pillar_1.9.0      tzdb_0.4.0        rlang_1.1.4      
 ## [17] utf8_1.2.4        cachem_1.1.0      xfun_0.45         sass_0.4.9       
 ## [21] bit64_4.0.5       timechange_0.3.0  cli_3.6.3         withr_3.0.0      
 ## [25] magrittr_2.0.3    digest_0.6.36     vroom_1.6.5       hms_1.1.3        
 ## [29] lifecycle_1.0.4   vctrs_0.6.5       evaluate_0.24.0   glue_1.8.0       
-## [33] fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2       tools_4.4.0      
+## [33] fansi_1.0.6       rmarkdown_2.27    purrr_1.0.2       tools_4.4.3      
 ## [37] pkgconfig_2.0.3   htmltools_0.5.8.1
 ```

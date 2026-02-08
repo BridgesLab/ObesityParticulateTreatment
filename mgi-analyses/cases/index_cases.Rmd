@@ -31,6 +31,8 @@ diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
 encounter.datafile <- 'EncounterAll.csv'
 encounter.anth.datafile <- "EncounterAnthropometricsBMI.csv"
 icd.datafile <- 'Bacterial Pneumonia Phecodes.txt'
+
+phecode.datafile <- 'Phecode_map_v1_2_icd9_icd10cm_09_30_2024.csv.zip'
 ```
 
 Read in diagnoses from `r icd.datafile`.  This script matches these to diagnoses in `r diagnosis.datafile`, which in term are matched to dates given in the `r encounter.datafile`.
@@ -45,18 +47,49 @@ diagnosis.data <- read_csv(diagnosis.datafile)
 #   select(ICD,Type)
 
 library(readr)
-bacterial.diagnoses <- read_lines(icd.datafile)
+#bacterial.diagnoses <- read_lines(icd.datafile)
+
+phecode.data <- read_csv(phecode.datafile)
+filter(phecode.data, Phecode %in% c('480.1','480.11', '480.12', '480.13')) %>% 
+  pull(ICD) -> 
+  bacterial.pneumonia.icd
+#70 ICD codes
+
+filter(phecode.data, Phecode %in% c('480.11')) %>%
+  pull(ICD) -> pneumococcal.pneumonia.icd 
+filter(phecode.data, Phecode %in% c('480.12')) %>%
+  pull(ICD) -> pseudonomas.pneumonia.icd 
+filter(phecode.data, Phecode %in% c('480.13')) %>%
+  pull(ICD) -> mrsa.pneumonia.icd 
+
+c('J13','481','481.0') -> klebsiella.icd 
 
 pneumonia.diagnosis <- 
   diagnosis.data %>%
-  filter(TermCodeSource %in% bacterial.diagnoses) %>% 
-  mutate(Type='Bacterial') 
+  filter(TermCodeSource %in% bacterial.pneumonia.icd) %>% 
+  mutate(Type='Bacterial') %>%
+  mutate(SubType = case_when(
+    TermCodeSource %in% klebsiella.icd ~ "Klebsiella",
+    TermCodeSource %in% pseudonomas.pneumonia.icd ~ "Pseudomonas",
+    TermCodeSource %in% mrsa.pneumonia.icd ~ "MRSA",
+    TermCodeSource %in% pneumococcal.pneumonia.icd ~ "Pneumococcal"))
 
 pneumonia.diagnosis %>%
   group_by(Type) %>%
   distinct(DeID_PatientID,.keep_all = T) %>%
   count %>%
   kable(caption="Diagnosis type by patient")
+
+pneumonia.diagnosis %>%
+  group_by(Type,SubType) %>%
+  distinct(DeID_PatientID,.keep_all = T) %>%
+  count %>%
+  kable(caption="Diagnosis type by patient")
+
+pneumonia.diagnosis %>%
+  group_by(Type,SubType) %>%
+  count %>%
+  kable(caption="Diagnoses of each type")
 ```
 
 # Merging with Encounter Data
@@ -67,23 +100,51 @@ encounter.anthro.data <-read_csv(encounter.anth.datafile)
 
 encounter.data.ano <- left_join(encounter.data,encounter.anthro.data,by=c("DeID_PatientID","DeID_EncounterID"))
 
-#when was the encoutner for each pneumonia diagnosis
+#when was the encounter for each pneumonia diagnosis
 pneumonia.enc.data <-
-  left_join(pneumonia.diagnosis,encounter.data.ano,by=c("DeID_PatientID","DeID_EncounterID")) %>%
-  mutate(Duration=difftime(mdy_hm(DeID_DischargeDate),mdy_hm(DeID_AdmitDate),units="days")) #calculate duration between admit and discharge in days
+   left_join(pneumonia.diagnosis,encounter.data.ano,by=c("DeID_PatientID","DeID_EncounterID")) %>%
+   mutate(Duration=difftime(mdy_hm(DeID_DischargeDate),mdy_hm(DeID_AdmitDate),units="days")) #calculate duration between admit and discharge in days
+# 
+# patient.enc.data <- 
+#   pneumonia.enc.data %>%
+#   #select(DeID_PatientID,DeID_EncounterID,DeID_AdmitDate,DeID_DischargeDate,AgeInYears,EmergencyVisit,Duration,Type,BMI) %>%
+#   mutate(AdmitMonth=format_ISO8601(mdy_hm(DeID_AdmitDate),precision="ym")) %>% #calculated month and year of admit
+#   group_by(DeID_PatientID,AdmitMonth,Type,SubType) %>% #summarize encounters by patient,type and admit month, this is defined as one event, if its a different type of pneumonia its considered a new event
+#   summarize(AgeInYears=median(AgeInYears,na.rm=T), #year at the event
+#             BMI = median(BMI,na.rm=T), #bmi at the event
+#             EmergencyVisit=max(EmergencyVisit), # whether there was an emergency visit
+#             MaxStay=max(Duration), #the max of each duration within this event
+#             AdmitDate=min(format_ISO8601(mdy_hm(DeID_AdmitDate),precision="ymd")), #when they were admitted
+#             DischargeDate=max(format_ISO8601(mdy_hm(DeID_DischargeDate),precision="ymd"))) %>% #when they were discharged
+#   distinct(DeID_PatientID,AdmitMonth,Type,.keep_all = T) 
 
+# Sort and group into "visits"
 patient.enc.data <- 
   pneumonia.enc.data %>%
-  #select(DeID_PatientID,DeID_EncounterID,DeID_AdmitDate,DeID_DischargeDate,AgeInYears,EmergencyVisit,Duration,Type,BMI) %>%
-  mutate(AdmitMonth=format_ISO8601(mdy_hm(DeID_AdmitDate),precision="ym")) %>% #calculated month and year of admit
-  group_by(DeID_PatientID,AdmitMonth,Type) %>% #summarize encounters by patient,type and admit month, this is defined as one event, if its a different type of pneumonia its considered a new event
-  summarize(AgeInYears=median(AgeInYears,na.rm=T), #year at the event
-            BMI = median(BMI,na.rm=T), #bmi at the event
-            EmergencyVisit=max(EmergencyVisit), # whether there was an emergency visit
-            MaxStay=max(Duration), #the max of each duration within this event
-            AdmitDate=min(format_ISO8601(mdy_hm(DeID_AdmitDate),precision="ymd")), #when they were admitted
-            DischargeDate=max(format_ISO8601(mdy_hm(DeID_DischargeDate),precision="ymd"))) %>% #when they were discharged
-  distinct(DeID_PatientID,AdmitMonth,Type,.keep_all = T) 
+  mutate(
+    DeID_AdmitDate = mdy_hm(DeID_AdmitDate),
+    DeID_DischargeDate = mdy_hm(DeID_DischargeDate)
+  ) %>%
+  arrange(DeID_PatientID, DeID_AdmitDate) %>%
+  group_by(DeID_PatientID) %>%
+  mutate(
+    DateGap = as.numeric(DeID_AdmitDate - lag(DeID_DischargeDate, default = first(DeID_AdmitDate)), units = "days"),
+    NewVisit = if_else(row_number() == 1 | DateGap > 14, 1, 0),
+    VisitID = cumsum(NewVisit),
+    AdmitDate = format_ISO8601(DeID_AdmitDate, precision="ymd"),
+    MaxStay = Duration,
+    DischargeDate = format_ISO8601(DeID_DischargeDate, precision="ymd")
+  ) %>%
+  #summarize(AgeInYears=median(AgeInYears,na.rm=T), #year at the event
+  #    VisitID = first(VisitID), #carry over visit ID
+  #    BMI = median(BMI,na.rm=T), #bmi at the event
+  #    EmergencyVisit=max(EmergencyVisit), # whether there was an emergency visit
+  #    MaxStay=max(Duration), #the max of each duration within this event
+  #    AdmitDate=first(format_ISO8601(DeID_AdmitDate),precision="ymd"), #when they were admitted
+  #    DischargeDate=first(format_ISO8601(mdy_hm(DeID_DischargeDate),precision="ymd"))) %>%
+  ungroup() %>%
+  distinct(DeID_PatientID,VisitID,.keep_all=T)
+
 
 index.filename <- 'PneumoniaEncounterData.csv'
 write_csv(patient.enc.data,index.filename)
@@ -104,6 +165,8 @@ patient.enc.data %>%
   patient.encounter.counts
 
 kable(patient.encounter.counts %>% ungroup %>% count(Admissions,name="Number of Patients"))
+
+kable(patient.enc.data  %>% count(SubType,name="Number of Patients"))
 
 library(ggplot2)
 ggplot(patient.encounter.counts,(aes(x=Admissions))) +

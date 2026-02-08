@@ -956,19 +956,19 @@ kable(summary.discrete,
       digits=c(0,0,0,0,1,99,0))
 ```
 
-# By Longer than Median Stay
+# By Longer than Exoected Stay
 
-The median stay was `r median(combined.data$MaxStay,na.rm=T)`.
+The median stay was `r median(combined.data$MaxStay,na.rm=T)`.  We set the a longer than average stay to be **3 days**.
 
 ```{r length-of-stay}
 combined.data <- 
   combined.data %>%
-  mutate(StayAboveMedian=case_when(MaxStay>median(MaxStay,na.rm=T)~"Yes",
-                                MaxStay<median(MaxStay,na.rm=T)~"No"))
+  mutate(LongStay=case_when(MaxStay>=3~"Yes",
+                                MaxStay<3~"No"))
 
 quant.demo <- 
   combined.data %>%
-  group_by(StayAboveMedian) %>%
+  group_by(LongStay) %>%
   summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
@@ -985,13 +985,13 @@ kable(quant.demo, caption="Summary of quantitative values for above average leng
 quant.t.tests <-
   combined.data %>%
   summarize(across(.cols=c('AgeInYears.x','BMI'),
-                   .fns=list(Mann.Whitney=~wilcox.test(.~StayAboveMedian)$p.value)))
+                   .fns=list(Mann.Whitney=~wilcox.test(.~LongStay)$p.value)))
 
 kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(99,99,99))
 
 ances.demo.ql <- 
   combined.data %>%
-  group_by(MajorityAncestry,StayAboveMedian) %>%
+  group_by(MajorityAncestry,LongStay) %>%
   mutate(Type="Ancestry") %>%
   rename("Group"="MajorityAncestry") %>%
   count %>%
@@ -1001,7 +1001,7 @@ ances.demo.ql <-
 
 type.demo.ql <- 
   combined.data %>%
-  group_by(Type,StayAboveMedian) %>%
+  group_by(Type,LongStay) %>%
   rename("Group"="Type") %>%
   count %>%
   ungroup %>%
@@ -1010,7 +1010,7 @@ type.demo.ql <-
 
 emerg.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit.Group,StayAboveMedian) %>%
+  group_by(EmergencyVisit.Group,LongStay) %>%
   rename("Group"="EmergencyVisit.Group") %>%
   count %>%
   mutate(Group=as.factor(Group)) %>%
@@ -1033,7 +1033,7 @@ emerg.demo.ql <-
 
 gender.demo.ql <- 
   combined.data %>%
-  group_by(GenderCode,StayAboveMedian) %>%
+  group_by(GenderCode,LongStay) %>%
   rename("Group"="GenderCode") %>%
   count %>%
   ungroup %>%
@@ -1042,7 +1042,7 @@ gender.demo.ql <-
 
 race.demo.ql <- 
 combined.data %>%
-  group_by(RaceName,StayAboveMedian) %>%
+  group_by(RaceName,LongStay) %>%
   count %>%
   ungroup %>%
   rename("Group"="RaceName") %>%
@@ -1051,7 +1051,7 @@ combined.data %>%
 
 ethnicity.demo.ql <- 
 combined.data %>%
-  group_by(EthnicityName,StayAboveMedian) %>%
+  group_by(EthnicityName,LongStay) %>%
   count %>%
   ungroup %>%
   rename("Group"="EthnicityName") %>%
@@ -1060,7 +1060,7 @@ combined.data %>%
 
 diabetes.demo.ql <- 
   combined.data %>%
-  group_by(PriorDiabetes,StayAboveMedian) %>%
+  group_by(PriorDiabetes,LongStay) %>%
   count %>%
   ungroup %>%
   rename("Group"="PriorDiabetes") %>%
@@ -1071,7 +1071,7 @@ diabetes.demo.ql <-
 
 smoking.demo.ql <- 
   combined.data %>%
-  group_by(SmokingStatusMapped,StayAboveMedian) %>%
+  group_by(SmokingStatusMapped,LongStay) %>%
   #mutate(Type="Smoking") %>%
   rename("Group"="SmokingStatusMapped") %>%
   count %>%
@@ -1082,7 +1082,7 @@ smoking.demo.ql <-
 #update to hypertension first
 hypertension.demo.ql <- 
   combined.data %>%
-  group_by(PriorHypertension,StayAboveMedian) %>%
+  group_by(PriorHypertension,LongStay) %>%
   rename("Group"="PriorHypertension") %>%
   count %>%
   ungroup %>%
@@ -1093,7 +1093,7 @@ hypertension.demo.ql <-
 
 arrythmia.demo.ql <- 
   combined.data %>%
-  group_by(PriorCardiacArrhythmias,StayAboveMedian) %>%
+  group_by(PriorCardiacArrhythmias,LongStay) %>%
   rename("Group"="PriorCardiacArrhythmias") %>%
   count %>%
   ungroup %>%
@@ -1104,7 +1104,7 @@ arrythmia.demo.ql <-
 
 obesity.demo.ql <- 
   combined.data %>%
-  group_by(PriorObesity,StayAboveMedian) %>%
+  group_by(PriorObesity,LongStay) %>%
   rename("Group"="PriorObesity") %>%
   count %>%
   ungroup %>%
@@ -1115,7 +1115,7 @@ obesity.demo.ql <-
 
 copd.demo.ql <- 
   combined.data %>%
-  group_by(PriorCOPD,StayAboveMedian) %>%
+  group_by(PriorCOPD,LongStay) %>%
   rename("Group"="PriorCOPD") %>%
   count %>%
   ungroup %>%
@@ -1126,7 +1126,7 @@ copd.demo.ql <-
 
 death.demo.ql <- 
   combined.data %>%
-  group_by(is.na(DeID_DeathIndexDeceasedDate),StayAboveMedian) %>%
+  group_by(is.na(DeID_DeathIndexDeceasedDate),LongStay) %>%
   count() %>%
   rename("Group"=1) %>%
   ungroup %>%
@@ -1137,7 +1137,7 @@ death.demo.ql <-
 
 surv30d.demo.ql <- 
   combined.data %>%
-  group_by(EmergencyVisit.Group,StayAboveMedian) %>%
+  group_by(EmergencyVisit.Group,LongStay) %>%
   count() %>%
   rename("Group"=1) %>%
   ungroup %>%
@@ -1146,14 +1146,14 @@ surv30d.demo.ql <-
 
 surv60d.demo.ql <- 
   combined.data %>%
-  group_by(Survival.60day,StayAboveMedian) %>%
+  group_by(Survival.60day,LongStay) %>%
   count() %>%
   rename("Group"=1) %>%
   ungroup %>%
   mutate(Pct=n/sum(n)*100) %>%
   mutate(Type="60d Survival") 
 
-total.survival <- combined.data %>% group_by(StayAboveMedian) %>% count() %>% pull(n) 
+total.survival <- combined.data %>% group_by(LongStay) %>% count() %>% pull(n) 
 
 summary.discrete <-
   bind_rows(gender.demo.ql,
@@ -1172,10 +1172,10 @@ summary.discrete <-
             obesity.demo.ql,
             copd.demo.ql
             ) %>%
-  select(StayAboveMedian,Type,Group,n,Pct) %>%
+  select(LongStay,Type,Group,n,Pct) %>%
   ungroup %>%
   select(-Pct) %>%
-  pivot_wider(names_from = StayAboveMedian,values_from = n, values_fn = sum) %>%
+  pivot_wider(names_from = LongStay,values_from = n, values_fn = sum) %>%
   arrange(Type,Group) %>%
   replace(.=="NULL", NA) %>%
   mutate(No = case_when(is.na(No)~0,
@@ -1436,7 +1436,26 @@ kable(summary.discrete,
       caption=paste("Summary of discrete variables for bacterial pneumonia cases, stratified by ventillation status.  Overall", round(total.survival[2]/(total.survival[2]+total.survival[1])*100,2),"% required ventillation"),
       digits=c(0,0,0,0,1,99,0))
 ```
-`
+
+```{r output}
+genetics_outfile <- '../Case_Control_After_Bacterial_Pneumonia.csv'
+
+combined.data %>%
+  rename('Age'='AgeInYears.x') %>%
+  mutate(AgeOver65 = case_when(Age>=65~1,
+                               Age<65~0)) %>%
+  mutate(COPD.History = case_when(COPD==1~1,
+                                  .default=0)) %>% 
+  select(DeID_PatientID,
+         Age,AgeOver65,GenderCode,BMI,
+         RaceName,EthnicityName,
+         SmokingStatusMapped,COPD.History,Diabetes,
+         Survival.30day, Survival.60day, EmergencyVisit.Group, Ventillation,LongStay,
+         SubType) %>% 
+  write_csv(genetics_outfile)
+```
+
+
 
 # Session Information
 

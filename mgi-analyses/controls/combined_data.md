@@ -12,7 +12,7 @@ output:
 
 ## Purpose
 
-To analyse the subset of patients *without* viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2024-11-12/controls and was most recently run on Wed Nov 13 10:59:58 2024.
+To analyse the subset of patients *without* viral or bacterial pneumonia.   This script combines the cleaned datasets and writes out a complete datafile for analyses.  This script can be found in /nfs/turbo/precision-health/DataDirect/HUM00229632 - Genome-wide associations of bacteria/2025-05-12/controls and was most recently run on Mon Dec  1 10:04:49 2025.
 
 
 ``` r
@@ -94,13 +94,13 @@ sessionInfo()
 ```
 
 ```
-## R version 4.4.0 (2024-04-24)
+## R version 4.4.3 (2025-02-28)
 ## Platform: x86_64-pc-linux-gnu
-## Running under: Red Hat Enterprise Linux 8.8 (Ootpa)
+## Running under: Red Hat Enterprise Linux 8.10 (Ootpa)
 ## 
 ## Matrix products: default
-## BLAS:   /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRblas.so 
-## LAPACK: /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.0/lib64/R/lib/libRlapack.so;  LAPACK version 3.12.0
+## BLAS:   /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.3/lib64/R/lib/libRblas.so 
+## LAPACK: /sw/pkgs/arc/stacks/gcc/13.2.0/R/4.4.3/lib64/R/lib/libRlapack.so;  LAPACK version 3.12.0
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -126,9 +126,9 @@ sessionInfo()
 ##  [9] bit_4.0.5         glue_1.8.0        htmltools_0.5.8.1 sass_0.4.9       
 ## [13] hms_1.1.3         fansi_1.0.6       rmarkdown_2.27    evaluate_0.24.0  
 ## [17] jquerylib_0.1.4   tibble_3.2.1      tzdb_0.4.0        fastmap_1.2.0    
-## [21] yaml_2.3.9        lifecycle_1.0.4   compiler_4.4.0    timechange_0.3.0 
+## [21] yaml_2.3.9        lifecycle_1.0.4   compiler_4.4.3    timechange_0.3.0 
 ## [25] pkgconfig_2.0.3   digest_0.6.36     R6_2.5.1          tidyselect_1.2.1 
-## [29] utf8_1.2.4        parallel_4.4.0    vroom_1.6.5       pillar_1.9.0     
-## [33] magrittr_2.0.3    bslib_0.7.0       bit64_4.0.5       tools_4.4.0      
+## [29] utf8_1.2.4        parallel_4.4.3    vroom_1.6.5       pillar_1.9.0     
+## [33] magrittr_2.0.3    bslib_0.7.0       bit64_4.0.5       tools_4.4.3      
 ## [37] cachem_1.1.0
 ```

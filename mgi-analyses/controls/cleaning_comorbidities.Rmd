@@ -41,7 +41,7 @@ encounter.data <- read_csv(encounter.datafile) %>%
   mutate(EncounterDate = mdy_hm(DeID_AdmitDate))
 
 
-encounter.anthro.data <- read_csv(encounter.anthro.datafile,n_max=100)
+encounter.anthro.data <- read_csv(encounter.anthro.datafile)
 
 encounter.combined.data <- left_join(encounter.data,encounter.anthro.data,
                                      by=c('DeID_PatientID','DeID_EncounterID'))
@@ -64,7 +64,8 @@ cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
             ObesityFirst = first(EncounterDate[Obesity==1]),
             RenalFailure = max(RenalFailure,na.rm=T),
             RenalFailureFirst = first(EncounterDate[RenalFailure==1]),
-            BMI = median(BMI,na.rm=T))
+            BMI = median(BMI,na.rm=T),
+            Age = max(AgeInYears,na.rm=T))
 
 
 cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%

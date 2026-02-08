@@ -75,7 +75,7 @@ cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%
 
 # Separate Diagnoses
 
-For COPD need to pull this information from the dignosis summary file.
+For COPD need to pull this information from the diagnosis summary file.
 
 ```{r diagnosis-copd}
 diagnosis.datafile <- 'DiagnosesComprehensiveAll.csv'
