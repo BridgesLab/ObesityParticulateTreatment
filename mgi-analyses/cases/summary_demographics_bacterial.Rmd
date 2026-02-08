@@ -41,7 +41,7 @@ combined.data <- read_csv(complete.filename) %>%
 ```{r summary-dempographics}
 quant.demo <- 
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              n = ~length(!(is.na(.)))))) %>%
@@ -261,7 +261,7 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(Survival.30day.Group) %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              #shapiro.p = ~shapiro.test(.)$p.value,
@@ -276,7 +276,7 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
 
 kable(quant.t.tests,caption="Mann-Whitney tests for 30 day survival",digits=c(99,99,99))
@@ -498,7 +498,7 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(Survival.60.day.Group) %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              #shapiro.p = ~shapiro.test(.)$p.value,
@@ -512,7 +512,7 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~Survival.30day.Group)$p.value)))
 
 kable(quant.t.tests,captionn="Mann-Whitney tests for 30 day survival", digits=c(99,99,99))
@@ -734,7 +734,7 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(EmergencyVisit.Group) %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              #shapiro.p = ~shapiro.test(.)$p.value,
@@ -749,7 +749,7 @@ kable(quant.demo, caption="Summary of quantitative values")
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~EmergencyVisit.Group)$p.value)))
 
 kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(99,99,99))
@@ -969,7 +969,7 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(LongStay) %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              #shapiro.p = ~shapiro.test(.)$p.value,
@@ -984,7 +984,7 @@ kable(quant.demo, caption="Summary of quantitative values for above average leng
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~LongStay)$p.value)))
 
 kable(quant.t.tests,captionn="Mann-Whitney tests for ER visit",digits=c(99,99,99))
@@ -1212,7 +1212,7 @@ combined.data <-
 quant.demo <- 
   combined.data %>%
   group_by(Ventillation) %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI','MaxStay'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x','MaxStay'),
                    .fns=list(mean = ~mean(.,na.rm=T),
                              sd = ~sd(.,na.rm=T),
                              #shapiro.p = ~shapiro.test(.)$p.value,
@@ -1227,7 +1227,7 @@ kable(quant.demo, caption="Summary of quantitative values for the need for venti
 
 quant.t.tests <-
   combined.data %>%
-  summarize(across(.cols=c('AgeInYears.x','BMI'),
+  summarize(across(.cols=c('AgeInYears.x','BMI.x'),
                    .fns=list(Mann.Whitney=~wilcox.test(.~Ventillation)$p.value)))
 
 kable(quant.t.tests,captionn="Mann-Whitney tests for need for ventillation",digits=c(99,99,99))
@@ -1441,13 +1441,13 @@ kable(summary.discrete,
 genetics_outfile <- '../Case_Control_After_Bacterial_Pneumonia.csv'
 
 combined.data %>%
-  rename('Age'='AgeInYears.x') %>%
-  mutate(AgeOver65 = case_when(Age>=65~1,
-                               Age<65~0)) %>%
+  rename('Age.2'='AgeInYears.x') %>%
+  mutate(AgeOver65 = case_when(Age.2>=65~1,
+                               Age.2<65~0)) %>%
   mutate(COPD.History = case_when(COPD==1~1,
                                   .default=0)) %>% 
   select(DeID_PatientID,
-         Age,AgeOver65,GenderCode,BMI,
+         Age,AgeOver65,GenderCode,BMI.x,
          RaceName,EthnicityName,
          SmokingStatusMapped,COPD.History,Diabetes,
          Survival.30day, Survival.60day, EmergencyVisit.Group, Ventillation,LongStay,
