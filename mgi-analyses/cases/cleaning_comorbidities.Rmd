@@ -30,6 +30,7 @@ library(lubridate)
 elixhauser.datafile <- 'ComorbiditiesElixhauserComprehensive.csv'
 charlson.datafile <- 'ComorbiditiesCharlsonComprehensive.csv'
 encounter.datafile <- 'EncounterAll.csv'
+encounter.anthro.datafile <- 'EncounterAnthropometricsBMI.csv'
 ```
 
 Combining demographic files
@@ -37,10 +38,16 @@ Combining demographic files
 ```{r combining}
 #need to know when the first diagnosis was so need encounter data
 encounter.data <- read_csv(encounter.datafile) %>%
-  mutate(EncounterDate = as.Date(mdy_hm(DeID_AdmitDate),format="%y-%m-%d"))
+  mutate(EncounterDate = mdy_hm(DeID_AdmitDate))
+
+
+encounter.anthro.data <- read_csv(encounter.anthro.datafile)
+
+encounter.combined.data <- left_join(encounter.data,encounter.anthro.data,
+                                     by=c('DeID_PatientID','DeID_EncounterID'))
 
 cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
-  left_join(encounter.data,by=c('DeID_PatientID','DeID_EncounterID')) %>%
+  left_join(encounter.combined.data,by=c('DeID_PatientID','DeID_EncounterID')) %>%
   filter(!is.na(EncounterDate)) %>% #remove enounters without dates
   arrange(EncounterDate) %>%
   ungroup() %>%
@@ -53,10 +60,14 @@ cm.elix.data <- read_csv(elixhauser.datafile,na='-99') %>%
             HypertensionUncomplicatedFirst = first(EncounterDate[HypertensionUncomplicated==1]),
             LiverDisease = max(LiverDisease,na.rm=T),
             LiverDiseaseFirst = first(EncounterDate[LiverDisease==1]),
+            MetastaticCancer = max(MetastaticCancer, na.rm=T),
+            MetastaticCancerFirst = first(MetastaticCancer[MetaMetastaticCancer==1]),
             Obesity = max(Obesity,na.rm=T),
             ObesityFirst = first(EncounterDate[Obesity==1]),
             RenalFailure = max(RenalFailure,na.rm=T),
-            RenalFailureFirst = first(EncounterDate[RenalFailure==1]))
+            RenalFailureFirst = first(EncounterDate[RenalFailure==1]),
+            BMI = median(BMI,na.rm=T),
+            Age = max(AgeInYears,na.rm=T))
 
 
 cm.charlson.data <- read_csv(charlson.datafile,na="-99") %>%
@@ -89,20 +100,55 @@ copd.diagnoses <-
   distinct(DeID_PatientID,.keep_all = T) %>%
   mutate(COPD=1) %>%
   rename(COPDFirst=EncounterDate)
+
+#Heart failure: ICD9 428/ICD10 150, used 428.x and I50.x
+hf.diagnoses <- 
+  diagnosis.data %>%
+  filter(grepl("^(428\\.|I50\\.)", TermCodeSource)) %>%
+  left_join(encounter.data, by=c("DeID_PatientID","DeID_EncounterID")) %>%
+  arrange(EncounterDate) %>%
+  distinct(DeID_PatientID,.keep_all = T) %>%
+  mutate(HeartFailure=1) %>%
+  rename(HeartFailureFirst=EncounterDate)
+
+#Chronic kidney disease: ICD9 585 /ICD10 N18, used 585.x and N18.x
+ckd.diagnoses <- 
+  diagnosis.data %>%
+  filter(grepl("^(585\\.|N18\\.)", TermCodeSource)) %>%
+  left_join(encounter.data, by=c("DeID_PatientID","DeID_EncounterID")) %>%
+  arrange(EncounterDate) %>%
+  distinct(DeID_PatientID,.keep_all = T) %>%
+  mutate(CKD=1) %>%
+  rename(CKDFirst=EncounterDate)
+
+#Dysphagia: ICD9 787.2/ICD10 R13.1 (cause of aspiration pneumonia) used 787.2x and R13.1x
+dysphagia.diagnoses <- 
+  diagnosis.data %>%
+  filter(grepl("^(787\\.2|R13\\.1)", TermCodeSource)) %>%
+  left_join(encounter.data, by=c("DeID_PatientID","DeID_EncounterID")) %>%
+  arrange(EncounterDate) %>%
+  distinct(DeID_PatientID,.keep_all = T) %>%
+  mutate(Dysphagia=1) %>%
+  rename(DysphagiaFirst=EncounterDate)
 ```
 
-There were a total of `r nrow(copd.diagnoses)` patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.
+There were a total of `r nrow(copd.diagnoses)` patients with COPD diagnoses in the dataset.  These were combined with the other comorbidity data.`
 
-# Combining and Exporting
+# Combining
 
-```{r combine-export}
+```{r combined-diagnoses}
 combined.data <-
   full_join(cm.charlson.data,cm.elix.data,by="DeID_PatientID") %>%
-  left_join(copd.diagnoses,by="DeID_PatientID")
+  left_join(copd.diagnoses,by="DeID_PatientID") %>%
+  left_join(hf.diagnoses,by="DeID_PatientID") %>%
+  left_join(ckd.diagnoses,by="DeID_PatientID") %>%
+  left_join(dysphagia.diagnoses,by="DeID_PatientID")
 
 comorbidities.filename <- 'Comorbidities_clean.csv'
 write_csv(combined.data, comorbidities.filename)
 ```
+
+
 
 Wrote this out to `r comorbidities.filename`.
 
