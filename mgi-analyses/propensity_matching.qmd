@@ -1,0 +1,143 @@
+---
+title: "Propensity Matching for Pneumonia Incidence"
+author: "Dave Bridges"
+date: "2025-12-01"
+editor: source
+format: 
+  html:
+    toc: true
+    toc-location: right
+    keep-md: true
+    code-fold: true
+    code-summary: "Show the code"
+    fig-path: "figures/"
+  gfm:
+    html-math-method: webtex
+theme: journal
+execute:
+  echo: true
+  warning: false
+---
+
+
+```{r global_options}
+# hide this code chunk
+#| echo: false
+#| message: false
+
+# defines the se function
+se <- function(x) {
+  sd(x, na.rm = TRUE) / sqrt(length(x))
+}
+
+#load these packages, nearly always needed
+library(tidyverse)
+library(knitr)
+
+# sets maize and blue color scheme
+color_scheme <- c("#00274c", "#ffcb05")
+```
+
+## Data Entry
+
+```{r data-entry}
+library(readr)
+filename <- 'Case_Control_Pneumonia_Incidence.csv'
+data <- read_csv(filename) |>
+  mutate(Race.Ethnicity = case_when(RaceName=="African American" ~ "Black",
+                                    RaceName=="Caucasian"~"White",
+                                    RaceName=="Asian"~"Asian",
+                                    EthnicityName=="Hispanic or Latino"~"Hispanic or Latino",
+                                    is.na(RaceName)~"Other",
+                                    is.na(EthnicityName)~"Other",
+                                    .default="Other")) 
+
+library(janitor)
+
+tabyl(data, Race.Ethnicity,CaCo_Incidence)|>
+  adorn_percentages("col") %>%          # row percentages (each row sums to 100%)
+  adorn_pct_formatting(digits = 0) %>%  # show as 23% instead of 0.23
+  adorn_ns(position = "front") %>%      # puts counts in front: 45 (23%)
+  adorn_title("combined") |> kable(caption="Counts by race/ethnicity prior to matching")
+
+tabyl(data, GenderCode,CaCo_Incidence)|>
+  adorn_percentages("col") %>%          # row percentages (each row sums to 100%)
+  adorn_pct_formatting(digits = 0) %>%  # show as 23% instead of 0.23
+  adorn_ns(position = "front") %>%      # puts counts in front: 45 (23%)
+  adorn_title("combined") |> kable(caption="Counts by gender prior to matching")
+
+data |>
+  group_by(CaCo_Incidence) |>
+  summarise(Mean = mean(Age,na.rm=T),
+            SD = sd(Age, na.rm=T),
+            n = length(Age))|> 
+  kable(caption="mean age by gender prior to matching")
+```
+
+Loaded in case-control unmatched file `r filename`.  This input file was most recently updated on `r ifelse(filename %in% dir(), format(file.info(filename)$mtime, "%Y-%m-%d"), "unknown")`.  This script was most recently updated on `r date()`.
+
+## Propensity Matching
+
+The goal is to try to match cases by age, race, ethnicity and gender, with exact matches on the last three.
+
+```{r matching}
+library(MatchIt)
+m.out.all <- matchit(CaCo_Incidence ~ Age, 
+                 data = data |> filter(is.finite(Age), !is.na(Race.Ethnicity)),
+                 method = "nearest", 
+                 exact = c("GenderCode", "Race.Ethnicity"),# Force exact matches
+                 ratio=3)
+
+matched_data <- match.data(m.out.all)
+
+#summary(m.out.all, standardize = TRUE)  # Balance statistics[5]
+
+tabyl(matched_data, Race.Ethnicity,CaCo_Incidence)|>
+  adorn_percentages("col") %>%          # row percentages (each row sums to 100%)
+  adorn_pct_formatting(digits = 0) %>%  # show as 23% instead of 0.23
+  adorn_ns(position = "front") %>%      # puts counts in front: 45 (23%)
+  adorn_title("combined") |> kable(caption="Counts by race/ethnicity after matching")
+
+tabyl(matched_data, GenderCode,CaCo_Incidence)|>
+  adorn_percentages("col") %>%          # row percentages (each row sums to 100%)
+  adorn_pct_formatting(digits = 0) %>%  # show as 23% instead of 0.23
+  adorn_ns(position = "front") %>%      # puts counts in front: 45 (23%)
+  adorn_title("combined") |> kable(caption="Counts by gender after matching")
+
+matched_data |>
+  group_by(CaCo_Incidence) |>
+  summarise(Mean = mean(Age,na.rm=T),
+            SD = sd(Age, na.rm=T),
+            n = length(Age))|> 
+  kable(caption="mean age by gender after matching")
+```
+
+### Love Plot
+
+```{r love-plots}
+library(cobalt)
+library(ggplot2)
+
+#plot(m.out.all,type="jitter")
+
+love.plot(m.out.all, stats="mean.diffs",
+          threshold=0.1,
+          abs=TRUE,
+          stars="none") + 
+  theme_classic(base_size=16) +
+    labs(
+      title = "Love Plot",
+      x = "Standardized Mean Difference",
+      color = "Stage",
+    ) +
+    scale_color_grey() +
+    theme(legend.position = c(0.65,0.25))
+
+write_csv(matched_data, 'Case_Control_Pneumonia_Incidence_Matched.csv')
+```
+
+## Session Information
+
+```{r session-information}
+sessionInfo()
+```
